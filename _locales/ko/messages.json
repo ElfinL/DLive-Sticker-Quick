@@ -1,0 +1,46 @@
+{
+  "extName": {
+    "message": "General Sticker System (GSS)",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "스티커 ID를 저장하고 한 번의 클릭으로 채팅 메시지를 보냅니다.",
+    "description": "Extension description"
+  },
+  "tscEnabledLabel": {
+    "message": "시스템 활성화",
+    "description": "TSC system enabled label"
+  },
+  "tscAutoCollectLabel": {
+    "message": "자동 수집",
+    "description": "TSC auto collect label"
+  },
+  "tscAutoCollectEnabled": {
+    "message": "자동 수집 활성화됨",
+    "description": "TSC auto collect enabled message"
+  },
+  "tscAutoCollectDisabled": {
+    "message": "자동 수집 비활성화됨",
+    "description": "TSC auto collect disabled message"
+  },
+  "tscAutoCollectActivated": {
+    "message": "✅ TSC 자동 수집이 활성화되었습니다",
+    "description": "TSC auto collect activated message"
+  },
+  "tscAutoCollectDeactivated": {
+    "message": "✅ TSC 자동 수집이 비활성화되었습니다",
+    "description": "TSC auto collect deactivated message"
+  },
+  "helpAutoCollect": {
+    "message": "자동 수집",
+    "description": "Help page auto collect label"
+  },
+  "helpAutoCollectDesc": {
+    "message": "라이브 페이지에 <code>#GSS-TexoStreamCore</code> 태그를 배치하면 확장 프로그램이 자동으로 아래 데이터를 읽습니다",
+    "description": "Help page auto collect description"
+  },
+  "helpAutoCollectSettings": {
+    "message": "자동 수집 설정",
+    "description": "Help page auto collect settings title"
+  }
+}

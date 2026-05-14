@@ -22,6 +22,7 @@ const batchTagInput = document.getElementById('batchTagInput');
 const batchTagSelect = document.getElementById('batchTagSelect');
 const batchAddTagBtn = document.getElementById('batchAddTagBtn');
 const batchRemoveTagBtn = document.getElementById('batchRemoveTagBtn');
+const batchDeleteBtn = document.getElementById('batchDeleteBtn');
 const clearSelectionBtn = document.getElementById('clearSelectionBtn');
 const statusBar = document.getElementById('statusBar');
 // 側邊欄元素
@@ -51,6 +52,7 @@ function setupEventListeners() {
   exportBtn.addEventListener('click', exportData);
   batchAddTagBtn.addEventListener('click', () => batchAddTag());
   batchRemoveTagBtn.addEventListener('click', () => batchRemoveTag());
+  batchDeleteBtn.addEventListener('click', () => batchDeleteIds());
   clearSelectionBtn.addEventListener('click', clearSelection);
 
   // 側邊欄保存按鈨
@@ -101,26 +103,35 @@ async function loadData() {
   content.innerHTML = '<div class="loading">載入資料中...</div>';
 
   try {
-    const result = await chrome.storage.local.get([
-      'stickerIdsText',
-      'favoriteStickerIds',
-      'stickerTagVocabularyText'
-    ]);
+    // Firefox 相容：使用回調形式
+    const result = await new Promise((resolve) => {
+      chrome.storage.local.get([
+        'stickerIdsText',
+        'favoriteStickerIds',
+        'stickerTagVocabularyText'
+      ], (items) => {
+        resolve(items || {});
+      });
+    });
 
     // 解析標籤詞庫
-    tagVocabulary = parseVocabulary(result.stickerTagVocabularyText || '');
+    tagVocabulary = parseVocabulary(result?.stickerTagVocabularyText || '');
 
-    // 填充側邊欄輸入框
-    if (idListInput) idListInput.value = result.stickerIdsText || '';
-    if (tagVocabInput) tagVocabInput.value = result.stickerTagVocabularyText || '';
+    // 解析貼圖資料（使用正規化後的內容）
+    const parsed = parseStickerIdsText(result?.stickerIdsText || '');
 
-    // 解析貼圖資料
-    const parsed = parseStickerIdsText(result.stickerIdsText || '');
+    // 填充側邊欄輸入框（顯示正規化後的內容）
+    if (idListInput) {
+      idListInput.value = rowsToText(parsed.rows);
+    }
+    if (tagVocabInput) tagVocabInput.value = result?.stickerTagVocabularyText || '';
+
+    // 使用已經正規化的 parsed 數據
     allStickers = parsed.rows.map(row => ({
       id: row.id,
       type: getStickerType(row.id),
       tags: row.tags || [],
-      isFav: (result.favoriteStickerIds || []).includes(row.id),
+      isFav: (result?.favoriteStickerIds || []).includes(row.id),
       previewUrl: getPreviewUrl(row.id),
       lineNumber: row.lineNumber // 保存行號
     }));
@@ -142,10 +153,17 @@ async function loadData() {
       }, 100);
     });
   } catch (err) {
-    content.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">❌</div>
-      <div>載入失敗: ${err.message}</div>
-    </div>`;
+    content.textContent = '';
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    const icon = document.createElement('div');
+    icon.className = 'empty-state-icon';
+    icon.textContent = '❌';
+    const msg = document.createElement('div');
+    msg.textContent = '載入失敗: ' + err.message;
+    emptyState.appendChild(icon);
+    emptyState.appendChild(msg);
+    content.appendChild(emptyState);
     showStatus('載入失敗: ' + err.message, true);
   }
 }
@@ -232,8 +250,14 @@ function parseStickerIdsText(text) {
       .filter(p => p.startsWith('#'))
       .map(p => p.slice(1));
 
-    if (id) {
-      rows.push({ id, tags, lineNumber: i + 1 }); // 記錄行號（從1開始）
+    // 正規化 ID（針對 GSS 格式移除 HTTP/HTTPS 前綴）
+    let normalizedId = id;
+    if (id.startsWith('GSS-')) {
+      normalizedId = id.replace(/^GSS-https?:\/\//i, 'GSS-');
+    }
+
+    if (normalizedId) {
+      rows.push({ id: normalizedId, tags, lineNumber: i + 1 }); // 記錄行號（從1開始）
     }
   }
 
@@ -249,27 +273,14 @@ function parseVocabulary(text) {
 
 // 取得貼圖類型
 function getStickerType(id) {
-  if (id.startsWith('DL-')) return 'DL';
-  if (id.startsWith('IM-')) return 'IM';
-  if (id.startsWith('ME-')) return 'ME';
-  return 'OTHER';
+  return StickerRegistry.detectType(id) || 'OTHER';
 }
 
 // 取得預覽 URL
 function getPreviewUrl(id) {
-  const type = getStickerType(id);
-  const cleanId = id.slice(3); // 移除 DL-, IM-, ME- 前綴
-
-  switch (type) {
-    case 'DL':
-      return `https://images.prd.dlivecdn.com/emote/${cleanId}`;
-    case 'IM':
-      return `https://i.imgur.com/${cleanId}`;
-    case 'ME':
-      return `https://meee.com.tw/${cleanId}`;
-    default:
-      return '';
-  }
+  if (!id) return '';
+  const info = StickerRegistry.getStickerInfo(id);
+  return info ? info.previewUrl : '';
 }
 
 // 過濾貼圖
@@ -323,36 +334,59 @@ function updateTagTabs() {
   const t = window.t || ((key) => key);
 
   // 清空現有標籤（保留全部和未分類）
-  tagTabs.innerHTML = `
-    <button class="tag-tab ${currentTagFilter === '__all__' ? 'active' : ''}" data-tag="__all__">${t('tagAll')} (${typeFilteredStickers.length})</button>
-    <button class="tag-tab ${currentTagFilter === '__uncategorized__' ? 'active' : ''}" data-tag="__uncategorized__">${t('tagUncategorized')} (${typeFilteredStickers.filter(s => s.tags.length === 0).length})</button>
-  `;
+  tagTabs.textContent = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'tag-tab' + (currentTagFilter === '__all__' ? ' active' : '');
+  allBtn.dataset.tag = '__all__';
+  allBtn.textContent = t('tagAll') + ' (' + typeFilteredStickers.length + ')';
+  tagTabs.appendChild(allBtn);
+  const uncategorizedBtn = document.createElement('button');
+  uncategorizedBtn.className = 'tag-tab' + (currentTagFilter === '__uncategorized__' ? ' active' : '');
+  uncategorizedBtn.dataset.tag = '__uncategorized__';
+  uncategorizedBtn.textContent = t('tagUncategorized') + ' (' + typeFilteredStickers.filter(s => s.tags.length === 0).length + ')';
+  tagTabs.appendChild(uncategorizedBtn);
 
   // 添加隱藏標籤
   const hiddenCount = typeFilteredStickers.filter(s => s.tags.includes('隱藏')).length;
   if (hiddenCount > 0 || sortedTags.includes('隱藏')) {
-    tagTabs.innerHTML += `<button class="tag-tab hidden-tag ${currentTagFilter === '隱藏' ? 'active' : ''}" data-tag="隱藏">${t('hiddenTag')} (${hiddenCount})</button>`;
+    const hiddenBtn = document.createElement('button');
+    hiddenBtn.className = 'tag-tab hidden-tag' + (currentTagFilter === '隱藏' ? ' active' : '');
+    hiddenBtn.dataset.tag = '隱藏';
+    hiddenBtn.textContent = t('hiddenTag') + ' (' + hiddenCount + ')';
+    tagTabs.appendChild(hiddenBtn);
   }
 
   // 添加其他標籤
   sortedTags.forEach(tag => {
     if (tag !== '隱藏') {
-      tagTabs.innerHTML += `<button class="tag-tab ${currentTagFilter === tag ? 'active' : ''}" data-tag="${tag}">${tag} (${tagCounts[tag]})</button>`;
+      const btn = document.createElement('button');
+      btn.className = 'tag-tab' + (currentTagFilter === tag ? ' active' : '');
+      btn.dataset.tag = tag;
+      btn.textContent = tag + ' (' + tagCounts[tag] + ')';
+      tagTabs.appendChild(btn);
     }
   });
 
   // 更新批量標籤下拉選項
   if (batchTagSelect) {
     const currentVal = batchTagSelect.value;
-    batchTagSelect.innerHTML = `
-      <option value="">${t('selectTag')}</option>
-      <option value="__manual__">${t('manualInput')}</option>
-    `;
+    batchTagSelect.textContent = '';
+    const opt1 = document.createElement('option');
+    opt1.value = '';
+    opt1.textContent = t('selectTag');
+    batchTagSelect.appendChild(opt1);
+    const opt2 = document.createElement('option');
+    opt2.value = '__manual__';
+    opt2.textContent = t('manualInput');
+    batchTagSelect.appendChild(opt2);
 
     // 添加所有可用標籤（按字母排序）
     const sortedTagList = Array.from(allTags).sort();
     sortedTagList.forEach(tag => {
-      batchTagSelect.innerHTML += `<option value="${tag}">${tag} (${tagCounts[tag]})</option>`;
+      const opt = document.createElement('option');
+      opt.value = tag;
+      opt.textContent = tag + ' (' + tagCounts[tag] + ')';
+      batchTagSelect.appendChild(opt);
     });
 
     // 恢復之前的選擇（如果還存在）
@@ -417,82 +451,134 @@ function renderStickers() {
 
 // 建立貼圖卡片
 function createStickerCard(sticker) {
-  const card = document.createElement('div');
-  card.className = 'sticker-card';
-  if (selectedIds.has(sticker.id)) {
-    card.classList.add('selected');
-  }
-
-  // 預覽圖處理
-  const isVideo = sticker.id.match(/\.(mp4|webm)$/i);
-  let previewHtml;
-  if (isVideo) {
-    previewHtml = `<video src="${sticker.previewUrl}" class="sticker-preview" autoplay loop muted playsinline></video>`;
-  } else {
-    previewHtml = `<img src="${sticker.previewUrl}" class="sticker-preview" alt="${sticker.id}" onerror="this.style.display='none'">`;
-  }
-
-  card.innerHTML = `
-    <div class="sticker-header">
-      <input type="checkbox" class="sticker-select" ${selectedIds.has(sticker.id) ? 'checked' : ''}>
-      ${previewHtml}
-      <div class="sticker-actions">
-        <button type="button" class="sticker-delete-btn" title="${t('delTitle')}">×</button>
-      </div>
-    </div>
-    <div class="sticker-id">${sticker.id} ${sticker.isFav ? '⭐' : ''}</div>
-    <div class="sticker-line-number">${t('stickerLineNumber', sticker.lineNumber)}</div>
-    <div class="tags-section">
-      <div class="tags-list">
-        ${sticker.tags.map(tag => `
-          <span class="tag" data-tag="${tag}">
-            ${tag}
-            <button type="button" class="remove-tag-btn">×</button>
-          </span>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  // 點擊卡片選擇
-  card.querySelector('.sticker-select').addEventListener('change', (e) => {
-    if (e.target.checked) {
-      selectedIds.add(sticker.id);
+  try {
+    const card = document.createElement('div');
+    card.className = 'sticker-card';
+    if (selectedIds.has(sticker.id)) {
       card.classList.add('selected');
-    } else {
-      selectedIds.delete(sticker.id);
-      card.classList.remove('selected');
     }
-    updateBatchPanel();
-  });
 
-  // 綁定移除標籤按鈕事件
-  card.querySelectorAll('.remove-tag-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const tagSpan = btn.closest('.tag');
-      const tag = tagSpan.dataset.tag;
-      removeTagFromSticker(sticker.id, tag);
+    // 預覽圖處理
+    const isVideo = sticker.id.match(/\.(mp4|webm)$/i);
+    let previewEl;
+    if (isVideo) {
+      previewEl = document.createElement('video');
+      previewEl.src = sticker.previewUrl;
+      previewEl.className = 'sticker-preview';
+      previewEl.autoplay = true;
+      previewEl.loop = true;
+      previewEl.muted = true;
+      previewEl.setAttribute('playsinline', '');
+    } else {
+      previewEl = document.createElement('img');
+      previewEl.src = sticker.previewUrl;
+      previewEl.className = 'sticker-preview';
+      previewEl.alt = sticker.id;
+      previewEl.loading = 'lazy';
+      previewEl.decoding = 'async';
+      previewEl.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // 建立 header
+    const header = document.createElement('div');
+    header.className = 'sticker-header';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'sticker-select';
+    if (selectedIds.has(sticker.id)) {
+      checkbox.checked = true;
+    }
+    header.appendChild(checkbox);
+    header.appendChild(previewEl);
+
+    const actions = document.createElement('div');
+    actions.className = 'sticker-actions';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'sticker-delete-btn';
+    deleteBtn.title = t('delTitle');
+    deleteBtn.textContent = '×';
+    actions.appendChild(deleteBtn);
+    header.appendChild(actions);
+    card.appendChild(header);
+
+    // 貼圖 ID
+    const idDiv = document.createElement('div');
+    idDiv.className = 'sticker-id';
+    const idText = sticker.id || 'NO_ID';
+    idDiv.textContent = idText + (sticker.isFav ? ' ⭐' : '');
+    card.appendChild(idDiv);
+
+    // 行號
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'sticker-line-number';
+    lineDiv.textContent = t('stickerLineNumber', sticker.lineNumber);
+    card.appendChild(lineDiv);
+
+    // 標籤區域
+    const tagsSection = document.createElement('div');
+    tagsSection.className = 'tags-section';
+    const tagsList = document.createElement('div');
+    tagsList.className = 'tags-list';
+
+    sticker.tags.forEach(tag => {
+      const tagSpan = document.createElement('span');
+      tagSpan.className = 'tag';
+      tagSpan.dataset.tag = tag;
+      tagSpan.textContent = tag;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-tag-btn';
+      removeBtn.textContent = '×';
+      tagSpan.appendChild(removeBtn);
+      tagsList.appendChild(tagSpan);
     });
-  });
 
-  // 綁定刪除貼圖按鈕事件
-  const deleteBtn = card.querySelector('.sticker-delete-btn');
-  if (deleteBtn) {
+    tagsSection.appendChild(tagsList);
+    card.appendChild(tagsSection);
+
+    // 點擊卡片選擇
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedIds.add(sticker.id);
+        card.classList.add('selected');
+      } else {
+        selectedIds.delete(sticker.id);
+        card.classList.remove('selected');
+      }
+      updateBatchPanel();
+    });
+
+    // 綁定移除標籤按鈕事件
+    tagsList.querySelectorAll('.remove-tag-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tagSpan = btn.closest('.tag');
+        const tag = tagSpan.dataset.tag;
+        removeTagFromSticker(sticker.id, tag);
+      });
+    });
+
+    // 綁定刪除貼圖按鈕事件
     deleteBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       deleteSticker(sticker.id);
     });
+
+    // 右鍵選單事件
+    card.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu(e, sticker);
+    });
+
+    return card;
+  } catch (err) {
+    console.error('createStickerCard error:', err, 'sticker:', sticker);
+    return document.createElement('div');
   }
-
-  // 右鍵選單事件
-  card.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    showContextMenu(e, sticker);
-  });
-
-  return card;
 }
 
 // 顯示右鍵選單
@@ -504,29 +590,53 @@ function showContextMenu(e, sticker) {
   menu.id = 'contextMenu';
   menu.className = 'context-menu';
 
-  // 產生標籤選項
-  const tagOptions = tagVocabulary.map(tag => {
-    const hasTag = sticker.tags.includes(tag);
-    return `
-      <div class="context-menu-item ${hasTag ? 'has-tag' : ''}" data-action="toggleTag" data-tag="${tag}">
-        <span class="tag-indicator">${hasTag ? '✓' : ''}</span>
-        ${tag}
-      </div>
-    `;
-  }).join('');
+  // 標題
+  const header = document.createElement('div');
+  header.className = 'context-menu-header';
+  header.textContent = sticker.id;
+  menu.appendChild(header);
 
-  menu.innerHTML = `
-    <div class="context-menu-header">${sticker.id}</div>
-    <div class="context-menu-divider"></div>
-    <div class="context-menu-item ${sticker.isFav ? 'has-tag' : ''}" data-action="toggleFav">
-      <span class="tag-indicator">${sticker.isFav ? '✓' : ''}</span>
-      ${sticker.isFav ? '⭐ 取消常用' : '⭐ 設為常用'}
-    </div>
-    <div class="context-menu-divider"></div>
-    ${tagOptions}
-    <div class="context-menu-divider"></div>
-    <div class="context-menu-item" data-action="addCustomTag">➕ 新增標籤...</div>
-  `;
+  // 分隔線
+  menu.appendChild(document.createElement('div')).className = 'context-menu-divider';
+
+  // 常用選項
+  const favItem = document.createElement('div');
+  favItem.className = 'context-menu-item' + (sticker.isFav ? ' has-tag' : '');
+  favItem.dataset.action = 'toggleFav';
+  const favIndicator = document.createElement('span');
+  favIndicator.className = 'tag-indicator';
+  favIndicator.textContent = sticker.isFav ? '✓' : '';
+  favItem.appendChild(favIndicator);
+  favItem.appendChild(document.createTextNode(sticker.isFav ? '⭐ 取消常用' : '⭐ 設為常用'));
+  menu.appendChild(favItem);
+
+  // 分隔線
+  menu.appendChild(document.createElement('div')).className = 'context-menu-divider';
+
+  // 標籤選項
+  tagVocabulary.forEach(tag => {
+    const hasTag = sticker.tags.includes(tag);
+    const tagItem = document.createElement('div');
+    tagItem.className = 'context-menu-item' + (hasTag ? ' has-tag' : '');
+    tagItem.dataset.action = 'toggleTag';
+    tagItem.dataset.tag = tag;
+    const indicator = document.createElement('span');
+    indicator.className = 'tag-indicator';
+    indicator.textContent = hasTag ? '✓' : '';
+    tagItem.appendChild(indicator);
+    tagItem.appendChild(document.createTextNode(tag));
+    menu.appendChild(tagItem);
+  });
+
+  // 分隔線
+  menu.appendChild(document.createElement('div')).className = 'context-menu-divider';
+
+  // 新增標籤選項
+  const addTagItem = document.createElement('div');
+  addTagItem.className = 'context-menu-item';
+  addTagItem.dataset.action = 'addCustomTag';
+  addTagItem.textContent = '➕ 新增標籤...';
+  menu.appendChild(addTagItem);
 
   // 定位選單 - 使用 clientX/clientY 視窗座標，避免捲軸影響
   const x = Math.min(e.clientX, window.innerWidth - 200);
@@ -747,8 +857,14 @@ async function toggleFavorite(id) {
 // 將 rows 轉換回文字格式
 function rowsToText(rows) {
   return rows.map(row => {
+    // 正規化 ID（針對 GSS 格式移除 HTTP/HTTPS 前綴）
+    let normalizedId = row.id;
+    if (row.id.startsWith('GSS-')) {
+      normalizedId = row.id.replace(/^GSS-https?:\/\//i, 'GSS-');
+    }
+
     const tagsPart = row.tags.map(t => `#${t}`).join(' ');
-    return tagsPart ? `${row.id} ${tagsPart}` : row.id;
+    return tagsPart ? `${normalizedId} ${tagsPart}` : normalizedId;
   }).join('\n');
 }
 
@@ -841,6 +957,61 @@ async function batchAddTag() {
   filterStickers();
   updateTagTabs();
   showStatus(`批量新增完成: ${successCount} 成功${failCount > 0 ? `, ${failCount} 失敗` : ''}`);
+}
+
+// 批量刪除ID
+async function batchDeleteIds() {
+  if (selectedIds.size === 0) {
+    showStatus('請先選擇要刪除的貼圖', true);
+    return;
+  }
+
+  if (!confirm(`確定要刪除 ${selectedIds.size} 個選中的貼圖嗎？\n\n此操作無法復原！`)) {
+    return;
+  }
+
+  let successCount = 0;
+  let failCount = 0;
+
+  try {
+    const result = await chrome.storage.local.get(['stickerIdsText']);
+    const parsed = parseStickerIdsText(result.stickerIdsText || '');
+
+    // 過濾掉要刪除的ID
+    const remainingRows = parsed.rows.filter(row => !selectedIds.has(row.id));
+
+    // 保存更新後的資料
+    const newText = rowsToText(remainingRows);
+    await chrome.storage.local.set({ stickerIdsText: newText });
+
+    // 更新 allStickers 陣列
+    allStickers = allStickers.filter(sticker => !selectedIds.has(sticker.id));
+
+    // 更新 filteredStickers 陣列（確保 renderStickers 使用最新的數據）
+    filteredStickers = filteredStickers.filter(sticker => !selectedIds.has(sticker.id));
+
+    successCount = selectedIds.size;
+
+    // 清除選擇
+    selectedIds.clear();
+    updateBatchPanel();
+
+    // 更新左側 ID 輸入框
+    if (idListInput) {
+      idListInput.value = newText;
+      // 觸發 input 事件以更新行號顯示
+      idListInput.dispatchEvent(new Event('input'));
+    }
+
+    // 重新渲染
+    renderStickers();
+
+  } catch (err) {
+    console.error('批量刪除失敗:', err);
+    failCount = selectedIds.size;
+  }
+
+  showStatus(`批量刪除完成: ${successCount} 成功${failCount > 0 ? `, ${failCount} 失敗` : ''}`);
 }
 
 // 批量移除標籤

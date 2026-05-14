@@ -1,0 +1,46 @@
+{
+  "extName": {
+    "message": "General Sticker System (GSS)",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "ステッカーIDを保存し、ワンクリックでチャットメッセージを送信します。",
+    "description": "Extension description"
+  },
+  "tscEnabledLabel": {
+    "message": "システムを有効にする",
+    "description": "TSC system enabled label"
+  },
+  "tscAutoCollectLabel": {
+    "message": "自動収集",
+    "description": "TSC auto collect label"
+  },
+  "tscAutoCollectEnabled": {
+    "message": "自動収集が有効",
+    "description": "TSC auto collect enabled message"
+  },
+  "tscAutoCollectDisabled": {
+    "message": "自動収集が無効",
+    "description": "TSC auto collect disabled message"
+  },
+  "tscAutoCollectActivated": {
+    "message": "✅ TSC 自動収集が有効化されました",
+    "description": "TSC auto collect activated message"
+  },
+  "tscAutoCollectDeactivated": {
+    "message": "✅ TSC 自動収集が無効化されました",
+    "description": "TSC auto collect deactivated message"
+  },
+  "helpAutoCollect": {
+    "message": "自動収集",
+    "description": "Help page auto collect label"
+  },
+  "helpAutoCollectDesc": {
+    "message": "ライブページに <code>#GSS-TexoStreamCore</code> タグを配置すると、拡張機能が自動的に以下のデータを読み込みます",
+    "description": "Help page auto collect description"
+  },
+  "helpAutoCollectSettings": {
+    "message": "自動収集設定",
+    "description": "Help page auto collect settings title"
+  }
+}

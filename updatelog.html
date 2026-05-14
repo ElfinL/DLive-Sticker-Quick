@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSS Update Log</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0b0f14 0%, #14161c 100%);
+      color: rgba(255, 255, 255, 0.9);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .header .version {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .lang-switch {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: rgba(120, 190, 255, 0.14);
+      border-color: rgba(120, 190, 255, 0.45);
+    }
+
+    .lang-btn.active {
+      background: rgba(120, 190, 255, 0.35);
+      border-color: rgba(120, 190, 255, 0.7);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .version-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .version-card.latest {
+      border-color: rgba(255, 212, 59, 0.5);
+      background: linear-gradient(135deg, rgba(255, 212, 59, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    }
+
+    .version-badge {
+      position: absolute;
+      top: -10px;
+      right: 15px;
+      background: #ffd43b;
+      color: #1a1a1a;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .version-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .version-number {
+      font-size: 18px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .version-date {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .pending-badge {
+      font-size: 11px;
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.15);
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: auto;
+    }
+
+    .version-changes {
+      list-style: none;
+    }
+
+    .version-changes li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .version-changes li:last-child {
+      border-bottom: none;
+    }
+
+    .version-changes li::before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: #4a90e2;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .footer a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📢 GSS Update Log</h1>
+      <div class="version">General Sticker System</div>
+    </div>
+
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="zh-TW">繁中</button>
+      <button class="lang-btn" data-lang="zh-CN">简中</button>
+      <button class="lang-btn" data-lang="en">English</button>
+      <button class="lang-btn" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
+    </div>
+
+    <!-- 繁中內容 -->
+    <div id="content-zh-TW">
+      <div class="version-card latest">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.6</span><span class="version-date">5月14日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>📢 GSS v6.6 更新聲明：關於「成人內容」標籤的真相</strong></p>
+          <p>致各位 GSS 用戶：</p>
+          <p>這是一個極其荒謬的版本。從今天起，您會在 Chrome 商店看到 GSS 被標記為「成人內容」。身為獨立開發者，我認為有義務向各位誠實交代這個決策背後的審核機制。</p>
+          <br>
+          <p><strong>🔍 消失的邏輯：從「核准」到「違規」</strong></p>
+          <p>這並非 GSS 包含了任何不雅內容，而是因為 Google 審核標準的反覆無常：</p>
+          <p>v6.1 版本：早已通過審核，當時完整支援 W.TV 且被判定為全年齡。</p>
+          <p>v6.2 版本：常規更新，審核依然順利通過。</p>
+          <p>v6.3 至今：Google 在無預警、無溝通的情況下，突然將 W.TV 定義為成人網域，並以此卡住 GSS 的所有技術更新。</p>
+          <p>在他們的邏輯裡：「技術適配該網域（定位聊天室座標）= 提供成人內容」。這種將「工具」與「環境」混為一談的荒謬判斷，我無法認同。</p>
+          <br>
+          <p><strong>👤 團隊現況：產能應用於創造，而非虛耗於審核</strong></p>
+          <p>GSS 的開發團隊只有我一個人。我的產能應該花在優化貼圖體驗，而不是浪費在應對繁瑣的審核流程和漫長的等待時間。與其花時間去規避審核系統，我寧願選擇「吃下這隻死貓」，換取開發功能的自由。</p>
+          <br>
+          <p><strong>🚀 更新策略調整與階段性停更說明</strong></p>
+          <p>由於 Google Chrome Web Store 的審核機制極度緩慢且充滿不確定性，為了確保版本資訊的統一，往後我將採取同步上載至 Chrome、Firefox、Edge 與 GitHub 的策略。</p>
+          <p>在此我必須公開感謝 Firefox (Mozilla) 團隊對開發者的信任與高效審查——在那裡，開發者的產能是被尊重的。</p>
+          <p>同時，這或許是近期最後一次同步更新，我打算暫停更新一段時間，主要基於以下原因：</p>
+          <ul>
+            <li><strong>一、注意力分配問題</strong>：自從開發 GSS 以來，我幾乎所有時間腦袋裡都在想著如何改善它，我現在沒法好好分配自己的注意力，我需要停下來休息。</li>
+            <li><strong>二、開發工具的限制</strong>：我一直是用免費的 AI 工具在開發，但最近原本使用的工具已經沒法免費使用了，我暫時不想增加這方面的支出。</li>
+            <li><strong>三、審核機制過於繁瑣</strong>：Google 的審核管得太寬，連 DLive 這種已經倒閉的平台的相關功能都要我特地去掉。應對這些重複的審核要求讓我感到很疲累。</li>
+          </ul>
+          <p>目前的版本我已經盡力做好了。雖然不知道還有沒有 bug，但我暫時不想寫了。如果以後環境變好，或者我找到了新的好用工具，或許會再回來。</p>
+          <br>
+          <p><strong>💻 關於開源與 GitHub 更新</strong></p>
+          <p>我將同步更新 GitHub，並上傳最新的完整源代碼。</p>
+          <p>歡迎所有用戶與開發者前往查閱</p>
+          <br>
+          <p><strong>🔓 技術開放：GSS Sticker Protocol</strong></p>
+          <p>我將 GSS 的轉圖邏輯正式命名為「GSS Sticker Protocol」。我歡迎任何開發者在作品中引用這套邏輯，共同推動去中心化的貼圖方式。</p>
+          <p>以後大家只要使用同一個 Protocol，無論在什麼平台、用什麼工具，大家都能互相看到貼圖。透過技術協議的開放，讓貼圖的使用不再受限於單一平台的審核機制。</p>
+          <br>
+          <p><strong>✅ 您的權益</strong></p>
+          <p>功能完全不變：GSS 依然是那個乾淨、高效、絕不追蹤數據的工具。</p>
+          <p>標籤的本質：這個標籤是給 Google 看的，而功能是寫給你們用的。</p>
+          <br>
+          <p>感謝你喜歡這個插件。</p>
+          <p>Developer: Elfin | Logic is logic, and freedom is freedom.</p>
+          <p>Don't be evil.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.5</span><span class="version-date">5月12日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>🔧 GSS v6.5 技術更新：DLive 平台完全移除</strong></p>
+          <p>致各位 GSS 用戶：</p>
+          <p>由於 Google 審核團隊今日新增的違規事項，要求本插件移除已關閉的 DLive 平台相關功能，我們已完成了 DLive 相關代碼的全面移除工作。</p>
+          <br>
+          <p><strong>📋 移除內容</strong></p>
+          <ul>
+            <li>完全移除 DLive 平台檢測與支援邏輯</li>
+            <li>移除 DLive 貼圖格式與相關函數</li>
+            <li>移除 DLive 相關的翻譯文本與 UI 元素</li>
+            <li>移除 DLive 儲存相關功能</li>
+            <li>更新所有 manifest 文件，移除 DLive 權限</li>
+          </ul>
+          <br>
+          <p><strong>🎯 影響範圍</strong></p>
+          <p>此更新主要影響已關閉的 DLive 平台，對其他平台（Twitch、Kick、YouTube、W.TV 等）的功能完全無影響。</p>
+          <p>所有現有貼圖功能保持正常，用戶體驗不變。</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.4</span><span class="version-date">5月11日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正 CB 和 GSS 格式的右鍵功能表問題</strong></li>
+          <li>修復 content 面板中 CB 和 GSS 格式貼圖無法使用右鍵菜單的問題</li>
+          <li><strong>⭐ 修正 CB 格式無法添加常用標籤問題</strong></li>
+          <li>解決 CB 格式貼圖無法標記為常用的 bug</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.3</span><span class="version-date">5月9日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🌐 全新 GSS 通用圖片連結格式</strong></li>
+          <li>支援格式：<code>GSS-[圖片連結]</code>理論上支援幾乎所有圖片格式(例如 Discord、Imgur 等任何平台)，只要聊天室能輸入能顯示的ID</li>
+          <li>支援 .jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4 等格式</li>
+          <li><strong>🦊 Firefox 實驗性 AN 支援</strong></li>
+          <li>開始嘗試支援 Firefox Add-ons 的 AN（Android Native）版本</li>
+          <li>為移動端用戶提供更完整的貼圖體驗</li>
+          <li><em>注意：因 Android 平台兼容性問題，AN 版本功能可能不完整，將逐步修正</em></li>
+          <li><strong>📝 說明頁面更新</strong></li>
+          <li>增加GSS通用圖片連結格式說明，方便用戶快速了解</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.2</span><span class="version-date">5月6日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正圖庫編輯器無法批量刪除ID的問題</strong></li>
+          <li><strong>🗑️ 因DLive平台和圖庫服務關閉，逐步取消相關功能</strong></li>
+          <li><strong>🔄 聊天室輸入框彈出面板取消DL分類，改為CB分類</strong></li>
+          <li><strong>🆕 開始支援catbox.moe圖庫</strong></li>
+          <li><strong>📝 格式為 CB-xxx.ext，例如 CB-z8dta6.gif，詳見❓</strong></li>
+          <li><strong>🌐 Edge 版送審核</strong></li>
+          <li>5月8日 Edge V6.2版本已送審核</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.1</span><span class="version-date">5月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正WTV卷軸問題</strong></li>
+          <li>優化轉圖處理，避免卷軸時的干擾問題</li>
+          <li>提升轉圖效能，減少系統資源占用</li>
+          <li><strong>🖱️ WTV 加入右鍵功能</strong></li>
+          <li>WTV 平台圖片現在支援右鍵菜單功能</li>
+          <li>支援 IM-、ME-、DLive 表情和 YT- 影片的右鍵操作</li>
+          <li>解決右鍵功能無法使用的問題</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.0</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 w.tv 聊天室按鈕位置優化</strong></li>
+          <li>修正 w.tv 平台聊天室貼圖面板按鈕插入位置的問題</li>
+          <li>按鈕現在會根據輸入狀態智能調整位置（未輸入時在選項按鈕左邊，輸入時在發送按鈕左邊）</li>
+          <li>優化按鈕圖標顯示大小，與官方按鈕保持一致的視覺效果</li>
+          <li>解決按鈕重複創建和位置跳動的問題</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.9</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 貼圖轉圖功能支援 w.tv</strong></li>
+          <li>貼圖轉圖功能開始支援 <strong>w.tv</strong> 平台</li>
+          <li>在聊天室輸入框內顯示 GSS 貼圖按鈕</li>
+          <li>支援轉存 w.tv 表情圖片到 GSS 清單</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.8</span><span class="version-date">5月1日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🦊 Firefox 審核過審</strong></li>
+          <li>V5.8 已通過 Firefox 審核</li>
+          <li><strong>🚀 Beamstream 自動發送</strong></li>
+          <li>beamstream 貼圖現在可以自動發送了</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.7</span><span class="version-date">4月28日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 TSC功能支援 Beamstream</strong></li>
+          <li>Texo Stream Core 多平台開台狀態面板現在支援 <strong>beamstream.gg</strong></li>
+          <li>在平台 Logo 旁顯示 TSC 收合按鈕</li>
+          <li>點擊展開後可觀看其他平台直播狀態</li>
+          <li><strong>🦊 Firefox 支援</strong></li>
+          <li>插件開始支援 Firefox 瀏覽器</li>
+          <li>提供 manifest-firefox.json 供 Firefox 安裝使用</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.6</span><span class="version-date">4月27日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🚀 新增平台支援（先行版）</strong></li>
+          <li>貼圖功能開始支援 <strong>beamstream.gg</strong> 平台</li>
+          <li>在聊天室輸入框旁顯示 GSS 貼圖按鈕</li>
+          <li>點擊貼圖後自動填入聊天框，手動發送</li>
+          <li class="note">此為先行測試版本，其他功能優化與修正將於後續版本陸續更新</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.5</span><span class="version-date">4月23日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 功能恢復與完整支援</strong></li>
+          <li>加回 V5.4 為加速審核而移除的功能</li>
+          <li>恢復主聊天室插入功能（支援跨平台嵌入聊天室）</li>
+          <li>恢復聊天室彈出面板的 📢 更新資訊和 ❓ 說明按鈕</li>
+          <li>完整支援 YouTube 聊天室 iframe（使用 all_frames 設定）</li>
+          <li>更新隱私權政策，詳細說明 tabs 權限與 all_frames 設定用途</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.4</span><span class="version-date">4月22日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 優化與調整</strong></li>
+          <li>移除部分功能以提升審核通過速度</li>
+          <li>移除主聊天室插入功能</li>
+          <li>移除聊天室彈出面板的更新資訊和使用說明按鈕</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.3</span><span class="version-date">4月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正 KICK 和 TWITCH 卷軸問題</strong></li>
+          <li>貼圖插入後聊天室自動滾動到底部</li>
+          <li>優化貼圖格式判斷邏輯，避免 ME-/IM- 被誤判為 YT-</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.2</span><span class="version-date">4月17日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🧶 Texo Stream Core 面板支援多語言</strong></li>
+          <li>編織資料頁面支援繁中/簡中/英/日/韓五種語言切換</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.1</span><span class="version-date">4月16日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎬 貼圖功能新增 YouTube 影片支援</strong></li>
+          <li>支援格式：<code>YT-xxxxxxxxxxx</code> 或完整 YouTube URL</li>
+          <li>自動將 YouTube 連結轉換為影片縮圖，點擊可播放</li>
+          <li>支援一般影片、Shorts 短影片</li>
+          <li><strong>🔧 修正全屏模式後版面錯位問題</strong></li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.0</span><span class="version-date">4月14日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 KICK 平台支援上線！</strong></li>
+          <li>GSS 貼圖功能完整支援 KICK 聊天室</li>
+          <li>TSC 面板支援 KICK 直播間狀態顯示</li>
+          <li>主聊天室支援 KICK 嵌入（因 CSRF 保護限制，在第三方頁面只能查看無法發言，等待 KICK 官方開放嵌入 API）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.9</span><span class="version-date">4月12日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>✨ 新功能：Texo Stream Core (TSC) 實況編織核心</strong></li>
+          <li>整合多平台實況台於單一面板統一管理</li>
+          <li>支援 Twitch / DLive / Vaughn Live 狀態顯示（綠=開台/紅=離線/灰=未知）</li>
+          <li>自動從網頁標記讀取主播資料，省去手動輸入</li>
+          <li>📋 使用須知：自動添加需網頁包含 #GSS-TexoStreamCore 標記</li>
+          <li>格式：>主播名稱 換行 #平台網址</li>
+          <li>詳細使用方式請參考說明頁</li>
+          <li>⚠️ 已知問題：Vaughn Live 暫時顯示灰色（尚未找到可靠的開台檢測方式）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.8</span><span class="version-date">4月8日</span>
+        </div>
+        <ul class="version-changes">
+          <li>優化圖庫編輯器的 Imgur (IM) 圖片載入速度</li>
+          <li>使用縮略圖 (medium size) 加速 GIF/JPG/PNG 顯示</li>
+          <li>新增圖片懶加載 (lazy loading) 減少初始載入負擔</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.7</span><span class="version-date">4月6日</span>
+        </div>
+        <ul class="version-changes">
+          <li>修正捲軸問題</li>
+          <li>修正錯誤訊息翻譯問題</li>
+          <li>新增「記住 Mature 同意」自動設定功能</li>
+          <li>新增更新日誌頁面，可查看最新功能</li>
+          <li>在聊天室面板新增 📢 更新日誌按鈕和 ❓ 說明按鈕</li>
+          <li>新增右鍵功能關閉按鈕，可暫時停用 GSS 右鍵選單</li>
+          <li>「設定」區塊現在顯示在 DLive 設定面板最上方</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.6</span><span class="version-date">4月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li>重寫整個插件結構，提升效能與可維護性</li>
+          <li>功能與 v4.5 保持一致</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.4</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增圖庫編輯器，方便管理大量貼圖</li>
+          <li>聊天室輸入框彈出面板改用「上一頁/下一頁」切換</li>
+          <li>支援滑鼠滾輪操作分頁切換</li>
+          <li>右鍵選單新增「發送相同圖片」按鈕</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.3</span><span class="version-date">4月3日</span>
+        </div>
+        <ul class="version-changes">
+          <li>支援 ME（meee.com.tw）圖片格式</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.2</span><span class="version-date">4月3日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增說明頁面，點擊右上角問號即可查看使用教學</li>
+          <li>支援五種語言</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.1</span><span class="version-date">3月31日</span>
+        </div>
+        <ul class="version-changes">
+          <li>貼圖功能支援 Twitch 平台</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.0</span><span class="version-date">3月30日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增劇院模式</li>
+          <li>新增網頁版面控制功能</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v3.0</span><span class="version-date">3月28日</span>
+        </div>
+        <ul class="version-changes">
+          <li>插件更名為「General Sticker System (GSS)」</li>
+          <li>新增支援 Imgur 圖片功能</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v2.0</span><span class="version-date">3月23日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增「未分類」標籤</li>
+          <li>正式上架 Chrome 線上應用程式商店</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v1.0</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>插件誕生日！命名為「DLive Sticker Quick」</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 简中內容 -->
+    <div id="content-zh-CN" class="hidden">
+      <div class="version-card latest">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.6</span><span class="version-date">5月14日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>📢 GSS v6.6 更新声明：关于「成人内容」标签的真相</strong></p>
+          <p>致各位 GSS 用户：</p>
+          <p>这是一个极其荒谬的版本。从今天起，您会在 Chrome 商店看到 GSS 被标记为「成人内容」。身为独立开发者，我认为有义务向各位诚实交代这个决策背后的审核机制。</p>
+          <br>
+          <p><strong>🔍 消失的逻辑：从「核准」到「违规」</strong></p>
+          <p>这并非 GSS 包含了任何不雅内容，而是因为 Google 审核标准的反复无常：</p>
+          <p>v6.1 版本：早已通过审核，当时完整支持 W.TV 且被判定为全年龄。</p>
+          <p>v6.2 版本：常规更新，审核依然顺利通过。</p>
+          <p>v6.3 至今：Google 在无预警、无沟通的情况下，突然将 W.TV 定义为成人网域，并以此卡住 GSS 的所有技术更新。</p>
+          <p>在他们的逻辑里：「技术适配该网域（定位聊天室坐标）= 提供成人内容」。这种将「工具」与「环境」混为一谈的荒谬判断，我无法认同。</p>
+          <br>
+          <p><strong>👤 团队现状：产能应用于创造，而非虚耗于审核</strong></p>
+          <p>GSS 的开发团队只有我一个人。我的产能应该花在优化贴图体验，而不是浪费在应对繁琐的审核流程和漫长的等待时间。与其花时间去规避审核系统，我宁愿选择「吃下这只死猫」，换取开发功能的自由。</p>
+          <br>
+          <p><strong>🚀 更新策略调整与阶段性停更说明</strong></p>
+          <p>由于 Google Chrome Web Store 的审核机制极度缓慢且充满不确定性，为了确保版本资讯的统一，往后我将采取同步上载至 Chrome、Firefox、Edge 与 GitHub 的策略。 </p>
+          <p>在此我必须公开感谢 Firefox (Mozilla) 团队对开发者的信任与高效审查——在那里，开发者的产能是被尊重的。 </p>
+          <p>同时，这或许是近期最后一次同步更新，我打算暂停更新一段时间，主要基于以下原因：</p>
+          <ul>
+            <li><strong>一、注意力分配问题</strong>：自从开发 GSS 以来，我几乎所有时间脑袋里都在想着如何改善它，我现在没法好好分配自己的注意力，我需要停下来休息。 </li>
+            <li><strong>二、开发工具的限制</strong>：我一直是用免费的 AI 工具在开发，但最近原本使用的工具已经没法免费使用了，我暂时不想增加这方面的支出。 </li>
+            <li><strong>三、审核机制过于繁琐</strong>：Google 的审核管得太宽，连 DLive 这种已经倒闭的平台的相关功能都要我特地去掉。应对这些重复的审核要求让我感到很疲累。 </li>
+          </ul>
+          <p>目前的版本我已经尽力做好了。虽然不知道还有没有 bug，但我暂时不想写了。如果以后环境变好，或者我找到了新的好用工具，或许会再回来。 </p>
+          <br>
+          <p><strong>💻 关于开源与 GitHub 更新</strong></p>
+          <p>我将同步更新 GitHub，并上传最新的完整源代码。 </p>
+          <p>欢迎所有用户与开发者前往查阅</p>
+          <br>
+          <p><strong>🔓 技术开放：GSS Sticker Protocol</strong></p>
+          <p>我将 GSS 的转图逻辑正式命名为"GSS Sticker Protocol"。我欢迎任何开发者在作品中引用这套逻辑，共同推动去中心化的贴图方式。</p>
+          <p>以后大家只要使用同一个 Protocol，无论在什么平台、用什么工具，大家都能互相看到贴图。通过技术协议的开放，让贴图的使用不再受限于单一平台的审核机制。</p>
+          <br>
+          <p><strong>✅ 您的权益</strong></p>
+          <p>功能完全不变：GSS 依然是那个干净、高效、绝不追踪数据的工具。</p>
+          <p>标签的本质：这个标签是给 Google 看的，而功能是写给你们用的。</p>
+          <br>
+          <p>感谢你喜欢这个插件。</p>
+          <p>Developer: Elfin | Logic is logic, and freedom is freedom.</p>
+          <p>Don't be evil.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.5</span><span class="version-date">5月12日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>🔧 GSS v6.5 技术更新：DLive 平台完全移除</strong></p>
+          <p>致各位 GSS 用户：</p>
+          <p>由于 Google 审核团队今日新增的违规事项，要求本插件移除已关闭的 DLive 平台相关功能，我们已完成 DLive 相关代码的全面移除工作。</p>
+          <br>
+          <p><strong>📋 移除内容</strong></p>
+          <ul>
+            <li>完全移除 DLive 平台检测与支持逻辑</li>
+            <li>移除 DLive 贴图格式与相关函数</li>
+            <li>移除 DLive 相关的翻译文本与 UI 元素</li>
+            <li>移除 DLive 储存相关功能</li>
+            <li>更新所有 manifest 文件，移除 DLive 权限</li>
+          </ul>
+          <br>
+          <p><strong>🎯 影响范围</strong></p>
+          <p>此更新主要影响已关闭的 DLive 平台，对其他平台（Twitch、Kick、YouTube、W.TV 等）的功能完全无影响。</p>
+          <p>所有现有贴图功能保持正常，用户体验不变。</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.4</span><span class="version-date">5月11日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正 CB 和 GSS 格式的右键功能表问题</strong></li>
+          <li>修复 content 面板中 CB 和 GSS 格式贴图无法使用右键菜单的问题</li>
+          <li><strong>⭐ 修正 CB 格式无法添加常用标签问题</strong></li>
+          <li>解决 CB 格式贴图无法标记为常用的 bug</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.3</span><span class="version-date">5月9日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🌐 全新 GSS 通用图片链接格式</strong></li>
+          <li>支持格式：<code>GSS-[图片链接]</code>理论上支持几乎所有图片格式(例如 Discord、Imgur 等任何平台)，只要聊天室能输入能显示的ID</li>
+          <li>支持 .jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4 等格式</li>
+          <li><strong>🦊 Firefox 实验性 AN 支持</strong></li>
+          <li>开始尝试支持 Firefox Add-ons 的 AN（Android Native）版本</li>
+          <li>为移动端用户提供更完整的贴图体验</li>
+          <li><em>注意：因 Android 平台兼容性问题，AN 版本功能可能不完整，将逐步修正</em></li>
+          <li><strong>📝 说明页面更新</strong></li>
+          <li>增加GSS通用图片链接格式说明，方便用户快速了解</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.2</span><span class="version-date">5月6日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正图库编辑器无法批量删除ID的问题</strong></li>
+          <li><strong>🗑️ 因DLive平台和图库服务关闭，逐步取消相关功能</strong></li>
+          <li><strong>🔄 聊天室输入框弹出面板取消DL分类，改为CB分类</strong></li>
+          <li><strong>🆕 开始支持catbox.moe图库</strong></li>
+          <li><strong>📝 格式为 CB-xxx.ext，例如 CB-z8dta6.gif，详见❓</strong></li>
+          <li><strong>🌐 Edge 版送审核</strong></li>
+          <li>5月8日 Edge V6.2版本已送审核</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.1</span><span class="version-date">5月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正WTV滚动问题</strong></li>
+          <li>优化转图处理，避免滚动时的干扰问题</li>
+          <li>提升转图效能，减少系统资源占用</li>
+          <li><strong>🖱️ WTV 加入右键功能</strong></li>
+          <li>WTV 平台图片现在支持右键菜单功能</li>
+          <li>支持 IM-、ME-、DLive 表情和 YT- 影片的右键操作</li>
+          <li>解决右键功能无法使用的问题</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.0</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 w.tv 聊天室按钮位置优化</strong></li>
+          <li>修正 w.tv 平台聊天室贴图面板按钮插入位置的问题</li>
+          <li>按钮现在会根据输入状态智能调整位置（未输入时在选项按钮左边，输入时在发送按钮左边）</li>
+          <li>优化按钮图标显示大小，与官方按钮保持一致的视觉效果</li>
+          <li>解决按钮重复创建和位置跳动的问题</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.9</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 贴图转图功能支援 w.tv</strong></li>
+          <li>贴图转图功能开始支援 <strong>w.tv</strong> 平台</li>
+          <li>在聊天室输入框内显示 GSS 贴图按钮</li>
+          <li>支援转存 w.tv 表情图片到 GSS 清单</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.8</span><span class="version-date">5月1日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🦊 Firefox 审核过审</strong></li>
+          <li>V5.8 已通过 Firefox 审核</li>
+          <li><strong>🚀 Beamstream 自动发送</strong></li>
+          <li>beamstream 贴图现在可以自动发送了</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.7</span><span class="version-date">4月28日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 TSC功能支援 Beamstream</strong></li>
+          <li>Texo Stream Core 多平台开播状态面板现在支援 <strong>beamstream.gg</strong></li>
+          <li>在平台 Logo 旁显示 TSC 收合按钮</li>
+          <li>点击展开后可观看其他平台直播状态</li>
+          <li><strong>🦊 Firefox 支援</strong></li>
+          <li>插件开始支援 Firefox 浏览器</li>
+          <li>提供 manifest-firefox.json 供 Firefox 安装使用</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.6</span><span class="version-date">4月27日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🚀 新增平台支援（先行版）</strong></li>
+          <li>贴图功能开始支援 <strong>beamstream.gg</strong> 平台</li>
+          <li>在聊天室输入框旁显示 GSS 贴图按钮</li>
+          <li>点击贴图后自动填入聊天框，手动发送</li>
+          <li class="note">此为先行测试版本，其他功能优化与修正将于后续版本陆续更新</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.5</span><span class="version-date">4月23日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 功能恢复与完整支援</strong></li>
+          <li>加回 V5.4 为加速审核而移除的功能</li>
+          <li>恢复主聊天室插入功能（支援跨平台嵌入聊天室）</li>
+          <li>恢复聊天室弹出面板的 📢 更新资讯和 ❓ 说明按钮</li>
+          <li>完整支援 YouTube 聊天室 iframe（使用 all_frames 设定）</li>
+          <li>更新隐私权政策，详细说明 tabs 权限与 all_frames 设定用途</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.4</span><span class="version-date">4月22日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 优化与调整</strong></li>
+          <li>移除部分功能以提升审核通过速度</li>
+          <li>移除主聊天室插入功能</li>
+          <li>移除聊天室弹出面板的更新资讯和使用说明按钮</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.3</span><span class="version-date">4月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 修正 KICK 和 TWITCH 滚动问题</strong></li>
+          <li>贴图插入后聊天室自动滚动到底部</li>
+          <li>优化贴图格式判断逻辑，避免 ME-/IM- 被误判为 YT-</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.2</span><span class="version-date">4月17日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🧶 Texo Stream Core 面板支持多语言</strong></li>
+          <li>编织资料页面支持繁中/简中/英/日/韩五种语言切换</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.1</span><span class="version-date">4月16日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎬 贴图功能新增 YouTube 影片支持</strong></li>
+          <li>支持格式：<code>YT-xxxxxxxxxxx</code> 或完整 YouTube URL</li>
+          <li>自动将 YouTube 链接转换为影片缩图，点击可播放</li>
+          <li>支持一般影片、Shorts 短影片</li>
+          <li><strong>🔧 修正全屏模式后版面错位问题</strong></li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.0</span><span class="version-date">4月14日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 KICK 平台支持上线！</strong></li>
+          <li>GSS 贴图功能完整支持 KICK 聊天室</li>
+          <li>TSC 面板支持 KICK 直播间状态显示</li>
+          <li>主聊天室支持 KICK 嵌入（因 CSRF 保护限制，在第三方页面只能查看无法发言，等待 KICK 官方开放嵌入 API）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.9</span><span class="version-date">4月12日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>✨ 新功能：Texo Stream Core (TSC) 实况编织核心</strong></li>
+          <li>整合多平台直播间于单一面板统一管理</li>
+          <li>支援 Twitch / DLive / Vaughn Live 状态显示（绿=开播/红=离线/灰=未知）</li>
+          <li>自动从网页标记读取主播资料，省去手动输入</li>
+          <li>📋 使用须知：自动添加需网页包含 #GSS-TexoStreamCore 标记</li>
+          <li>格式：>主播名称 换行 #平台网址</li>
+          <li>详细使用方式请参考说明页</li>
+          <li>⚠️ 已知问题：Vaughn Live 暂时显示灰色（尚未找到可靠的开播检测方式）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.8</span><span class="version-date">4月8日</span>
+        </div>
+        <ul class="version-changes">
+          <li>优化图库编辑器的 Imgur (IM) 图片载入速度</li>
+          <li>使用缩略图 (medium size) 加速 GIF/JPG/PNG 显示</li>
+          <li>新增图片懒加载 (lazy loading) 减少初始载入负担</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.7</span><span class="version-date">4月6日</span>
+        </div>
+        <ul class="version-changes">
+          <li>修正卷轴问题</li>
+          <li>修正错误信息翻译问题</li>
+          <li>新增「记住 Mature 同意」自动设置功能</li>
+          <li>新增更新日志页面，可查看最新功能</li>
+          <li>在聊天室面板新增 📢 更新日志按钮和 ❓ 说明按钮</li>
+          <li>新增右键功能关闭按钮，可暂时停用 GSS 右键选单</li>
+          <li>「设置」区块现在显示在 DLive 设置面板最上方</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.6</span><span class="version-date">4月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li>重写整个插件结构，提升效能与可维护性</li>
+          <li>功能与 v4.5 保持一致</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.4</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增图库编辑器，方便管理大量贴图</li>
+          <li>聊天室输入框弹出面板改用「上一頁/下一頁」切换</li>
+          <li>支援滑鼠滾輪操作分頁切換</li>
+          <li>右鍵選單新增「發送相同圖片」按鈕</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.3</span><span class="version-date">4月3日</span>
+        </div>
+        <ul class="version-changes">
+          <li>支援 ME（meee.com.tw）圖片格式</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.2</span><span class="version-date">4月3日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增說明頁面，點擊右上角問號即可查看使用教學</li>
+          <li>支援五種語言</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.1</span><span class="version-date">3月31日</span>
+        </div>
+        <ul class="version-changes">
+          <li>貼圖功能支援 Twitch 平台</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.0</span><span class="version-date">3月30日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增劇院模式</li>
+          <li>新增網頁版面控制功能</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v3.0</span><span class="version-date">3月28日</span>
+        </div>
+        <ul class="version-changes">
+          <li>插件更名为「General Sticker System (GSS)」</li>
+          <li>新增支援 Imgur 圖片功能</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v2.0</span><span class="version-date">3月23日</span>
+        </div>
+        <ul class="version-changes">
+          <li>新增「未分類」標籤</li>
+          <li>正式上架 Chrome 線上應用程式商店</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v1.0</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>插件誕生日！命名为「DLive Sticker Quick」</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- English Content -->
+    <div id="content-en" class="hidden">
+      <div class="version-card latest">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.6</span><span class="version-date">May 14</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>📢 GSS v6.6 Update Statement: The Truth About the "Adult Content" Label</strong></p>
+          <p>To all GSS users:</p>
+          <p>This is an extremely absurd version. Starting today, you will see GSS marked as "Adult Content" in the
+            Chrome Store. As an independent developer, I feel obligated to honestly explain the review process
+            behind this decision.</p>
+          <br>
+          <p><strong>🔍 The Disappearing Logic: From "Approved" to "Violation"</strong></p>
+          <p>This is not because GSS contains any inappropriate content, but because of Google's inconsistent review
+            standards:</p>
+          <p>v6.1 version: Long ago passed review, with full W.TV support and was determined as all-ages.</p>
+          <p>v6.2 version: Regular updates, review still passed smoothly.</p>
+          <p>v6.3 to present: Google suddenly defined W.TV as an adult domain without warning or communication, and has
+            used this to block all of GSS's technical updates.</p>
+          <p>In their logic: "Technical adaptation for that domain (locating chat room coordinates) = Providing adult
+            content". This absurd judgment that confuses "tools" with "environment" is something I cannot accept.</p>
+          <br>
+          <p><strong>👤 Team Status: Production capacity should be used for creation, not wasted on auditing.</strong>
+          </p>
+          <p>The GSS development team is just me. My productivity should be spent optimizing sticker experience, not
+            wasting time dealing with cumbersome review processes and long waiting periods. Rather than spending time
+            circumventing review systems, I'd rather choose to "swallow this dead cat" in exchange for the freedom to
+            develop features.</p>
+          <br>
+          <p><strong>🚀 Update Strategy Adjustment and Temporary Suspension of Updates</strong></p>
+          <p>Due to the extremely slow and uncertain review process of the Google Chrome Web Store, in order to ensure
+            the consistency of version information, I will adopt a strategy of simultaneous uploading to Chrome,
+            Firefox, Edge, and GitHub from now on.</p>
+          <p>I must publicly thank the Firefox (Mozilla) team for their trust in developers and their efficient review
+            process—where the productivity of developers is respected.</p>
+          <p>Meanwhile, this may be the last simultaneous update for the time being. I plan to suspend updates for a
+            while, mainly due to the following reasons:</p>
+          <ul>
+            <li><strong>1. Attention Allocation Issue</strong>: Since developing GSS, I have spent almost all my time
+              thinking about how to improve it. I can no longer properly allocate my attention and need to stop and
+              rest.</li>
+            <li><strong>2. Development Tool Limitations</strong>: I have always used free AI tools for development, but
+              recently the tools I was using are no longer free to use, and I do not want to increase my spending in
+              this area for now.</li>
+            <li><strong>3. Burdensome Review Mechanism</strong>: Google's review is too overreaching, requiring me to
+              specifically remove features related to platforms that have already shut down, such as DLive. Dealing with
+              these repetitive review requirements has made me feel very exhausted.</li>
+          </ul>
+          <p>I have done my best with the current version. Although I don't know if there are still bugs, I don't want
+            to write anymore for now. If the environment improves in the future, or if I find new and useful tools, I
+            might come back.</p>
+          <br>
+          <p><strong>💻 Regarding Open Source and GitHub Updates</strong></p>
+          <p>I will simultaneously update GitHub and upload the latest full source code.</p>
+          <p>All users and developers are welcome to check it out.</p>
+          <br>
+          <p><strong>🔓 Technical Openness: GSS Sticker Protocol</strong></p>
+          <p>I am formally naming GSS's image conversion logic as "GSS Sticker Protocol". I welcome any developer to
+            reference this logic in their works to jointly promote decentralized sticker methods.</p>
+          <p>In the future, as long as everyone uses the same Protocol, regardless of platform or tool, everyone can see
+            each other's stickers. By opening up technical protocols, the use of stickers will no longer be restricted
+            by the review mechanisms of a single platform.</p>
+          <br>
+          <p><strong>✅ Your Rights</strong></p>
+          <p>Functionality completely unchanged: GSS remains that clean, efficient, absolutely data-non-tracking tool.
+          </p>
+          <p>The essence of the label: This label is for Google to see, while the functionality is written for you to
+            use.</p>
+          <br>
+          <p>Thank you for liking this extension.</p>
+          <p>Developer: Elfin | Logic is logic, and freedom is freedom.</p>
+          <p>Don't be evil.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.5</span><span class="version-date">May 12</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>🔧 GSS v6.5 Technical Update: Complete DLive Platform Removal</strong></p>
+          <p>To all GSS users:</p>
+          <p>Due to Google review team's new violation item today, requiring this plugin to remove DLive
+            platform-related features (which has already been closed), we have completed the comprehensive removal of
+            DLive-related code.</p>
+          <br>
+          <p><strong>📋 Removed Content</strong></p>
+          <ul>
+            <li>Completely removed DLive platform detection and support logic</li>
+            <li>Removed DLive sticker format and related functions</li>
+            <li>Removed DLive-related translation texts and UI elements</li>
+            <li>Removed DLive storage-related features</li>
+            <li>Updated all manifest files, removed DLive permissions</li>
+          </ul>
+          <br>
+          <p><strong>🎯 Impact Scope</strong></p>
+          <p>This update mainly affects the closed DLive platform, with no impact on other platforms (Twitch, Kick,
+            YouTube, W.TV, etc.) functionality.</p>
+          <p>All existing sticker features remain normal, user experience unchanged.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.4</span><span class="version-date">May 11</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 Fixed CB and GSS format right-click context menu issue</strong></li>
+          <li>Fixed issue where CB and GSS format stickers couldn't use right-click menu in content panel</li>
+          <li><strong>⭐ Fixed CB format favorite marking issue</strong></li>
+          <li>Resolved bug where CB format stickers couldn't be marked as favorites</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.3</span><span class="version-date">May 9</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🌐 New GSS Universal Image Links Format</strong></li>
+          <li>Support format: <code>GSS-[image_link]</code>, theoretically supports almost all image formats (e.g.,
+            Discord, Imgur, or any platform), as long as ID can be entered and displayed in chat</li>
+          <li>Supports .jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4 and more</li>
+          <li><strong>🦊 Firefox Experimental AN Support</strong></li>
+          <li>Starting to support Firefox Add-ons AN (Android Native) version</li>
+          <li>Providing more complete sticker experience for mobile users</li>
+          <li><em>Note: Due to Android platform compatibility issues, AN version features may be incomplete and will be
+              gradually fixed</em></li>
+          <li><strong>📝 Help Page Updated</strong></li>
+          <li>Added GSS Universal Image Links format explanation for quick user understanding</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.2</span><span class="version-date">May 6</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 Fixed batch delete issue in sticker editor</strong></li>
+          <li><strong>🗑️ Gradually removing DLive-related features due to platform and image service closure</strong>
+          </li>
+          <li><strong>🔄 Chat panel: Replaced DL category with CB category</strong></li>
+          <li><strong>🆕 Added support for catbox.moe image library</strong></li>
+          <li><strong>📝 New format: CB-xxx.ext (e.g., CB-z8dta6.gif), see ❓ for details</strong></li>
+          <li><strong>🌐 Edge Version Submitted</strong></li>
+          <li>Edge V6.2 version submitted for review on May 8</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.1</span><span class="version-date">May 5</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 Fixed WTV Scroll Issues</strong></li>
+          <li>Optimized image processing to avoid interference during scrolling</li>
+          <li>Improved image processing performance, reducing system resource usage</li>
+          <li><strong>🖱️ WTV Right-Click Functionality Added</strong></li>
+          <li>WTV platform images now support right-click menu functionality</li>
+          <li>Supports right-click operations for IM-, ME-, DLive emotes and YT- videos</li>
+          <li>Fixed right-click functionality not working issue</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.0</span><span class="version-date">May 4</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 w.tv Chat Button Position Optimization</strong></li>
+          <li>Fixed w.tv platform chat room sticker panel button insertion position issues</li>
+          <li>Button now intelligently adjusts position based on input state (left of options button when not
+            typing,
+            left of send button when typing)</li>
+          <li>Optimized button icon display size to match official button visual effects</li>
+          <li>Resolved button duplication and position jumping issues</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.9</span><span class="version-date">May
+            4</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 Sticker Transfer Support for w.tv</strong></li>
+          <li>Sticker transfer feature now supports <strong>w.tv</strong> platform</li>
+          <li>GSS sticker button displayed inside chat input box</li>
+          <li>Support saving w.tv emoji images to GSS list</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.8</span><span class="version-date">May
+            1</span> </div>
+        <ul class="version-changes">
+          <li><strong>🦊 Firefox Review Approved</strong></li>
+          <li>V5.8 has passed Firefox review</li>
+          <li><strong>🚀 Beamstream Auto Send</strong></li>
+          <li>beamstream stickers can now be sent automatically</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.7</span><span class="version-date">Apr
+            28</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 TSC Support for Beamstream</strong></li>
+          <li>Texo Stream Core multi-platform streaming status panel now supports <strong>beamstream.gg</strong>
+          </li>
+          <li>Display TSC collapse button next to platform logo</li>
+          <li>Click to expand and view other platforms' streaming status</li>
+          <li><strong>🦊 Firefox Support</strong></li>
+          <li>Extension now supports Firefox browser</li>
+          <li>Provide manifest-firefox.json for Firefox installation</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.6</span><span class="version-date">Apr
+            27</span> </div>
+        <ul class="version-changes">
+          <li><strong>🚀 New Platform Support (Early Access)</strong></li>
+          <li>Sticker support for <strong>beamstream.gg</strong> platform</li>
+          <li>GSS button displayed next to chat input box</li>
+          <li>Click sticker to insert into chat box, manual send</li>
+          <li class="note">This is an early test version, other optimizations will be updated in future versions
+          </li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.5</span><span class="version-date">Apr
+            23</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 Features Restored & Full Support</strong></li>
+          <li>Restored features removed in V5.4 for faster review</li>
+          <li>Restored main chat insertion (supports cross-platform embedded chat)</li>
+          <li>Restored 📢 update info and ❓ help buttons in chat popup panel</li>
+          <li>Full YouTube chat iframe support (using all_frames setting)</li>
+          <li>Updated Privacy Policy with detailed tabs & all_frames usage explanations</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.4</span><span class="version-date">Apr
+            22</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 Optimization & Adjustments</strong></li>
+          <li>Removed some features to speed up review approval</li>
+          <li>Removed main chat insertion feature</li>
+          <li>Removed update info and help buttons from chat popup panel</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.3</span><span class="version-date">Apr
+            19</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 Fixed KICK & TWITCH scroll issues</strong></li>
+          <li>Chat auto-scrolls to bottom after sending stickers</li>
+          <li>Improved sticker format detection to prevent ME-/IM- being misidentified as YT-</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.2</span><span class="version-date">Apr
+            17</span> </div>
+        <ul class="version-changes">
+          <li><strong>🧶 Texo Stream Core Multi-Language Support</strong></li>
+          <li>TSC panel now supports 5 languages: zh-TW/zh-CN/en/ja/ko</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.1</span><span class="version-date">Apr
+            16</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎬 Added YouTube Video Support to Stickers</strong></li>
+          <li>Supported formats: <code>YT-xxxxxxxxxxx</code> or full YouTube URL</li>
+          <li>Auto-converts YouTube links to video thumbnails, click to play</li>
+          <li>Supports regular videos and Shorts</li>
+          <li><strong>🔧 Fixed Fullscreen Mode Layout Displacement Issue</strong></li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.0</span><span class="version-date">Apr
+            14</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 KICK Platform Support Added!</strong></li>
+          <li>GSS stickers now fully support KICK chat rooms</li>
+          <li>TSC panel supports KICK live stream status</li>
+          <li>Main chat supports KICK embedding (due to CSRF protection, can only view but not interact on
+            third-party
+            pages; waiting for KICK to release embed API)</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.9</span><span class="version-date">Apr
+            12</span> </div>
+        <ul class="version-changes">
+          <li><strong>✨ New: Texo Stream Core (TSC)</strong></li>
+          <li>Unified multi-platform streamer management panel</li>
+          <li>Support Twitch / DLive / Vaughn Live status (green=live/red=offline/gray=unknown)</li>
+          <li>Auto-import streamer data from webpage markers</li>
+          <li>📋 Note: Auto-import requires #GSS-TexoStreamCore marker on webpage</li>
+          <li>Format: >streamer_name followed by #platform_url</li>
+          <li>Refer to help page for detailed usage</li>
+          <li>⚠️ Known Issue: Vaughn Live temporarily shows gray (reliable detection method pending)</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.8</span><span class="version-date">Apr
+            8</span> </div>
+        <ul class="version-changes">
+          <li>Optimized Imgur (IM) image loading speed in sticker editor</li>
+          <li>Using medium thumbnails to accelerate GIF/JPG/PNG display</li>
+          <li>Added lazy loading to reduce initial loading burden</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.7</span><span class="version-date">Apr
+            6</span> </div>
+        <ul class="version-changes">
+          <li>Fixed scroll bar issues</li>
+          <li>Fixed error message translation issues</li>
+          <li>Added "Remember Mature consent" auto-setting</li>
+          <li>Added changelog page</li>
+          <li>Added 📢 changelog and ❓ help buttons to chat panel</li>
+          <li>Added context menu toggle button</li>
+          <li>Settings section now at top of DLive settings panel</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.6</span><span class="version-date">Apr 5</span>
+        </div>
+        <ul class="version-changes">
+          <li>Rewrote entire plugin structure</li>
+          <li>Same functionality as v4.5</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.4</span><span class="version-date">Mar 19</span>
+        </div>
+        <ul class="version-changes">
+          <li>Added sticker library editor</li>
+          <li>Chat popup now uses Prev/Next pagination</li>
+          <li>Added mouse wheel support for pagination</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.2</span><span class="version-date">Apr 3</span>
+        </div>
+        <ul class="version-changes">
+          <li>Added help page</li>
+          <li>Support for 5 languages</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.1</span><span class="version-date">Mar 31</span>
+        </div>
+        <ul class="version-changes">
+          <li>Sticker functionality now supports Twitch</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.0</span><span class="version-date">Mar 30</span>
+        </div>
+        <ul class="version-changes">
+          <li>Added theater mode</li>
+          <li>Added webpage layout controls</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v3.0</span><span class="version-date">Mar 28</span>
+        </div>
+        <ul class="version-changes">
+          <li>Plugin renamed to "General Sticker System (GSS)"</li>
+          <li>Added support for Imgur images</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v2.0</span><span class="version-date">Mar 23</span>
+        </div>
+        <ul class="version-changes">
+          <li>Added "Uncategorized" tab</li>
+          <li>Officially published on Chrome Web Store</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v1.0</span><span class="version-date">Mar 19</span>
+        </div>
+        <ul class="version-changes">
+          <li>Plugin birth! Named "DLive Sticker Quick"</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 日本語内容 -->
+    <div id="content-ja" class="hidden">
+      <div class="version-card latest">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.6</span><span class="version-date">5月14日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>📢 GSS v6.6 アップデート声明：「成人コンテンツ」ラベルの真実</strong></p>
+          <p>GSS ユーザーの皆様へ：</p>
+          <p>これは極めて不合理なバージョンです。本日より、Chrome ストアで GSS
+            が「成人コンテンツ」としてマークされることになります。独立開発者として、この決定の背後にある審査プロセスを正直に説明する義務があると考えています。</p>
+          <br>
+          <p><strong>🔍 消失した論理：「承認」から「違反」へ</strong></p>
+          <p>これは GSS が不適切なコンテンツを含んでいるからではなく、Google の審査基準が不安定であるためです：</p>
+          <p>v6.1 バージョン：とっくに審査を通過し、当時 W.TV を完全サポートし全年齢と判定されていました。</p>
+          <p>v6.2 バージョン：通常更新、審査は依然スムーズに通過しました。</p>
+          <p>v6.3 から現在：Google が予告もなく、コミュニケーションもなしに突然 W.TV を成人ドメインと定義し、これを使って GSS のすべての技術更新をブロックしています。</p>
+          <p>彼らの論理では：「そのドメインの技術適応（チャットルーム座標の位置特定）= 成人コンテンツの提供」。この「ツール」と「環境」を混同した不合理な判断は、受け入れることができません。</p>
+          <br>
+          <p><strong>👤 チーム状況：生産能力は創造のために使うべきであり、監査に浪費すべきではない。</strong></p>
+          <p>GSS
+            の開発チームは私一人です。私の生産性はステッカー体験の最適化に費やすべきで、煩雑な審査プロセスや長い待ち時間に無駄にすべきではありません。審査システムを回避する時間を費やすよりも、機能を開発する自由と引き換えに「苦渋の決断を下さざるを得ませんでした」ことを選びます。
+          </p>
+          <br>
+          <p><strong>🚀 更新戦略の調整および一時的な更新停止のお知らせ</strong></p>
+          <p>Google Chrome ウェブストアの審査が極めて遅く、不確実であるため、バージョン情報の統一を図るべく、今後は Chrome、Firefox、Edge、および GitHub
+            へ同時にアップロードする戦略をとります。</p>
+          <p>ここで、開発者への信頼と効率的な審査を提供してくれている Firefox (Mozilla) チームに深く感謝いたします。そこでは、開発者の生産性が尊重されています。</p>
+          <p>また、これが当面の間で最後の同時更新となるかもしれません。主に以下の3つの理由により、しばらくの間更新を停止する予定です：</p>
+          <ul>
+            <li><strong>一、注意力の配分について</strong>：GSSを開発して以来、ほぼすべての時間をその改善に費やしてしまい、現在は注意力をうまく配分できなくなっています。一度立ち止まって休息が必要です。
+            </li>
+            <li>
+              <strong>二、開発ツールの制限</strong>：これまで無料のAIツールを使用して開発してきましたが、最近使用していたツールが無料で利用できなくなり、現時点ではこの分野への支出を増やすつもりはありません。
+            </li>
+            <li>
+              <strong>三、審査メカニズムの煩雑さ</strong>：Googleの審査はあまりにも干渉が激しく、すでに閉鎖されたプラットフォームであるDLiveに関連する機能まで削除するよう求められます。こうした繰り返しの審査対応に、非常に疲弊しています。
+            </li>
+          </ul>
+          <p>現在のバージョンは、自分なりに全力を尽くしました。まだバグがあるかもしれませんが、今はこれ以上書く気になれません。将来的に環境が改善されたり、新しい使いやすいツールが見つかったりすれば、戻ってくるかもしれません。
+          </p>
+          <br>
+          <p><strong>💻 オープンソースと GitHub の更新について</strong></p>
+          <p>GitHub を同時に更新し、最新の完全なソースコードをアップロードします。</p>
+          <p>すべてのユーザーおよび開発者の皆様、ぜひご確認ください。</p>
+          <br>
+          <p><strong>🔓 技術公開：GSS Sticker Protocol</strong></p>
+          <p>GSS の画像変換ロジックを「GSS Sticker Protocol」と正式に命名します。このロジックを作品中で参照し、分散型ステッカー方式を共同で推進することをすべての開発者に歓迎します。</p>
+          <p>
+            今後、誰もが同じプロトコルを使用すれば、プラットフォームやツールに関係なく、お互いのステッカーを見ることができます。技術プロトコルの開放を通じて、ステッカーの使用が単一プラットフォームの審査メカニズムに制限されないようにします。
+          </p>
+          <br>
+          <p><strong>✅ あなたの権利</strong></p>
+          <p>機能は完全に変更なし：GSS は依然としてそのクリーンで効率的、絶対にデータを追跡しないツールです。</p>
+          <p>ラベルの本質：このラベルは Google が見るためのもので、機能はあなたが使うために書かれています。</p>
+          <br>
+          <p>この拡張機能を気に入ってくれてありがとうございます。</p>
+          <p>Developer: Elfin | Logic is logic, and freedom is freedom.</p>
+          <p>Don't be evil.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.5</span><span class="version-date">5月12日</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>🔧 GSS v6.5 技術更新：DLive プラットフォーム完全削除</strong></p>
+          <p>GSS ユーザーの皆様へ：</p>
+          <p>Google 審査チームが本日追加した違反事項により、すでに閉鎖された DLive プラットフォーム関連機能を削除するよう要求されたため、DLive 関連コードの完全削除作業を完了しました。</p>
+          <br>
+          <p><strong>📋 削除内容</strong></p>
+          <ul>
+            <li>DLive プラットフォーム検出とサポートロジックを完全削除</li>
+            <li>DLive ステッカーフォーマットと関連関数を削除</li>
+            <li>DLive 関連の翻訳テキストと UI 要素を削除</li>
+            <li>DLive 関連の保存機能を削除</li>
+            <li>すべての manifest ファイルを更新し、DLive 権限を削除</li>
+          </ul>
+          <br>
+          <p><strong>🎯 影響範囲</strong></p>
+          <p>この更新は主に閉鎖された DLive プラットフォームに影響し、他のプラットフォーム（Twitch、Kick、YouTube、W.TV など）の機能には完全に影響ありません。</p>
+          <p>既存のステッカー機能は正常に維持され、ユーザー体験は変更ありません。</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.4</span><span class="version-date">5月11日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 CB と GSS 形式の右クリックメニュー問題を修正</strong></li>
+          <li>content パネル内の CB と GSS 形式ステッカーが右クリックメニューを使用できない問題を修正</li>
+          <li><strong>⭐ CB 形式のお気に入りマーク問題を修正</strong></li>
+          <li>CB 形式ステッカーをお気に入りとしてマークできないバグを解決</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.3</span><span class="version-date">5月9日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🌐 新しい GSS 汎用画像リンク形式</strong></li>
+          <li>形式：<code>GSS-[画像リンク]</code>理論上ほぼ全ての画像形式をサポート（例：Discord、Imgur など任意のプラットフォーム）、チャットで入力・表示できるIDなら可能</li>
+          <li>.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4 などをサポート</li>
+          <li><strong>🦊 Firefox 実験的 AN サポート</strong></li>
+          <li>Firefox Add-ons AN（Android Native）バージョンのサポートを開始</li>
+          <li>モバイルユーザーにより完全なステッカー体験を提供</li>
+          <li><em>注意：Android プラットフォームの互換性問題により、AN バージョンの機能は不完全な場合があり、段階的に修正されます</em></li>
+          <li><strong>📝 ヘルプページ更新</strong></li>
+          <li>GSS汎用画像リンク形式の説明を追加し、ユーザーの理解を促進</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.2</span><span class="version-date">5月6日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 ステッカーエディターで一括削除できない問題を修正</strong></li>
+          <li><strong>🗑️ DLiveプラットフォームと画像サービスの閉鎖により、関連機能を段階的に削除</strong></li>
+          <li><strong>🔄 チャットパネル：DLカテゴリをCBカテゴリに変更</strong></li>
+          <li><strong>🆕 catbox.moe画像ライブラリをサポート開始</strong></li>
+          <li><strong>📝 新形式：CB-xxx.ext（例：CB-z8dta6.gif）、詳細は❓参照</strong></li>
+          <li><strong>🌐 Edge 版審査提出</strong></li>
+          <li>5月8日 Edge V6.2バージョンを審査提出</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.1</span><span class="version-date">5月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 WTVスクロール問題を修正</strong></li>
+          <li>画像処理を最適化し、スクロール時の干渉問題を回避</li>
+          <li>画像処理性能を向上し、システムリソース使用量を削減</li>
+          <li><strong>🖱️ WTVに右クリック機能を追加</strong></li>
+          <li>WTVプラットフォームの画像が右クリックメニューをサポート</li>
+          <li>IM-、ME-、DLiveエモートとYT-動画の右クリック操作をサポート</li>
+          <li>右クリック機能が動作しない問題を修正</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.0</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 w.tv チャットボタン位置最適化</strong></li>
+          <li>w.tv プラットフォームのチャットルームスターカーパネルボタンの挿入位置問題を修正</li>
+          <li>ボタンが入力状態に応じてインテリジェントに位置を調整（未入力時はオプションボタンの左、入力時は送信ボタンの左）</li>
+          <li>ボタンアイコンの表示サイズを最適化し、公式ボタンと一致した視覚効果を実現</li>
+          <li>ボタンの重複作成と位置ジャンプの問題を解決</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.9</span><span class="version-date">5月4日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 スターカー転送機能 w.tv 対応</strong></li>
+          <li>スターカー転送機能が <strong>w.tv</strong> プラットフォームに対応</li>
+          <li>チャット入力欄内に GSS スターカーボタンを表示</li>
+          <li>w.tv 絵文字画像の GSS リストへの保存をサポート</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.8</span><span class="version-date">5月1日</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🦊 Firefox 審査通過</strong></li>
+          <li>V5.8 が Firefox 審査を通過</li>
+          <li><strong>🚀 Beamstream 自動送信</strong></li>
+          <li>beamstream スターカーが自動送信できるようになりました</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.7</span><span class="version-date">4月28日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 TSC Beamstream 対応</strong></li>
+          <li>Texo Stream Core マルチプラットフォーム配信ステータスパネルが <strong>beamstream.gg</strong> に対応</li>
+          <li>プラットフォームロゴ横に TSC 折りたたみボタンを表示</li>
+          <li>クリックして展開し、他プラットフォームの配信状況を確認</li>
+          <li><strong>🦊 Firefox サポート</strong></li>
+          <li>拡張機能が Firefox ブラウザに対応</li>
+          <li>Firefox インストール用 manifest-firefox.json を提供</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.6</span><span class="version-date">4月27日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🚀 新プラットフォーム対応（先行版）</strong></li>
+          <li>スタンプ機能が <strong>beamstream.gg</strong> プラットフォームに対応</li>
+          <li>チャット入力欄の横に GSS スタンプボタンを表示</li>
+          <li>スタンプをクリックしてチャット欄に挿入、手動送信</li>
+          <li class="note">これは先行テスト版です、その他の機能最適化は今後のバージョンで順次更新予定</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.5</span><span class="version-date">4月23日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 機能復元と完全サポート</strong></li>
+          <li>V5.4で審査高速化のために削除した機能を復元</li>
+          <li>メインチャット挿入機能を復元（クロスプラットフォーム埋め込みチャット対応）</li>
+          <li>チャットポップアップパネルの 📢 更新情報と ❓ ヘルプボタンを復元</li>
+          <li>YouTubeチャットiframeの完全サポート（all_frames設定を使用）</li>
+          <li>プライバシーポリシーを更新し、tabs権限とall_frames設定の詳細な説明を追加</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.4</span><span class="version-date">4月22日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 最適化と調整</strong></li>
+          <li>審査通過速度を向上させるため一部機能を削除</li>
+          <li>メインチャット挿入機能を削除</li>
+          <li>チャットポップアップパネルの更新情報とヘルプボタンを削除</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.3</span><span class="version-date">4月19日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 KICKとTWITCHのスクロール問題を修正</strong></li>
+          <li>ステッカー送信後、チャットが自動的に最下部にスクロール</li>
+          <li>ステッカー形式の判定ロジックを改善（ME-/IM-がYT-と誤認識される問題を修正）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.2</span><span class="version-date">4月17日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🧶 Texo Stream Core 多言語対応</strong></li>
+          <li>編織資料ページが繁中/簡中/英/日/韓の5言語に対応</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.1</span><span class="version-date">4月16日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎬 ステッカー機能に YouTube 動画サポートを追加</strong></li>
+          <li>サポート形式：<code>YT-xxxxxxxxxxx</code> または YouTube 完全 URL</li>
+          <li>YouTube リンクを自動的に動画サムネイルに変換、クリックで再生</li>
+          <li>通常動画、Shorts 短い動画に対応</li>
+          <li><strong>🔧 フルスクリーンモードのレイアウトズレ問題を修正</strong></li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.0</span><span class="version-date">4月14日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🎉 KICK プラットフォーム対応開始！</strong></li>
+          <li>GSS ステッカー機能が KICK チャットを完全サポート</li>
+          <li>TSC パネルが KICK 配信状況を表示</li>
+          <li>メインチャットが KICK 埋め込みに対応（CSRF 保護のため、第三者ページでは表示のみで発言できません。KICK の埋め込み API 公開を待機中）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.9</span><span class="version-date">4月12日</span><span
+            class="pending-badge"></span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>✨ 新機能：Texo Stream Core (TSC)</strong></li>
+          <li>複数プラットフォームの配信者を統合管理パネルで一元管理</li>
+          <li>Twitch / DLive / Vaughn Live の配信状態を表示（緑=配信中/赤=オフライン/灰=未知）</li>
+          <li>Webページのマーカーから配信者データを自動インポート</li>
+          <li>📋 注意：自動インポートには #GSS-TexoStreamCore マーカーが必要</li>
+          <li>形式：>配信者名、改行して #プラットフォームURL</li>
+          <li>詳細な使用方法は説明ページを参照</li>
+          <li>⚠️ 既知の問題：Vaughn Live は一時的に灰色表示（信頼できる検出方法を検討中）</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.8</span><span class="version-date">4月8日</span><span
+            class="pending-badge"></span></div>
+        <ul class="version-changes">
+          <li>ステッカーエディターの Imgur (IM) 画像読み込み速度を最適化</li>
+          <li>ミディアムサムネイルを使用して GIF/JPG/PNG 表示を高速化</li>
+          <li>レイジーローディングを追加して初期読み込み負担を軽減</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.7</span><span class="version-date">4月6日</span><span
+            class="pending-badge"></span></div>
+        <ul class="version-changes">
+          <li>スクロールバーの問題を修正</li>
+          <li>エラーメッセージの翻訳問題を修正</li>
+          <li>「記住 Mature 同意」自動設定機能を追加</li>
+          <li>更新日誌ページを追加</li>
+          <li>チャットパネルに 📢 更新日誌ボタンと ❓ 説明ボタンを追加</li>
+          <li>右クリックメニュー無効ボタンを追加</li>
+          <li>「設定」セクションが DLive 設定パネルの上部に表示されるように変更</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.6</span><span class="version-date">4月5日</span>
+        </div>
+        <ul class="version-changes">
+          <li>プラグイン構造を完全に書き直し</li>
+          <li>機能は v4.5 と同じまま</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.4</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>ステッカーライブラリエディターを追加</li>
+          <li>チャット入力ポップアップを「前へ/次へ」ページ切り替えに変更</li>
+          <li>マウスホイールでのページ切り替えをサポート</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.2</span><span class="version-date">4月3日</span>
+        </div>
+        <ul class="version-changes">
+          <li>ヘルプページを追加</li>
+          <li>5言語をサポート</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.1</span><span class="version-date">3月31日</span>
+        </div>
+        <ul class="version-changes">
+          <li>ステッカー機能が Twitch プラットフォームをサポート</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.0</span><span class="version-date">3月30日</span>
+        </div>
+        <ul class="version-changes">
+          <li>シアターモードを追加</li>
+          <li>ウェブページレイアウト制御機能を追加</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v3.0</span><span class="version-date">3月28日</span>
+        </div>
+        <ul class="version-changes">
+          <li>プラグイン名を「General Sticker System (GSS)」に変更</li>
+          <li>Imgur 画像のサポートを追加</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v2.0</span><span class="version-date">3月23日</span>
+        </div>
+        <ul class="version-changes">
+          <li>「未分類」タブを追加</li>
+          <li>Chrome Web Storeで正式公開</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v1.0</span><span class="version-date">3月19日</span>
+        </div>
+        <ul class="version-changes">
+          <li>プラグイン誕生！「DLive Sticker Quick」と命名</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 한국어 내용 -->
+    <div id="content-ko" class="hidden">
+      <div class="version-card latest">
+        <div class="version-badge">NEW</div>
+        <div class="version-header"><span class="version-number">v6.6</span><span class="version-date">5월14일</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>📢 GSS v6.6 업데이트 성명: "성인 콘텐츠" 라벨의 진실</strong></p>
+          <p>GSS 사용자 여러분께:</p>
+          <p>이것은 극히 터무니없는 버전입니다. 오늘부터 Chrome 스토어에서 GSS가 "성인 콘텐츠"로 표시될 것입니다. 독립 개발자로서, 이 결정 뒤에 있는 심사 과정을 솔직하게 설명할 의무가
+            있다고 생각합니다.</p>
+          <br>
+          <p><strong>🔍 사라진 논리: "승인"에서 "위반"으로</strong></p>
+          <p>이것은 GSS가 부적절한 콘텐츠를 포함하고 있어서가 아니라, Google의 심사 기준이 변덕스럽기 때문입니다:</p>
+          <p>v6.1 버전: 오래전 심사를 통과했으며, 당시 W.TV를 완전 지원하고 전연령으로 판정되었습니다.</p>
+          <p>v6.2 버전: 정규 업데이트, 심사는 여전히 순조롭게 통과했습니다.</p>
+          <p>v6.3부터 현재: Google이 예고도 없고, 소통도 없이 갑자기 W.TV를 성인 도메인으로 정의하고, 이를 이용해 GSS의 모든 기술 업데이트를 막고 있습니다.</p>
+          <p>그들의 논리에서는: "해당 도메인의 기술 적응(채팅룸 좌표 위치 지정) = 성인 콘텐츠 제공". 이 "도구"와 "환경"을 혼동하는 터무니없는 판단은 제가 받아들일 수 없습니다.</p>
+          <br>
+          <p><strong>👤 팀 현황: 생산 능력은 창출에 사용되어야 하며, 감사에 낭비되어서는 안 됩니다.</strong></p>
+          <p>GSS 개발팀은 저 혼자입니다. 저의 생산성은 스티커 경험을 최적화하는 데 써야 하며, 번거로운 심사 절차와 긴 대기 시간에 낭비해서는 안 됩니다.
+            심사 시스템을 회피하는 시간을 쓰는 것보다, 기능을 개발하는 자유와 교환하여 "불명예스러운 결정을 내릴 수밖에 없었습니다" 것을 선택하겠습니다.</p>
+          <br>
+          <p><strong>🚀 업데이트 전략 조정 및 일시적 업데이트 중단 안내</strong></p>
+          <p>Google Chrome 웹 스토어의 심사 메커니즘이 매우 느리고 불확실하기 때문에, 버전 정보의 통일성을 확보하고자 향후 Chrome, Firefox, Edge, GitHub에 동시
+            업로드하는 전략을 취할 예정입니다.</p>
+          <p>이 자리를 빌려 개발자에 대한 신뢰와 효율적인 심사를 제공해 준 Firefox (Mozilla) 팀에 깊은 감사를 표합니다. 그곳은 개발자의 생산성이 존중받는 곳입니다.</p>
+          <p>또한, 이것이 당분간 마지막 동시 업데이트가 될 것 같습니다. 주로 다음과 같은 세 가지 이유로 한동안 업데이트를 중단할 계획입니다:</p>
+          <ul>
+            <li><strong>1. 주의력 분산 문제</strong>: GSS를 개발하기 시작한 이후로 거의 모든 시간을 이 프로젝트를 개선하는 데 쏟아부어, 현재는 주의력을 제대로 분배할 수 없는
+              상태입니다. 잠시 멈추고 휴식이 필요합니다.</li>
+            <li><strong>2. 개발 도구의 제한</strong>: 지금까지 무료 AI 도구를 사용하여 개발해 왔으나, 최근 사용하던 도구가 유료로 전환되면서 현재로서는 이 분야에 대한 추가 지출을
+              원치 않습니다.</li>
+            <li><strong>3. 번거로운 심사 메커니즘</strong>: Google의 심사는 지나치게 간섭이 심하며, 이미 폐쇄된 플랫폼인 DLive와 관련된 기능까지 제거하라고 요구합니다. 이러한
+              반복적인 심사 대응에 매우 지쳐 있는 상태입니다.</li>
+          </ul>
+          <p>현재 버전은 제가 할 수 있는 최선을 다했습니다. 아직 버그가 남아있을지도 모르지만, 당분간은 더 이상 코드를 작성하고 싶지 않습니다. 향후 환경이 개선되거나 새롭고 유용한 도구를 찾게 된다면
+            다시 돌아올 수도 있습니다.</p>
+          <br>
+          <p><strong>💻 오픈 소스 및 GitHub 업데이트 관련</strong></p>
+          <p>GitHub를 동시에 업데이트하고 최신 전체 소스 코드를 업로드하겠습니다.</p>
+          <p>모든 사용자와 개발자분들의 확인을 환영합니다.</p>
+          <br>
+          <p><strong>🔓 기술 개방: GSS Sticker Protocol</strong></p>
+          <p>GSS의 이미지 변환 로직을 "GSS Sticker Protocol"으로 공식적으로 명명합니다. 저는 어떤 개발자든 이 로직을 작품에서 참조하여 분산형 스티커 방식을 공동으로 추진하는 것을
+            환영합니다.</p>
+          <p>앞으로 모두가 동일한 프로토콜을 사용하면, 어떤 플랫폼, 어떤 도구를 사용하든, 모두 서로의 스티커를 볼 수 있습니다. 기술 프로토콜의 개방을 통해,
+            스티커 사용이 단일 플랫폼의 심사 메커니즘에 제한되지 않도록 합니다.</p>
+          <br>
+          <p><strong>✅ 여러분의 권리</strong></p>
+          <p>기능은 완전히 변함 없음: GSS는 여전히 그 깨끗하고, 효율적이며, 절대 데이터를 추적하지 않는 도구입니다.</p>
+          <p>라벨의 본질: 이 라벨은 Google이 보는 것이며, 기능은 여러분이 쓰라고 쓰여진 것입니다.</p>
+          <br>
+          <p>이 확장 프로그램을 좋아해 주셔서 감사합니다.</p>
+          <p>Developer: Elfin | Logic is logic, and freedom is freedom.</p>
+          <p>Don't be evil.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.5</span><span class="version-date">5월12일</span>
+        </div>
+        <div class="version-content" style="font-size: 16px; line-height: 1.8;">
+          <p><strong>🔧 GSS v6.5 기술 업데이트: DLive 플랫폼 완전 제거</strong></p>
+          <p>GSS 사용자 여러분께:</p>
+          <p>Google 심사팀이 오늘 추가한 위반 사항으로, 이미 폐쇄된 DLive 플랫폼 관련 기능을 제거하도록 요구했기 때문에, DLive 관련 코드의 완전 제거 작업을 완료했습니다.</p>
+          <br>
+          <p><strong>📋 제거 내용</strong></p>
+          <ul>
+            <li>DLive 플랫폼 감지 및 지원 로직 완전 제거</li>
+            <li>DLive 스티커 포맷 및 관련 함수 제거</li>
+            <li>DLive 관련 번역 텍스트 및 UI 요소 제거</li>
+            <li>DLive 관련 저장 기능 제거</li>
+            <li>모든 manifest 파일 업데이트, DLive 권한 제거</li>
+          </ul>
+          <br>
+          <p><strong>🎯 영향 범위</strong></p>
+          <p>이 업데이트는 주로 폐쇄된 DLive 플랫폼에 영향을 미치며, 다른 플랫폼(Twitch, Kick, YouTube, W.TV 등)의 기능에는 완전히 영향이 없습니다.</p>
+          <p>기존 스티커 기능은 정상 유지되며, 사용자 경험은 변함이 없습니다.</p>
+        </div>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.4</span><span class="version-date">5월11일</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🔧 CB 및 GSS 형식의 우클릭 컨텍스트 메뉴 문제 수정</strong></li>
+          <li>content 패널에서 CB 및 GSS 형식 스티커가 우클릭 메뉴를 사용할 수 없는 문제 수정</li>
+          <li><strong>⭐ CB 형식 즐겨찾기 표시 문제 수정</strong></li>
+          <li>CB 형식 스티커를 즐겨찾기로 표시할 수 없는 버그 해결</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.3</span><span class="version-date">5월9일</span>
+        </div>
+        <ul class="version-changes">
+          <li><strong>🌐 새로운 GSS 범용 이미지 링크 형식</strong></li>
+          <li>형식: <code>GSS-[이미지_링크]</code>, 이론적으로 거의 모든 이미지 형식 지원 (예: Discord, Imgur 등 모든 플랫폼), 채팅에서 입력하고 표시할 수 있는 ID라면
+            가능</li>
+          <li>.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4 등 지원</li>
+          <li><strong>🦊 Firefox 실험적 AN 지원</strong></li>
+          <li>Firefox Add-ons AN (Android Native) 버전 지원 시작</li>
+          <li>모바일 사용자를 위한 더 완전한 스티커 경험 제공</li>
+          <li><em>참고: Android 플랫폼 호환성 문제로 AN 버전 기능이 불완전할 수 있으며, 점진적으로 수정될 예정입니다</em></li>
+          <li><strong>📝 도움말 페이지 업데이트</strong></li>
+          <li>GSS 범용 이미지 링크 형식 설명 추가로 사용자의 빠른 이해 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.2</span><span class="version-date">5월
+            6일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 스티커 편집기 일괄 삭제 문제 수정</strong></li>
+          <li><strong>🗑️ DLive 플랫폼과 이미지 서비스 폐쇄로 인해 관련 기능을 단계적으로 제거</strong></li>
+          <li><strong>🔄 채팅 입력창 패널 DL 카테고리를 CB 카테고리로 변경</strong></li>
+          <li><strong>🆕 catbox.moe 이미지 라이브러리 지원 시작</strong></li>
+          <li><strong>📝 새 형식: CB-xxx.ext (예: CB-z8dta6.gif), 자세한 내용은 ❓ 참조</strong></li>
+          <li><strong>🌐 Edge 버전 심사 제출</strong></li>
+          <li>5월8일 Edge V6.2 버전 심사 제출</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.1</span><span class="version-date">5월
+            5일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 WTV 스크롤 문제 수정</strong></li>
+          <li>이미지 처리를 최적화하여 스크롤 시 간섭 문제 방지</li>
+          <li>이미지 처리 성능 향상, 시스템 리소스 사용량 감소</li>
+          <li><strong>🖱️ WTV 오른쪽 클릭 기능 추가</strong></li>
+          <li>WTV 플랫폼 이미지가 오른쪽 클릭 메뉴 지원</li>
+          <li>IM-, ME-, DLive 이모티콘 및 YT- 비디오의 오른쪽 클릭 작업 지원</li>
+          <li>오른쪽 클릭 기능이 작동하지 않는 문제 수정</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v6.0</span><span class="version-date">5월
+            4일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 w.tv 채팅 버튼 위치 최적화</strong></li>
+          <li>w.tv 플랫폼 채팅방 스티커 패널 버튼 삽입 위치 문제 수정</li>
+          <li>버튼이 입력 상태에 따라 지능적으로 위치 조정 (입력 안 할 때는 옵션 버튼 왼쪽, 입력할 때는 전송 버튼 왼쪽)</li>
+          <li>버튼 아이콘 표시 크기 최적화하여 공식 버튼과 일치된 시각 효과 구현</li>
+          <li>버튼 중복 생성 및 위치 점프 문제 해결</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.9</span><span class="version-date">5월
+            4일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 스티커 전송 기능 w.tv 지원</strong></li>
+          <li>스티커 전송 기능이 <strong>w.tv</strong> 플랫폼을 지원</li>
+          <li>채팅 입력창 내부에 GSS 스티커 버튼 표시</li>
+          <li>w.tv 이모지 이미지의 GSS 목록 저장 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.8</span><span class="version-date">5월
+            1일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🦊 Firefox 심사 통과</strong></li>
+          <li>V5.8이 Firefox 심사를 통과</li>
+          <li><strong>🚀 Beamstream 자동 전송</strong></li>
+          <li>beamstream 스티커가 이제 자동으로 전송됩니다</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.7</span><span class="version-date">4월
+            28일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 TSC Beamstream 지원</strong></li>
+          <li>Texo Stream Core 다중 플랫폼 스트리밍 상태 패널이 <strong>beamstream.gg</strong>를 지원</li>
+          <li>플랫폼 로고 옆에 TSC 접기 버튼 표시</li>
+          <li>클릭하여 확장하고 다른 플랫폼의 스트리밍 상태 확인</li>
+          <li><strong>🦊 Firefox 지원</strong></li>
+          <li>확장 프로그램이 Firefox 브라우저를 지원</li>
+          <li>Firefox 설치용 manifest-firefox.json 제공</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.6</span><span class="version-date">4월
+            27일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🚀 새 플랫폼 지원 (선행 버전)</strong></li>
+          <li>스티커 기능 <strong>beamstream.gg</strong> 플랫폼 지원 시작</li>
+          <li>채팅 입력창 옆에 GSS 스티커 버튼 표시</li>
+          <li>스티커 클릭 후 채팅창에 자동 입력, 수동 전송</li>
+          <li class="note">이는 선행 테스트 버전이며, 기타 기능 최적화는 후속 버전에서 순차적으로 업데이트됩니다</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.5</span><span class="version-date">4월
+            23일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 기능 복원 및 완전 지원</strong></li>
+          <li>V5.4에서 심사 속도 향상을 위해 제거한 기능 복원</li>
+          <li>메인 채팅 삽입 기능 복원 (크로스 플랫폼 임베디드 채팅 지원)</li>
+          <li>채팅 팝업 패널의 📢 업데이트 정보 및 ❓ 도움말 버튼 복원</li>
+          <li>YouTube 채팅 iframe 완전 지원 (all_frames 설정 사용)</li>
+          <li>개인정보 처리방침 업데이트, tabs 권한 및 all_frames 설정 상세 설명 추가</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.4</span><span class="version-date">4월
+            22일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 최적화 및 조정</strong></li>
+          <li>심사 승인 속도를 높이기 위해 일부 기능 제거</li>
+          <li>메인 채팅 삽입 기능 제거</li>
+          <li>채팅 팝업 패널의 업데이트 정보 및 도움말 버튼 제거</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.3</span><span class="version-date">4월
+            19일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🔧 KICK 및 TWITCH 스크롤 문제 수정</strong></li>
+          <li>스티커 전송 후 채팅창이 자동으로 최하단으로 스크롤</li>
+          <li>스티커 형식 판별 로직 개선 (ME-/IM-이 YT-로 오인식되지 않도록)</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.2</span><span class="version-date">4월
+            17일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🧶 Texo Stream Core 다국어 지원</strong></li>
+          <li>편직 자료 페이지가 번중/간중/영/일/한 5개 언어 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.1</span><span class="version-date">4월
+            16일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎬 스티커 기능에 YouTube 동영상 지원 추가</strong></li>
+          <li>지원 형식: <code>YT-xxxxxxxxxxx</code> 또는 전체 YouTube URL</li>
+          <li>YouTube 링크를 자동으로 동영상 썸네일로 변환, 클릭하여 재생</li>
+          <li>일반 동영상, Shorts 짧은 동영상 지원</li>
+          <li><strong>🔧 전체 화면 모드 레이아웃 어긋남 문제 수정</strong></li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v5.0</span><span class="version-date">4월
+            14일</span> </div>
+        <ul class="version-changes">
+          <li><strong>🎉 KICK 플랫폼 지원 시작!</strong></li>
+          <li>GSS 스티커 기능이 KICK 채팅을 완벽 지원</li>
+          <li>TSC 패널이 KICK 방송 상태 표시</li>
+          <li>공용 채팅이 KICK 임베드 지원 (CSRF 보호로 인해 타사 페이지에서는 조회만 가능하고 발언할 수 없습니다. KICK 임베드 API 공개 대기 중)</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.9</span><span class="version-date">4월
+            12일</span> </div>
+        <ul class="version-changes">
+          <li><strong>✨ 새 기능: Texo Stream Core (TSC)</strong></li>
+          <li>다중 플랫폼 스트리머 통합 관리 패널</li>
+          <li>Twitch / DLive / Vaughn Live 방송 상태 표시 (녹색=방송중/빨간색=오프라인/회색=알 수 없음)</li>
+          <li>웹페이지 마커에서 스트리머 데이터 자동 가져오기</li>
+          <li>📋 참고: 자동 가져오기에는 #GSS-TexoStreamCore 마커가 필요합니다</li>
+          <li>형식: >스트리머 이름 다음 줄에 #플랫폼 URL</li>
+          <li>자세한 사용 방법은 설명 페이지 참조</li>
+          <li>⚠️ 알려진 문제: Vaughn Live는 일시적으로 회색으로 표시됨 (신뢰할 수 있는 감지 방법 검토 중)</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.8</span><span class="version-date">4월
+            8일</span> </div>
+        <ul class="version-changes">
+          <li>스티커 편집기의 Imgur (IM) 이미지 로딩 속도 최적화</li>
+          <li>미디엄 썸네일을 사용하여 GIF/JPG/PNG 표시 가속화</li>
+          <li>레이지 로딩을 추가하여 초기 로딩 부담 감소</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.7</span><span class="version-date">4월
+            6일</span> </div>
+        <ul class="version-changes">
+          <li>스크롤바 문제 수정</li>
+          <li>오류 메시지 번역 문제 수정</li>
+          <li>"Mature 동의 기억" 자동 설정 기능 추가</li>
+          <li>업데이트 내역 페이지 추가</li>
+          <li>채팅 패널에 📢 업데이트 내역 버튼과 ❓ 도움말 버튼 추가</li>
+          <li>우클릭 메뉴 제어 버튼을 추가</li>
+          <li>"설정" 섹션이 DLive 설정 패널 최상단에 표시되도록</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.6</span><span class="version-date">4월 5일</span>
+        </div>
+        <ul class="version-changes">
+          <li>플러그인 구조를 완전히 재작성</li>
+          <li>기능은 v4.5와 동일하게 유지</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.4</span><span class="version-date">3월 19일</span>
+        </div>
+        <ul class="version-changes">
+          <li>스티커 라이브러리 편집기를 추가</li>
+          <li>채팅 입력 팝업을 "이전/다음" 페이지 전환으로 변경</li>
+          <li>마우스 휠로 페이지 전환 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.2</span><span class="version-date">4월 3일</span>
+        </div>
+        <ul class="version-changes">
+          <li>도움말 페이지 추가</li>
+          <li>5개 언어 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.1</span><span class="version-date">3월 31일</span>
+        </div>
+        <ul class="version-changes">
+          <li>스티커 기능이 Twitch 플랫폼 지원</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v4.0</span><span class="version-date">3월 30일</span>
+        </div>
+        <ul class="version-changes">
+          <li>극장 모드 추가</li>
+          <li>웹페이지 레이아웃 제어 기능 추가</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v3.0</span><span class="version-date">3월 28일</span>
+        </div>
+        <ul class="version-changes">
+          <li>플러그인 이름을 "General Sticker System (GSS)"로 변경</li>
+          <li>Imgur 이미지 지원 추가</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v2.0</span><span class="version-date">3월 23일</span>
+        </div>
+        <ul class="version-changes">
+          <li>"미분류" 탭을 추가</li>
+          <li>Chrome Web Store에서 정식 출시</li>
+        </ul>
+      </div>
+      <div class="version-card">
+        <div class="version-header"><span class="version-number">v1.0</span><span class="version-date">3월 19일</span>
+        </div>
+        <ul class="version-changes">
+          <li>플러그인 탄생! "DLive Sticker Quick"으로 명명</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      Made by Elfin • <a href="https://github.com/ElfinL" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+
+  <script>
+    // Update Log page - Language switching and version tracking
+    const SUPPORTED_LANGS = ['zh-TW', 'zh-CN', 'en', 'ja', 'ko'];
+    // GitHub 部署修復：使用靜態版本號避免 Chrome API 依賴
+    const CURRENT_VERSION = '6.6';
+    let currentLang = 'zh-TW';
+
+    // 自動識別最新版本的邏輯
+    function findLatestVersion() {
+      // 搜索所有語言版本中的所有版本卡片
+      const versionCards = document.querySelectorAll('.version-card');
+      let latestVersion = null;
+      let latestVersionElements = []; // 存儲所有最新版本的元素
+
+      versionCards.forEach(card => {
+        const versionNumber = card.querySelector('.version-number');
+        if (versionNumber) {
+          const version = versionNumber.textContent;
+          // 移除 "v" 前綴並比較版本號
+          const cleanVersion = version.replace('v', '');
+          console.log(`檢查版本: ${cleanVersion}, 當前最新: ${latestVersion}`);
+          if (!latestVersion || compareVersions(cleanVersion, latestVersion) > 0) {
+            latestVersion = cleanVersion;
+            latestVersionElements = [card]; // 重置數組，只保留當前最新版本
+          } else if (latestVersion && compareVersions(cleanVersion, latestVersion) === 0) {
+            // 如果是相同版本，添加到數組中
+            latestVersionElements.push(card);
+          }
+        }
+      });
+
+      console.log(`最終結果: 最新版本=${latestVersion}, 元素數量=${latestVersionElements.length}`);
+      return { latestVersion, latestVersionElements };
+    }
+
+    // 比較版本號（返回 1 如果 version1 > version2）
+    function compareVersions(version1, version2) {
+      const parts1 = version1.split('.').map(Number);
+      const parts2 = version2.split('.').map(Number);
+
+      for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+        const part1 = parts1[i] || 0;
+        const part2 = parts2[i] || 0;
+
+        if (part1 > part2) return 1;
+        if (part1 < part2) return -1;
+      }
+
+      return 0;
+    }
+
+    // Get stored language
+    function getStoredLanguage() {
+      // First try URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlLang = urlParams.get('lang');
+      if (urlLang && SUPPORTED_LANGS.includes(urlLang)) {
+        console.log('[UpdateLog] 從 URL 參數讀取語言:', urlLang);
+        return urlLang;
+      }
+
+      // Then try localStorage
+      try {
+        const stored = localStorage.getItem('updatelogLang');
+        console.log('[UpdateLog] 從 localStorage 讀取語言:', stored);
+        if (stored && SUPPORTED_LANGS.includes(stored)) {
+          return stored;
+        }
+      } catch (e) {
+        console.log('[UpdateLog] localStorage 不可用:', e);
+        // localStorage not available
+      }
+      return 'zh-TW';
+    }
+
+    // Save language preference
+    function saveLanguagePreference(lang) {
+      try {
+        localStorage.setItem('updatelogLang', lang);
+      } catch (e) {
+        // localStorage not available
+      }
+    }
+
+    // Mark version as seen
+    function markVersionAsSeen() {
+      try {
+        localStorage.setItem('lastSeenVersion', CURRENT_VERSION);
+      } catch (e) {
+        // localStorage not available
+      }
+    }
+
+    // Switch language display
+    function switchLanguage(lang) {
+      console.log('[UpdateLog] 切換語言到:', lang);
+      if (!SUPPORTED_LANGS.includes(lang)) {
+        console.log('[UpdateLog] 不支援的語言:', lang);
+        return;
+      }
+
+      currentLang = lang;
+      saveLanguagePreference(lang);
+
+      // Update URL parameter for GitHub Pages compatibility
+      const url = new URL(window.location);
+      url.searchParams.set('lang', lang);
+      if (lang === 'zh-TW') {
+        // Remove parameter for default language
+        url.searchParams.delete('lang');
+      }
+
+      // Update URL without page reload
+      window.history.replaceState({}, '', url.toString());
+
+      // Hide all content sections
+      SUPPORTED_LANGS.forEach(l => {
+        const el = document.getElementById(`content-${l}`);
+        if (el) el.classList.add('hidden');
+      });
+
+      // Show selected language content
+      const selectedContent = document.getElementById(`content-${lang}`);
+      if (selectedContent) {
+        selectedContent.classList.remove('hidden');
+        console.log('[UpdateLog] 顯示語言內容:', lang);
+      } else {
+        console.log('[UpdateLog] 找不到語言內容:', `content-${lang}`);
+      }
+
+      // Update button states
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+    }
+
+    // Initialize
+    function init() {
+      try {
+        console.log('[UpdateLog] 開始初始化...');
+
+        // Mark this version as seen
+        markVersionAsSeen();
+
+        // 自動高亮最新版本
+        const versionResult = findLatestVersion();
+        console.log('[UpdateLog] findLatestVersion 結果:', versionResult);
+
+        const latestVersionElements = versionResult ? versionResult.latestVersionElements : [];
+        console.log('[UpdateLog] 找到最新版本元素:', latestVersionElements.length);
+
+        if (latestVersionElements && latestVersionElements.length > 0) {
+          // 移除所有非最新版本的 NEW 標籤
+          document.querySelectorAll('.version-card').forEach(card => {
+            const badge = card.querySelector('.version-badge');
+            if (badge && !latestVersionElements.includes(card)) {
+              badge.remove();
+            }
+          });
+
+          // 為所有最新版本元素確保有 NEW 標籤
+          latestVersionElements.forEach(latestVersionElement => {
+            // 檢查是否已經有 badge
+            const existingBadge = latestVersionElement.querySelector('.version-badge');
+            if (!existingBadge) {
+              const badge = document.createElement('div');
+              badge.className = 'version-badge';
+              badge.textContent = 'NEW';
+              latestVersionElement.insertBefore(badge, latestVersionElement.firstChild);
+            }
+          });
+        }
+
+        // Load preferred language
+        const storedLang = getStoredLanguage();
+        console.log('[UpdateLog] 載入儲存的語言:', storedLang);
+        switchLanguage(storedLang);
+
+        // Set up language button listeners
+        const langButtons = document.querySelectorAll('.lang-btn');
+        console.log('[UpdateLog] 找到語言按鈕數量:', langButtons.length);
+
+        if (langButtons.length === 0) {
+          console.error('[UpdateLog] 找不到語言按鈕！DOM 可能未完全載入');
+          // 延遲重試
+          setTimeout(init, 500);
+          return;
+        }
+
+        langButtons.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const lang = btn.dataset.lang;
+            console.log('[UpdateLog] 用戶點擊語言按鈕:', lang);
+            if (lang) switchLanguage(lang);
+          });
+
+          // 測試點擊事件
+          console.log('[UpdateLog] 為按鈕添加事件監聽器:', btn.dataset.lang);
+        });
+
+        console.log('[UpdateLog] 初始化完成');
+      } catch (error) {
+        console.error('[UpdateLog] 初始化錯誤:', error);
+      }
+    }
+
+    // Run when DOM is ready
+    function startInit() {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        // 確保 DOM 已經完全載入
+        if (document.querySelectorAll('.lang-btn').length > 0) {
+          init();
+        } else {
+          // 如果按鈕還沒載入，等待一下再試
+          setTimeout(() => {
+            if (document.querySelectorAll('.lang-btn').length > 0) {
+              init();
+            } else {
+              console.error('[UpdateLog] 無法找到語言按鈕元素');
+            }
+          }, 100);
+        }
+      }
+    }
+
+    startInit();
+  </script>
+</body>
+
+</html>

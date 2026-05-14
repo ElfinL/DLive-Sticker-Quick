@@ -1,0 +1,46 @@
+{
+  "extName": {
+    "message": "General Sticker System (GSS)",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "儲存貼圖 ID，一鍵發送聊天訊息。",
+    "description": "Extension description"
+  },
+  "tscEnabledLabel": {
+    "message": "啟用系統",
+    "description": "TSC system enabled label"
+  },
+  "tscAutoCollectLabel": {
+    "message": "自動抓取",
+    "description": "TSC auto collect label"
+  },
+  "tscAutoCollectEnabled": {
+    "message": "自動抓取已開啟",
+    "description": "TSC auto collect enabled message"
+  },
+  "tscAutoCollectDisabled": {
+    "message": "自動抓取已關閉",
+    "description": "TSC auto collect disabled message"
+  },
+  "tscAutoCollectActivated": {
+    "message": "✅ TSC 自動抓取已啟用",
+    "description": "TSC auto collect activated message"
+  },
+  "tscAutoCollectDeactivated": {
+    "message": "✅ TSC 自動抓取已禁用",
+    "description": "TSC auto collect deactivated message"
+  },
+  "helpAutoCollect": {
+    "message": "自動抓取",
+    "description": "Help page auto collect label"
+  },
+  "helpAutoCollectDesc": {
+    "message": "在直播頁面放置 <code>#GSS-TexoStreamCore</code> 標記，插件會自動讀取下方資料",
+    "description": "Help page auto collect description"
+  },
+  "helpAutoCollectSettings": {
+    "message": "自動抓取設定",
+    "description": "Help page auto collect settings title"
+  }
+}

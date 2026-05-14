@@ -660,9 +660,12 @@
         <div class="toolbar-row">
           <div class="filter-tabs" id="typeTabs">
             <button class="filter-tab active" data-type="all">全部</button>
+            <button class="filter-tab" data-type="GSS">GSS</button>
             <button class="filter-tab" data-type="DL">DL</button>
             <button class="filter-tab" data-type="IM">IM</button>
             <button class="filter-tab" data-type="ME">ME</button>
+            <button class="filter-tab" data-type="YT">YT</button>
+            <button class="filter-tab" data-type="CB">CB</button>
           </div>
           <button id="refreshBtn">🔄 重新整理</button>
           <button id="selectAllBtn">☑️ 全選</button>
@@ -691,14 +694,16 @@
     </select>
     <input type="text" id="batchTagInput" placeholder="輸入新標籤..."
       style="display: none; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10,12,16,0.88); color: #fff; font-size: 14px; width: 150px;">
-    <button id="batchAddTagBtn">➕ 批量新增</button>
-    <button id="batchRemoveTagBtn" class="danger">➖ 批量移除</button>
+    <button id="batchAddTagBtn">➕ 批量新增標籤</button>
+    <button id="batchRemoveTagBtn" class="danger">➖ 批量移除標籤</button>
+    <button id="batchDeleteBtn" class="danger">🗑️ 批量刪除ID</button>
     <button id="clearSelectionBtn">✕ 清除選擇</button>
   </div>
 
   <div class="status-bar" id="statusBar"></div>
 
   <script src="i18n.js"></script>
+  <script src="stickerRegistry.js"></script>
   <script src="editor.js"></script>
 </body>
 

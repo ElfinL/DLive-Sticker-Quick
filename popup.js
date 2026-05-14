@@ -12,39 +12,28 @@ function setStatus(text, color = '#28a745') {
 }
 
 function buildStickerFromId(id, index) {
-  // IM 類型
-  if (id.startsWith('IM-')) {
-    const idWithExt = id.slice(3);
-    const isVideo = /\.mp4$/i.test(idWithExt);
+  // 使用 StickerRegistry 统一获取贴纸信息
+  const info = StickerRegistry.getStickerInfo(id);
+  if (!info) {
+    // 无效 ID 的降级处理
     return {
-      name: `圖片 ${index + 1}`,
+      name: `ID${index + 1}`,
       rawId: id,
       code: id,
-      imageUrl: `https://i.imgur.com/${idWithExt}`,
-      isVideo: isVideo,
-      isIM: true
+      imageUrl: ''
     };
   }
-  // ME 類型
-  if (id.startsWith('ME-')) {
-    const idWithExt = id.slice(3);
-    const isVideo = /\.mp4$/i.test(idWithExt);
-    return {
-      name: `圖片 ${index + 1}`,
-      rawId: id,
-      code: id,
-      imageUrl: `https://meee.com.tw/${idWithExt}`,
-      isVideo: isVideo,
-      isME: true
-    };
-  }
-  // DL 類型：移除 DL- 前綴
-  const cleanId = id.startsWith('DL-') ? id.slice(3) : id;
+
+  // 构建向后兼容的贴纸对象
+  // 使用正规化的 ID 作为 code（DL-xxx 格式），而非平台特定格式
   return {
-    name: `ID${index + 1}`,
-    rawId: id,
-    code: `:emote/mine/dlive/${cleanId}:`,
-    imageUrl: `https://images.prd.dlivecdn.com/emote/${cleanId}`
+    name: info.type === 'DL' ? `ID${index + 1}` : `圖片 ${index + 1}`,
+    rawId: info.id,
+    code: info.id,
+    imageUrl: info.previewUrl,
+    isVideo: info.isVideo,
+    isIM: info.type === 'IM',
+    isME: info.type === 'ME'
   };
 }
 
@@ -99,8 +88,8 @@ function idsToText(ids) {
 }
 
 function extractIdFromSticker(sticker) {
-  const match = String(sticker?.code || '').match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/);
-  return match?.[1] || null;
+  // 移除 DLive 格式處理，返回 null
+  return null;
 }
 
 function sortRowsWithFavorites(rows, favoriteIds) {
@@ -199,6 +188,8 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     if (lang && setLanguage(lang)) {
       updateLineInfo();
       loadStickers();
+      updateSettingsButtonTexts();
+      updateTexoTexts();
     }
   });
 });
@@ -349,13 +340,11 @@ function toggleFavorite(id) {
     const { rows } = parseStickerIdsWithTag(r.stickerIdsText || '');
     const sortedRows = sortRowsWithFavorites(rows, next);
     const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
-    const stickersNext = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
 
     chrome.storage.local.set(
       {
         favoriteStickerIds: next,
-        stickerIdsText: nextText,
-        stickers: stickersNext
+        stickerIdsText: nextText
       },
       () => {
         loadStickers();
@@ -373,12 +362,10 @@ function deleteSticker(id) {
     const nextFav = (Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : []).filter((x) => x !== id);
     const sortedRows = sortRowsWithFavorites(nextRows, nextFav);
     const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
-    const stickersNext = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
 
     chrome.storage.local.set(
       {
         stickerIdsText: nextText,
-        stickers: stickersNext,
         favoriteStickerIds: nextFav
       },
       () => {
@@ -406,7 +393,6 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
     chrome.storage.local.set(
       {
         stickerIdsText: '',
-        stickers: [],
         favoriteStickerIds: [],
         stickerTagVocabularyText: vocabRaw
       },
@@ -426,16 +412,20 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
   const mergedVocabRaw = mergeVocabWithRowTags(vocabRaw, rows);
 
   const ids = rows.map((r) => r.id);
-  // 驗證 ID 格式（支援 DL-、IM- 和 ME- 前綴）
+  // 驗證 ID 格式（支援 CB-、IM-、ME-、YT-、YTS-、GSS- 前綴）
   const invalidId = ids.find((id) => {
     if (TAG) {
-      return !TAG.isValidDLId(id) && !TAG.isValidIMId(id) && !TAG.isValidMEId(id);
+      return !TAG.isValidDLId(id) && !TAG.isValidIMId(id) && !TAG.isValidMEId(id) && !TAG.isValidYTId(id) && !TAG.isValidCBId(id) && !TAG.isValidGSSId(id);
     }
     // 後備驗證
     const isDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(id);
     const isIM = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
     const isME = /^ME-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
-    return !isDL && !isIM && !isME;
+    const isYT = /^YT-[a-zA-Z0-9_-]+$/.test(id);
+    const isYTS = /^YTS-[a-zA-Z0-9_-]+$/.test(id);
+    const isCB = /^CB-[a-zA-Z0-9]{6}(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(id);
+    const isGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(id);
+    return !isDL && !isIM && !isME && !isYT && !isYTS && !isCB && !isGSS;
   });
   if (invalidId) {
     setStatus(t('statusInvalidId', invalidId), '#dc3545');
@@ -452,13 +442,11 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
     }
     const cleanedFav = removeUnknownFavorites(Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [], uniqueRows.map((x) => x.id));
     const sortedRows = sortRowsWithFavorites(uniqueRows, cleanedFav);
-    const stickers = sortedRows.map((row, index) => buildStickerFromId(row.id, index));
     const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
 
     chrome.storage.local.set(
       {
         stickerIdsText: nextText,
-        stickers,
         favoriteStickerIds: cleanedFav,
         stickerTagVocabularyText: mergedVocabRaw
       },
@@ -479,7 +467,12 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
     const version = manifest?.version || '3.0';
     const titleEl = document.getElementById('titleText');
     if (titleEl) {
-      titleEl.innerHTML = '<img src="icons/icon16.png" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"> General Sticker System (GSS) V' + version;
+      titleEl.textContent = '';
+      const img = document.createElement('img');
+      img.src = 'icons/icon16.png';
+      img.style.cssText = 'width:16px;height:16px;vertical-align:middle;margin-right:4px;';
+      titleEl.appendChild(img);
+      titleEl.appendChild(document.createTextNode(' General Sticker System (GSS) V' + version));
     }
   } catch (e) {
     // Version load error
@@ -494,7 +487,9 @@ document.getElementById('saveIdsBtn').addEventListener('click', () => {
   }
 
   loadSettings();
-  initLanguage();
+  initLanguage(() => {
+    updateTexoTexts();
+  });
   initLineInfo();
   loadStickers();
 })();
@@ -581,8 +576,6 @@ function getCurrentPlatform(callback) {
     const url = tabs[0].url || '';
     if (url.includes('twitch.tv')) {
       callback('twitch');
-    } else if (url.includes('dlive.tv')) {
-      callback('dlive');
     } else {
       callback('unknown');
     }
@@ -590,138 +583,404 @@ function getCurrentPlatform(callback) {
 }
 
 // ==================== 頁面切換功能 ====================
-let currentPage = 'main'; // 'main' 或 'dlive'
+let currentPage = 'main'; // 'main', 'texo', 或 'settings'
 
 function initPageToggle() {
   const tabSticker = document.getElementById('tabSticker');
-  const tabDlive = document.getElementById('tabDlive');
+  const tabTexo = document.getElementById('tabTexo');
+  const tabSettings = document.getElementById('tabSettings');
   const mainPage = document.getElementById('mainPage');
-  const dlivePage = document.getElementById('dlivePage');
+  const texoPage = document.getElementById('texoPage');
+  const settingsPage = document.getElementById('settingsPage');
 
-  if (!tabSticker || !tabDlive || !mainPage || !dlivePage) return;
+  if (!tabSticker || !tabSettings || !mainPage || !settingsPage) return;
 
   // 檢測當前平台並調整 UI
   getCurrentPlatform((platform) => {
-    if (platform === 'twitch') {
-      // Twitch 平台：隱藏 DLive 設定頁，因為 Twitch 劇院模式已經做得很好
-      tabDlive.style.display = 'none';
-      // 更新提醒文字（根據當前語言）
-      const reminderText = document.getElementById('reminderText');
-      if (reminderText && typeof t === 'function') {
-        reminderText.textContent = t('reminder');
-      }
+    // 更新提醒文字（根據當前語言）
+    const reminderText = document.getElementById('reminderText');
+    if (reminderText && typeof t === 'function') {
+      reminderText.textContent = t('reminder');
     }
-  });
+  }
+  );
 
   function switchToPage(page) {
     currentPage = page;
+    // 重置所有頁面和按鈕狀態
+    mainPage.classList.remove('active');
+    if (texoPage) texoPage.classList.remove('active');
+    settingsPage.classList.remove('active');
+    tabSticker.classList.remove('active');
+    if (tabTexo) tabTexo.classList.remove('active');
+    tabSettings.classList.remove('active');
+
+    // 激活當前頁面
     if (page === 'main') {
       mainPage.classList.add('active');
-      dlivePage.classList.remove('active');
       tabSticker.classList.add('active');
-      tabDlive.classList.remove('active');
-    } else {
-      mainPage.classList.remove('active');
-      dlivePage.classList.add('active');
-      tabSticker.classList.remove('active');
-      tabDlive.classList.add('active');
+    } else if (page === 'texo') {
+      if (texoPage) texoPage.classList.add('active');
+      if (tabTexo) tabTexo.classList.add('active');
+      // 初始化 TSC 開關
+      initTscToggles();
+    } else if (page === 'settings') {
+      settingsPage.classList.add('active');
+      tabSettings.classList.add('active');
     }
   }
 
   tabSticker.addEventListener('click', () => switchToPage('main'));
-  tabDlive.addEventListener('click', () => switchToPage('dlive'));
+  if (tabTexo) tabTexo.addEventListener('click', () => switchToPage('texo'));
+  tabSettings.addEventListener('click', () => switchToPage('settings'));
+
+  // 初始化編織頁面功能
+  if (typeof TexoPopup !== 'undefined') {
+    TexoPopup.init();
+  }
 
   // 圖庫編輯按鈕 - 在新分頁開啟編輯器
   const openEditorBtn = document.getElementById('openEditorBtn');
   if (openEditorBtn) {
     openEditorBtn.addEventListener('click', () => {
       const editorUrl = chrome.runtime.getURL('editor.html');
-      chrome.tabs.create({ url: editorUrl });
+      window.open(editorUrl, '_blank');
     });
   }
 
-  // 初始化 DLive 設定頁按鈕
-  initDliveButtons();
+  // 移除 DLive 設定頁按鈕初始化
 }
 
-// ==================== DLive 設定頁按鈕 ====================
-function initDliveButtons() {
-  // 元素控制
-  bindDliveButton('btnDonation', 'toggleDonation');
-  bindDliveButton('btnTitleFix1', 'toggleTitleFix1');
-  bindDliveButton('btnAboutFix1', 'toggleAboutFix1');
-  bindDliveButton('btnSidebar', 'toggleSidebar');
-  bindDliveButton('btnNavbar', 'toggleNavbar');
+// 禁用原生右鍵面板按鈕
+initDisableNativeContextMenuButton();
 
-  // 聊天室控制
-  bindDliveButton('btnChatNarrow', 'toggleChatNarrow');
-  bindDliveButton('btnChatHidden', 'toggleChatHidden');
-  bindDliveButton('btnChatOverlayFix1', 'toggleChatOverlayFix1');
+// ==================== 自動關閉 Mature 警告功能 ====================
 
-  // 劇院模式
-  bindDliveButton('btnTheater13', 'toggleTheaterComboFix');
+// 自定義確認對話框
+let customDialogCallback = null;
 
-  // 測試按鈕
-  bindDliveButton('btnTestZoomIn', 'testZoomIn');
-  bindDliveButton('btnTestZoomOut', 'testZoomOut');
-  bindDliveButton('btnTestZoomReset', 'testZoomReset');
-  bindDliveButton('btnTestBlackFix1', 'toggleBlackBackgroundFix1');
+function initCustomDialog() {
+  const dialog = document.getElementById('customConfirmDialog');
+  const cancelBtn = document.getElementById('customDialogCancel');
+  const confirmBtn = document.getElementById('customDialogConfirm');
 
-  // 隱藏頂部欄分解測試按鈕
-  bindDliveButton('btnNavbarTest1', 'toggleNavbarTest1');
-  bindDliveButton('btnNavbarTest2', 'toggleNavbarTest2');
-  bindDliveButton('btnNavbarTest3', 'toggleNavbarTest3');
-  bindDliveButton('btnNavbarTest4', 'toggleNavbarTest4');
-  bindDliveButton('btnNavbarTest5', 'toggleNavbarTest5');
-  bindDliveButton('btnNavbarTest6', 'toggleNavbarTest6');
-  bindDliveButton('btnNavbarTest7', 'toggleNavbarTest7');
-  bindDliveButton('btnNavbarTest8', 'toggleNavbarTest8');
-  bindDliveButton('btnNavbarTest9', 'toggleNavbarTest9');
-  bindDliveButton('btnNavbarTest10', 'toggleNavbarTest10');
-  bindDliveButton('btnNavbarTest2Fix', 'toggleNavbarTest2Fix');
-  bindDliveButton('btnNavbarTestCombo', 'toggleNavbarTestCombo');
-  bindDliveButton('btnTheaterCombo', 'toggleTheaterComboFix');
-  bindDliveButton('btnTheaterComboFix', 'toggleTheaterComboFix');
-}
+  if (!dialog || !cancelBtn || !confirmBtn) return;
 
-function bindDliveButton(btnId, command) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
+  cancelBtn.addEventListener('click', () => {
+    hideCustomDialog(false);
+  });
 
-  btn.addEventListener('click', () => {
-    sendDliveCommand(command);
+  confirmBtn.addEventListener('click', () => {
+    hideCustomDialog(true);
+  });
+
+  // 點擊背景關閉
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) {
+      hideCustomDialog(false);
+    }
   });
 }
 
-function sendDliveCommand(command) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs[0]) {
-      showDliveStatus('❌ 找不到當前頁面', '#dc3545');
-      return;
-    }
+function showCustomDialog(title, content, onConfirm) {
+  const dialog = document.getElementById('customConfirmDialog');
+  const titleEl = document.getElementById('customDialogTitle');
+  const contentEl = document.getElementById('customDialogContent');
+  const cancelBtn = document.getElementById('customDialogCancel');
+  const confirmBtn = document.getElementById('customDialogConfirm');
 
-    chrome.tabs.sendMessage(tabs[0].id, {
-      type: 'DLIVE_CONTROL',
-      command: command
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        showDliveStatus('❌ 無法連接到頁面，請確保在 DLive 頻道頁', '#dc3545');
-      } else if (response) {
-        showDliveStatus(response.message || '✅ 已執行', response.success ? '#28a745' : '#dc3545');
-        // 更新按鈕狀態（如果有回傳）
-        if (response.active !== undefined && response.buttonId) {
-          const btn = document.getElementById(response.buttonId);
-          if (btn) {
-            btn.classList.toggle('active', response.active);
+  if (!dialog || !titleEl || !contentEl) return;
+
+  // 更新文字（支援多語言）
+  titleEl.textContent = title || t('autoMatureTitle') || '🔞 自動關閉 Mature 警告';
+  contentEl.textContent = content;
+
+  // 按鈕文字
+  if (cancelBtn) cancelBtn.textContent = t('deleteCancelBtn') || '取消';
+  if (confirmBtn) confirmBtn.textContent = t('deleteConfirmBtn') || '確定';
+
+  customDialogCallback = onConfirm;
+  dialog.classList.add('show');
+}
+
+function hideCustomDialog(result) {
+  const dialog = document.getElementById('customConfirmDialog');
+  if (dialog) {
+    dialog.classList.remove('show');
+  }
+
+  if (customDialogCallback) {
+    const callback = customDialogCallback;
+    customDialogCallback = null;
+    callback(result);
+  }
+}
+
+function initAutoMatureButton() {
+  const btn = document.getElementById('btnAutoMature');
+  if (!btn) return;
+
+  // 初始化自定義對話框
+  initCustomDialog();
+
+  // 載入當前設置狀態
+  chrome.storage.local.get(['autoCloseMatureWarning'], (result) => {
+    const isEnabled = result.autoCloseMatureWarning === true;
+    updateAutoMatureButtonState(btn, isEnabled);
+  });
+
+  btn.addEventListener('click', () => {
+    chrome.storage.local.get(['autoCloseMatureWarning'], (result) => {
+      const currentState = result.autoCloseMatureWarning === true;
+
+      if (!currentState) {
+        // 要開啟 - 顯示自定義確認對話框
+        const confirmMessage = t('autoMatureConfirm');
+
+        showCustomDialog(null, confirmMessage, (confirmed) => {
+          if (confirmed) {
+            setAutoMatureWarning(true);
+            updateAutoMatureButtonState(btn, true);
           }
-        }
+        });
+      } else {
+        // 要關閉 - 直接關閉
+        setAutoMatureWarning(false);
+        updateAutoMatureButtonState(btn, false);
       }
     });
   });
 }
 
-function showDliveStatus(message, color) {
-  const status = document.getElementById('dliveStatus');
+function updateAutoMatureButtonState(btn, isEnabled) {
+  btn.classList.toggle('active', isEnabled);
+  const baseText = t('autoMatureTitle') || '🔞 記住 Mature 同意';
+  btn.textContent = isEnabled ? `${baseText} (✓)` : baseText;
+}
+
+function setAutoMatureWarning(enabled) {
+  chrome.storage.local.set({ autoCloseMatureWarning: enabled }, () => {
+    // 移除 DLive 相關邏輯，只保存設置
+  });
+  showSettingsStatus(
+    enabled ? t('autoMatureEnabled') : t('autoMatureDisabled'),
+    enabled ? '#28a745' : '#dc3545'
+  );
+}
+
+// ==================== 禁用原生右鍵面板功能 ====================
+
+function initDisableNativeContextMenuButton() {
+  const btn = document.getElementById('btnDisableNativeContextMenu');
+  if (!btn) return;
+
+  // 載入當前設置狀態
+  chrome.storage.local.get(['disableNativeContextMenu'], (result) => {
+    const isDisabled = result.disableNativeContextMenu === true;
+    updateDisableNativeContextMenuButtonState(btn, isDisabled);
+  });
+
+  btn.addEventListener('click', () => {
+    chrome.storage.local.get(['disableNativeContextMenu'], (result) => {
+      const currentState = result.disableNativeContextMenu === true;
+      const newState = !currentState;
+
+      chrome.storage.local.set({ disableNativeContextMenu: newState }, () => {
+        updateDisableNativeContextMenuButtonState(btn, newState);
+        showSettingsStatus(
+          newState ? t('disableNativeContextMenuEnabled') : t('disableNativeContextMenuDisabled'),
+          newState ? '#28a745' : '#dc3545'
+        );
+
+        // 通知所有頁面更新設置
+        chrome.tabs.query({}, (tabs) => {
+          tabs.forEach(tab => {
+            chrome.tabs.sendMessage(tab.id, {
+              type: 'GSS_CONTROL',
+              command: newState ? 'disableNativeContextMenu' : 'enableNativeContextMenu'
+            }).catch(() => {
+              // 忽略無法連接的頁面錯誤
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
+function updateDisableNativeContextMenuButtonState(btn, isDisabled) {
+  btn.classList.toggle('active', isDisabled);
+  const baseText = t('disableNativeContextMenuTitle') || '🖱️ 關閉右鍵面板';
+  btn.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+}
+
+// ==================== TSC 開關功能 ====================
+
+function initTscToggles() {
+  const tscEnabled = document.getElementById('tscEnabled');
+  const tscAutoCollect = document.getElementById('tscAutoCollect');
+  const tscEnabledLabel = document.getElementById('tscEnabledLabel');
+  const tscAutoCollectLabel = document.getElementById('tscAutoCollectLabel');
+
+  if (!tscEnabled || !tscAutoCollect) return;
+
+  // 設置 i18n 文字（使用項目的 t() 函數）
+  if (tscEnabledLabel && typeof t === 'function') {
+    const text = t('tscEnabledLabel');
+    if (text) tscEnabledLabel.textContent = text;
+  }
+  if (tscAutoCollectLabel && typeof t === 'function') {
+    const text = t('tscAutoCollectLabel');
+    if (text) tscAutoCollectLabel.textContent = text;
+  }
+
+  // 防止重複初始化
+  if (tscEnabled.dataset.initialized === 'true') return;
+  tscEnabled.dataset.initialized = 'true';
+
+  // 載入儲存的設定（預設開啟）
+  chrome.storage.local.get(['tscEnabled', 'tscAutoCollect'], (result) => {
+    const isEnabled = result.tscEnabled !== false; // 預設 true
+    const isAutoCollect = result.tscAutoCollect !== false; // 預設 true
+
+    tscEnabled.checked = isEnabled;
+    tscAutoCollect.checked = isAutoCollect;
+    tscAutoCollect.disabled = !isEnabled; // 如果主開關關閉，自動抓取也禁用
+  });
+
+  // 主開關變更事件
+  tscEnabled.addEventListener('change', () => {
+    const isEnabled = tscEnabled.checked;
+
+    // 立即更新 UI（不等待 storage）
+    tscAutoCollect.disabled = !isEnabled;
+    if (!isEnabled) {
+      tscAutoCollect.checked = false;
+    }
+
+    chrome.storage.local.set({ tscEnabled: isEnabled }, () => {
+      if (!isEnabled) {
+        chrome.storage.local.set({ tscAutoCollect: false });
+      }
+      showSettingsStatus(
+        isEnabled ? 'TSC 系統已開啟' : 'TSC 系統已關閉',
+        isEnabled ? '#28a745' : '#dc3545'
+      );
+      // 通知所有頁面更新設置
+      notifyAllTabs({ type: 'GSS_CONTROL', command: isEnabled ? 'enableTsc' : 'disableTsc' });
+    });
+  });
+
+  // 自動抓取開關變更事件
+  tscAutoCollect.addEventListener('change', () => {
+    const isAutoCollect = tscAutoCollect.checked;
+    chrome.storage.local.set({ tscAutoCollect: isAutoCollect }, () => {
+      showSettingsStatus(
+        isAutoCollect ? t('tscAutoCollectEnabled') : t('tscAutoCollectDisabled'),
+        isAutoCollect ? '#28a745' : '#dc3545'
+      );
+      notifyAllTabs({ type: 'GSS_CONTROL', command: isAutoCollect ? 'enableTscAutoCollect' : 'disableTscAutoCollect' });
+    });
+  });
+}
+
+// 通知所有頁面的輔助函數
+function notifyAllTabs(message) {
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach(tab => {
+      chrome.tabs.sendMessage(tab.id, message).catch(() => {
+        // 忽略無法連接的頁面錯誤
+      });
+    });
+  });
+}
+
+// 當語言切換時更新所有設定按鈕文字
+function updateSettingsButtonTexts() {
+  // 更新右鍵面板按鈕
+  const btnDisableNativeContextMenu = document.getElementById('btnDisableNativeContextMenu');
+  if (btnDisableNativeContextMenu) {
+    const isDisabled = btnDisableNativeContextMenu.classList.contains('active');
+    const baseText = t('disableNativeContextMenuTitle') || '🖱️ 關閉右鍵面板';
+    btnDisableNativeContextMenu.textContent = isDisabled ? `${baseText} (✓)` : baseText;
+    updateDisableNativeContextMenuButtonState(btnDisableNativeContextMenu, isDisabled);
+  }
+}
+
+// 當語言切換時更新 TexoStreamCore 頁面文字
+function updateTexoTexts() {
+  // 標題
+  const texoTitle = document.getElementById('texoTitle');
+  if (texoTitle) texoTitle.textContent = t('texoTitle') || '🧶 實況編織核心';
+
+  // 副標題
+  const texoSubtitle = document.getElementById('texoSubtitle');
+  if (texoSubtitle) texoSubtitle.textContent = t('texoSubtitle') || 'Texo Stream Core - 管理多平台實況資訊';
+
+  // 輸入框標籤
+  const texoLabel = document.getElementById('texoLabel');
+  if (texoLabel) {
+    const label = t('texoLabel') || '編織資料';
+    const onePerLine = t('texoOnePerLine') || '(一行一筆)';
+    texoLabel.textContent = '';
+    texoLabel.appendChild(document.createTextNode(label + ' '));
+    const span = document.createElement('span');
+    span.id = 'texoOnePerLine';
+    span.style.cssText = 'color: #868e96; font-weight: 400;';
+    span.textContent = onePerLine;
+    texoLabel.appendChild(span);
+  }
+
+  // placeholder
+  const texoInput = document.getElementById('texoInput');
+  if (texoInput) texoInput.placeholder = t('texoPlaceholder') || '>主播名稱 #https://www.twitch.tv/xxx\n#https://www.youtube.com/...\n#https://www.kick.com/...';
+
+  // 格式說明
+  const texoFormatTitle = document.getElementById('texoFormatTitle');
+  if (texoFormatTitle) texoFormatTitle.textContent = t('texoFormatTitle') || '格式規則：';
+
+  const texoFormatDisplayName = document.getElementById('texoFormatDisplayName');
+  if (texoFormatDisplayName) texoFormatDisplayName.textContent = t('texoFormatDisplayName') || '顯示名稱';
+
+  const texoFormatPlatform = document.getElementById('texoFormatPlatform');
+  if (texoFormatPlatform) texoFormatPlatform.textContent = t('texoFormatPlatform') || '直播平台';
+
+  // TSC 標籤
+  const tscEnabledLabel = document.getElementById('tscEnabledLabel');
+  if (tscEnabledLabel) {
+    const text = t('tscEnabledLabel');
+    if (text) tscEnabledLabel.textContent = text;
+  }
+  const tscAutoCollectLabel = document.getElementById('tscAutoCollectLabel');
+  if (tscAutoCollectLabel) {
+    const text = t('tscAutoCollectLabel');
+    if (text) tscAutoCollectLabel.textContent = text;
+  }
+
+  const texoFormatSharedChat = document.getElementById('texoFormatSharedChat');
+  if (texoFormatSharedChat) texoFormatSharedChat.textContent = t('texoFormatSharedChat') || '共用聊天室';
+
+  const texoFormatSeeHelp = document.getElementById('texoFormatSeeHelp');
+  if (texoFormatSeeHelp) texoFormatSeeHelp.textContent = t('texoFormatSeeHelp') || '詳見';
+
+  // 儲存按鈕
+  const texoSaveText = document.getElementById('texoSaveText');
+  if (texoSaveText) texoSaveText.textContent = t('texoSave') || '💾 儲存';
+
+  // 狀態（如果不是顯示已儲存狀態）
+  const texoStatus = document.getElementById('texoStatus');
+  if (texoStatus && !texoStatus.textContent.includes('✅')) {
+    texoStatus.textContent = t('texoStatus') || '自動載入上次儲存的內容';
+  }
+
+  // Tab 按鈕（只更新文字部分，保留 emoji）
+  const tabTexoSpan = document.querySelector('#tabTexo [data-i18n="tabTexo"]');
+  if (tabTexoSpan) tabTexoSpan.textContent = t('tabTexo') || '編織';
+}
+
+
+function showSettingsStatus(message, color) {
+  const status = document.getElementById('settingsStatus');
   if (status) {
     status.textContent = message;
     status.style.color = color || 'rgba(255, 255, 255, 0.7)';
@@ -732,6 +991,8 @@ function showDliveStatus(message, color) {
 document.addEventListener('DOMContentLoaded', () => {
   initPageToggle();
   initHelpPopover();
+  initUpdateButton();
+  initTscToggles();
 });
 
 // ==================== Help Button 功能 ====================
@@ -741,7 +1002,78 @@ function initHelpPopover() {
 
   // 問號按鈕點擊 - 在新分頁打開說明頁面
   helpBtn.addEventListener('click', () => {
-    const helpUrl = chrome.runtime.getURL('help.html');
-    chrome.tabs.create({ url: helpUrl });
+    const helpUrl = 'https://elfinl.github.io/General-Sticker-System/help.html';
+    window.open(helpUrl, '_blank');
   });
+}
+
+// ==================== Update Notification Button 功能 ====================
+// 直接讀取 manifest.json 的版本號（只需改 manifest.json 即可）
+const CURRENT_VERSION = chrome.runtime.getManifest().version;
+
+function initUpdateButton() {
+  const updateBtn = document.getElementById('updateBtn');
+  if (!updateBtn) return;
+
+  // 先隱藏按鈕，等待檢查存儲狀態後再顯示，避免閃爍
+  updateBtn.style.visibility = 'hidden';
+
+  // 檢查是否已看過當前版本
+  chrome.storage.local.get(['lastSeenVersion'], (result) => {
+    const hasSeen = result.lastSeenVersion === CURRENT_VERSION;
+
+    // 顯示按鈕
+    updateBtn.style.visibility = 'visible';
+
+    // 如果已看過，移除高亮狀態；否則添加高亮
+    if (hasSeen) {
+      updateBtn.classList.remove('highlighted');
+      updateBtn.title = '查看更新日誌';
+    } else {
+      updateBtn.classList.add('highlighted');
+      updateBtn.title = '📢 有新更新！點擊查看';
+    }
+  });
+
+  // 點擊事件 - 打開更新日誌
+  updateBtn.addEventListener('click', () => {
+    // 移除高亮狀態
+    updateBtn.classList.remove('highlighted');
+    updateBtn.title = '查看更新日誌';
+
+    // 標記為已讀（立即保存）
+    chrome.storage.local.set({ lastSeenVersion: CURRENT_VERSION }, () => {
+      console.log('[GSS] Update button clicked, marked as seen for version', CURRENT_VERSION);
+    });
+
+    // 打開更新日誌頁面
+    const updatelogUrl = 'https://elfinl.github.io/General-Sticker-System/updatelog.html';
+    window.open(updatelogUrl, '_blank');
+  });
+
+  // 監聽 storage 變化 - 當其他頁面（如聊天面板）標記為已讀時，同步移除高亮
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes.lastSeenVersion) {
+      const newVersion = changes.lastSeenVersion.newValue;
+      if (newVersion === CURRENT_VERSION) {
+        updateBtn.classList.remove('highlighted');
+        updateBtn.title = '查看更新日誌';
+      }
+    }
+  });
+}
+
+// ==================== 通用提示功能 ====================
+function showToast(message) {
+  // 使用現有的狀態顯示機制或創建一個簡單的 toast
+  const statusEl = document.getElementById('texoStatus') || document.getElementById('settingsStatus');
+  if (statusEl) {
+    const originalText = statusEl.textContent;
+    statusEl.textContent = message;
+    statusEl.style.color = message.includes('❌') ? '#ff6b6b' : '#28a745';
+    setTimeout(() => {
+      statusEl.textContent = originalText;
+      statusEl.style.color = '';
+    }, 3000);
+  }
 }

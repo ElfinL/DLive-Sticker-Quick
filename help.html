@@ -155,7 +155,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <img src="icons/icon48.png" alt="GSS Logo">
+      <img src="https://elfinl.github.io/General-Sticker-System/icons/icon48.png" alt="GSS Logo">
       <h1>General Sticker System (GSS)</h1>
       <p id="header-subtitle">通用貼圖系統</p>
     </div>
@@ -175,30 +175,45 @@
         <div class="highlight-box">
           <p><strong>使用步驟：</strong></p>
           <ol style="margin-left: 20px; margin-top: 8px;">
-            <li>在 DLive 或 Twitch 登入並進入頻道頁面</li>
+            <li>在 Twitch、YouTube、Vaughn Live、beamstream、w.tv 或 KICK 登入並進入頻道頁面</li>
             <li>開啟插件，輸入貼圖 ID 清單</li>
             <li>點擊聊天室旁的 GSS 圖示開啟貼圖面板</li>
-            <li>一鍵發送貼圖！</li>
+            <li>點擊貼圖快速發送（例如 Twitch/KICK 全自動，其他平台自動填入）</li>
           </ol>
         </div>
       </div>
 
       <div class="content-section">
         <h2>🎨 貼圖格式</h2>
-        <h3>DLive 官方貼圖</h3>
-        <p>格式：<code>DL-xxx</code></p>
+        <h3>🌐 GSS 通用圖片連結</h3>
+        <p>格式：<code>GSS-[圖片連結]</code></p>
         <ul>
-          <li>在 DLive 頻道頁面右鍵點擊貼圖即可快速儲存 ID</li>
-          <li>或在貼圖連結中找到 ID（例如：<code>DL-826c4ac1e004273_498281</code>）</li>
+          <li>支援格式：.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4</li>
+          <li>支援直接連結或相對連結</li>
+          <li>範例：<code>GSS-https://example.com/image.jpg</code></li>
+          <li>範例：<code>GSS-cdn.discordapp.com/attachments/.../image.png</code></li>
         </ul>
         <div class="highlight-box">
-          <p><strong>🔍 如何從網址取得 ID：</strong></p>
+          <p><strong>🔍 連結取得方式：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            貼圖網址範例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+            1. 在網路上看到喜歡的圖片<br>
+            2. 右鍵複製圖片連結<br>
+            3. 加上 <code>GSS-</code> 前綴即可使用<br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 支援 Discord、Imgur、或其他任何圖片連結</span>
+          </p>
+        </div>
+
+        <h3>CatBox 圖片/影片</h3>
+        <p>格式：<code>CB-xxx.ext</code></p>
+        <p>支援格式：<code>.gif</code>, <code>.png</code></p>
+        <p>範例：<code>CB-z8dta6.gif</code></p>
+        <div class="highlight-box">
+          <p><strong>🔍 CatBox ID 取得方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            CatBox 網址範例：<code>https://files.catbox.moe/z8dta6.gif</code>
           </p>
           <p style="margin-top: 8px;">
-            網址最後一段 <code>826c4ac1e004273_498281</code> 就是 ID<br>
-            使用時請加上 <code>DL-</code> 前綴，變成 <code>DL-826c4ac1e004273_498281</code>
+            網址最後一段 <code>z8dta6.gif</code> 就是 ID
           </p>
         </div>
 
@@ -223,26 +238,63 @@
         <h3>meee.com.tw 圖片/影片</h3>
         <p>格式：<code>ME-xxx.ext</code></p>
         <ul>
-          <li>支援格式：.gif, .jpg（其他格式待確認）</li>
-          <li>範例：<code>ME-LXEcxGi.gif</code>、<code>ME-abc1234.jpg</code></li>
+          <li>支援格式：.gif, .png（其他格式待確認）</li>
+          <li>範例：<code>ME-LXEcxGi.gif</code>、<code>ME-HUi2Bs0.png</code></li>
         </ul>
         <div class="highlight-box">
           <p><strong>🔍 meee ID 取得方式：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            meee 網址範例：<code>https://i.meee.com.tw/LXEcxGi.gif</code>
+            meee 網址範例：<code>https://meee.com.tw/LXEcxGi</code>
           </p>
           <p style="margin-top: 8px;">
             網址最後一段 <code>LXEcxGi</code> 就是 ID<br>
-            使用時請加上 <code>ME-</code> 前綴和副檔名（如 .gif/.jpg），變成 <code>ME-LXEcxGi.gif</code><br>
-            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道副檔名，可先嘗試 .gif 或 .jpg</span>
+            使用時請加上 <code>ME-</code> 前綴和副檔名（如 .gif/.png），變成 <code>ME-LXEcxGi.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道副檔名，可先嘗試 .gif 或 .png</span>
           </p>
         </div>
+
+        <h3>🎬 YouTube 影片</h3>
+        <p>統一格式：<code>YT-xxx</code>（系統自動識別影片類型）</p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          <code>https://www.youtube.com/watch?v=xxxx</code><br>
+          <code>https://www.youtube.com/shorts/xxxx</code>
+        </p>
+
+        <div class="highlight-box" style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4);">
+          <p><strong>🤖 智能模式：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Shorts 短影音</strong>（9:16 比例）→ 自動靜音循環播放，可點擊播放</li>
+            <li><strong>一般影片</strong>（16:9 比例）→ 顯示縮略圖，點擊播放</li>
+            <li>系統自動檢測影片類型</li>
+          </ul>
+        </div>
+
+        <ul>
+          <li>在聊天室輸入會自動顯示縮略圖，點擊開啟內建播放器</li>
+          <li>範例：<code>YT-tGXZNHNhI0I</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 ID 取得方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <code>youtube.com/watch?v=xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code><br>
+            <code>youtu.be/xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code><br>
+            <code>youtube.com/shorts/xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code>
+          </p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>📋 平台支援狀態：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <strong>DLive / Twitch / KICK：</strong>完整支援縮略圖與播放器<br>
+            <strong>Vaughn Live：</strong>YT- 會顯示縮略圖，但完整 YouTube 連結不會轉換（避免官方攔截）
+          </p>
+        </div>
+
       </div>
 
       <div class="content-section">
         <h2>🏷️ 標籤功能</h2>
         <p>每張貼圖可添加最多 <strong>4 個標籤</strong>，方便分類和搜尋。</p>
-        <p>格式：<code>DL-xxx #meme #reaction</code></p>
+        <p>格式：<code>CB-xxx #meme #reaction</code></p>
         <ul>
           <li>標籤以 <code>#</code> 開頭</li>
           <li>每個標籤最多 16 個字元</li>
@@ -279,6 +331,62 @@
           <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷鍵僅在全屏模式下有效，劇院模式不適用</p>
         </div>
       </div>
+
+      <div class="content-section">
+        <h2>🧶 TexoStreamCore (TSC) 實況管理</h2>
+        <p>TSC 是 GSS 的實況主管理平台，讓你在直播頁面快速切換不同實況主的頻道，並使用<strong>共用聊天室</strong>功能。</p>
+
+        <h3>📋 設定格式</h3>
+        <p>在管理面板的<strong>【編織】</strong>標籤輸入：</p>
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 實況主名稱<br>
+            <span style="color:#ffaa66;">#</span> 直播平台網址<br>
+            <span style="color:#ffaa66;">!</span> 共用聊天室（支援 Twitch / KICK）
+          </p>
+        </div>
+
+        <h3>🎯 核心功能</h3>
+        <ul>
+          <li><strong>多位實況主管理：</strong>同時追蹤多位實況主的開台狀態</li>
+          <li><strong>實時狀態顯示：</strong>🟢 在線 / 🔴 離線 / ⚫ 未知</li>
+          <li><strong>面板控制：</strong>點擊網站標誌右側的 ▼ 箭頭展開/收合 TSC 面板，再點擊平台徽章直接跳轉</li>
+          <li><strong>共用聊天室：</strong>例如將 Twitch / KICK 聊天嵌入 DLive / Vaughn 頁面，完全支援 GSS 貼圖（注意：Twitch 聊天因安全策略無法在 KICK
+            頁面嵌入；KICK 聊天因 CSRF 保護限制，在第三方頁面只能查看無法發言（等待 KICK 官方開放嵌入 API）；Vaughn Live 因無可靠檢測方法，開台狀態暫時顯示 ⚫ 未知）</li>
+          <li><strong>自動抓取：</strong>在直播頁面放置 <code>#GSS-TexoStreamCore</code> 標記，插件會自動讀取下方資料</li>
+        </ul>
+
+        <h3>🤖 自動抓取設定</h3>
+        <p>在直播說明或頁面任意位置加入以下格式，TSC 會自動偵測並匯入：</p>
+
+
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>#GSS-TexoStreamCore
+&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 實況主名稱<br>
+            <span style="color:#ffaa66;">#</span> 直播平台網址（支援 DLive / Twitch / KICK / Vaughn / YouTube）<br>
+            <span style="color:#ffaa66;">!</span> 共用聊天室（支援 Twitch / KICK）
+          </p>
+        </div>
+
+        <h3>🌐 支援平台</h3>
+        <p><strong>貼圖發送：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>開台狀態檢測：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
+      </div>
     </div>
 
     <!-- English Content -->
@@ -288,30 +396,46 @@
         <div class="highlight-box">
           <p><strong>Steps:</strong></p>
           <ol style="margin-left: 20px; margin-top: 8px;">
-            <li>Log in to DLive or Twitch and go to a channel page</li>
+            <li>Log in to Twitch, YouTube, Vaughn Live, beamstream, w.tv or KICK and go to a channel page</li>
             <li>Open the extension and enter your sticker ID list</li>
             <li>Click the GSS icon next to the chat to open the sticker panel</li>
-            <li>Send stickers with one click!</li>
+            <li>Click sticker to send (e.g. Twitch/KICK: auto-send, others: auto-fill)</li>
           </ol>
         </div>
       </div>
 
       <div class="content-section">
         <h2>🎨 Sticker Formats</h2>
-        <h3>DLive Official Emotes</h3>
-        <p>Format: <code>DL-xxx</code></p>
+        <h3>🌐 GSS Universal Image Links</h3>
+        <p>Format: <code>GSS-[image_link]</code></p>
         <ul>
-          <li>Right-click any emote on a DLive channel to quickly save its ID</li>
-          <li>Or find the ID in the emote URL (e.g., <code>DL-826c4ac1e004273_498281</code>)</li>
+          <li>Supported formats: .jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4</li>
+          <li>Supports direct links or relative links</li>
+          <li>Example: <code>GSS-https://example.com/image.jpg</code></li>
+          <li>Example: <code>GSS-cdn.discordapp.com/attachments/.../image.png</code></li>
         </ul>
         <div class="highlight-box">
-          <p><strong>🔍 How to get ID from URL:</strong></p>
+          <p><strong>🔍 How to get links:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            Example URL: <code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+            1. Find an image you like online<br>
+            2. Right-click and copy image link<br>
+            3. Add <code>GSS-</code> prefix to use<br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ Supports Discord, Imgur, or any other image
+              links</span>
+          </p>
+        </div>
+
+        <h3>CatBox Images/Videos</h3>
+        <p>Format: <code>CB-xxx.ext</code></p>
+        <p>Supported formats: <code>.gif</code>, <code>.png</code></p>
+        <p>Example: <code>CB-z8dta6.gif</code></p>
+        <div class="highlight-box">
+          <p><strong>🔍 How to get CatBox ID:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            Example URL: <code>https://files.catbox.moe/z8dta6.gif</code>
           </p>
           <p style="margin-top: 8px;">
-            The last part <code>826c4ac1e004273_498281</code> is the ID<br>
-            Add <code>DL-</code> prefix to use it: <code>DL-826c4ac1e004273_498281</code>
+            The last part <code>z8dta6.gif</code> is the ID
           </p>
         </div>
 
@@ -337,19 +461,56 @@
         <h3>meee.com.tw Images/Videos</h3>
         <p>Format: <code>ME-xxx.ext</code></p>
         <ul>
-          <li>Supported: .gif, .jpg (other formats to be confirmed)</li>
-          <li>Examples: <code>ME-LXEcxGi.gif</code>, <code>ME-abc1234.jpg</code></li>
+          <li>Supported: .gif, .png (other formats to be confirmed)</li>
+          <li>Examples: <code>ME-LXEcxGi.gif</code>, <code>ME-HUi2Bs0.png</code></li>
         </ul>
         <div class="highlight-box">
           <p><strong>🔍 How to get meee ID:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            Example URL: <code>https://i.meee.com.tw/LXEcxGi.gif</code>
+            Example URL: <code>https://meee.com.tw/LXEcxGi</code>
           </p>
           <p style="margin-top: 8px;">
             The last part <code>LXEcxGi</code> is the ID<br>
-            Add <code>ME-</code> prefix and extension (e.g., .gif/.jpg): <code>ME-LXEcxGi.gif</code><br>
+            Add <code>ME-</code> prefix and extension (e.g., .gif/.png): <code>ME-LXEcxGi.gif</code><br>
             <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ If unsure of extension, try .gif or
-              .jpg</span>
+              .png</span>
+          </p>
+        </div>
+
+        <h3>🎬 YouTube Videos</h3>
+        <p>Unified Format: <code>YT-xxx</code> (Auto-detects video type)</p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          <code>https://www.youtube.com/watch?v=xxxx</code><br>
+          <code>https://www.youtube.com/shorts/xxxx</code>
+        </p>
+
+        <div class="highlight-box" style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4);">
+          <p><strong>🤖 Smart Mode:</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Shorts</strong> (9:16 ratio) → Auto-plays muted in loop, clickable to play</li>
+            <li><strong>Regular videos</strong> (16:9 ratio) → Thumbnail, click to play</li>
+            <li>System auto-detects video type</li>
+          </ul>
+        </div>
+
+        <ul>
+          <li>Enter in chat to auto-display thumbnail, click to open built-in player</li>
+          <li>Example: <code>YT-tGXZNHNhI0I</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 How to get ID:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <code>youtube.com/watch?v=xxx</code> → ID is <code>xxx</code> → Use <code>YT-xxx</code><br>
+            <code>youtu.be/xxx</code> → ID is <code>xxx</code> → Use <code>YT-xxx</code><br>
+            <code>youtube.com/shorts/xxx</code> → ID is <code>xxx</code> → Use <code>YT-xxx</code>
+          </p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>📋 Platform Support:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <strong>DLive / Twitch / KICK:</strong> Full thumbnail and player support<br>
+            <strong>Vaughn Live:</strong> YT- shows thumbnail, but full YouTube URLs are not converted (to avoid
+            platform interception)
           </p>
         </div>
       </div>
@@ -357,7 +518,7 @@
       <div class="content-section">
         <h2>🏷️ Tags</h2>
         <p>Each sticker can have up to <strong>4 tags</strong> for easy categorization and filtering.</p>
-        <p>Format: <code>DL-xxx #meme #reaction</code></p>
+        <p>Format: <code>CB-xxx #meme #reaction</code></p>
         <ul>
           <li>Tags start with <code>#</code></li>
           <li>Max 16 characters per tag</li>
@@ -396,6 +557,69 @@
             mode, not in theater mode</p>
         </div>
       </div>
+
+      <div class="content-section">
+        <h2>🧶 TexoStreamCore (TSC) Streamer Management</h2>
+        <p>TSC is GSS's streamer management platform, allowing you to quickly switch between different streamers'
+          channels and use the <strong>Shared Chat</strong> feature.</p>
+
+        <h3>📋 Configuration Format</h3>
+        <p>Enter in the <strong>【Weave】</strong> tab of the management panel:</p>
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> Streamer name<br>
+            <span style="color:#ffaa66;">#</span> Platform URL<br>
+            <span style="color:#ffaa66;">!</span> Shared chat (Twitch / KICK supported)
+          </p>
+        </div>
+
+        <h3>🎯 Core Features</h3>
+        <ul>
+          <li><strong>Multiple Streamers:</strong> Track multiple streamers' live status simultaneously</li>
+          <li><strong>Real-time Status:</strong> 🟢 Online / 🔴 Offline / ⚫ Unknown</li>
+          <li><strong>Panel Control:</strong> Click the ▼ arrow next to the site logo to expand/collapse the TSC panel,
+            then click platform badges to navigate</li>
+          <li><strong>Shared Chat:</strong> For example, embed Twitch / KICK chat on DLive / Vaughn pages, fully
+            supports GSS stickers (Note: Twitch chat cannot be embedded on KICK pages due to security policy;
+            KICK chat can only be viewed but not interacted with on third-party pages due to CSRF protection (waiting
+            for KICK to release embed API); Vaughn Live status shows ⚫ Unknown as no reliable detection method is
+            currently available)</li>
+          <li><strong>Auto-Detection:</strong> Place <code>#GSS-TexoStreamCore</code> tag on your page and the extension
+            will automatically read the data below</li>
+        </ul>
+
+        <h3>🤖 Auto-Detection Setup</h3>
+        <p>Add the following format anywhere on your stream page or description, TSC will automatically detect and
+          import:</p>
+
+
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>#GSS-TexoStreamCore
+&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> Streamer name<br>
+            <span style="color:#ffaa66;">#</span> Platform URL (supports DLive / Twitch / KICK / Vaughn / YouTube)<br>
+            <span style="color:#ffaa66;">!</span> Shared chat (Twitch / KICK supported)
+          </p>
+        </div>
+
+        <h3>🌐 Supported Platforms</h3>
+        <p><strong>Sticker Sending:</strong> DLive, Twitch, KICK, YouTube, Vaughn Live</p>
+        <p><strong>Live Status Detection:</strong> DLive, Twitch, KICK, YouTube, Vaughn Live (⚫ Not yet supported)</p>
+      </div>
     </div>
 
     <!-- 简中內容 -->
@@ -405,30 +629,45 @@
         <div class="highlight-box">
           <p><strong>使用步骤：</strong></p>
           <ol style="margin-left: 20px; margin-top: 8px;">
-            <li>在 DLive 或 Twitch 登录并进入频道页面</li>
+            <li>在 Twitch、YouTube、Vaughn Live、beamstream、w.tv 或 KICK 登录并进入频道页面</li>
             <li>开启插件，输入贴纸 ID 清单</li>
             <li>点击聊天室旁的 GSS 图标开启贴纸面板</li>
-            <li>一键发送贴纸！</li>
+            <li>点击贴图快速发送（例如 Twitch/KICK 全自动，其他平台自动填入）</li>
           </ol>
         </div>
       </div>
 
       <div class="content-section">
         <h2>🎨 贴纸格式</h2>
-        <h3>DLive 官方贴纸</h3>
-        <p>格式：<code>DL-xxx</code></p>
+        <h3>🌐 GSS 通用图片链接</h3>
+        <p>格式：<code>GSS-[图片链接]</code></p>
         <ul>
-          <li>在 DLive 频道页面右键点击贴纸即可快速保存 ID</li>
-          <li>或在贴纸链接中找到 ID（例如：<code>DL-826c4ac1e004273_498281</code>）</li>
+          <li>支持格式：.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4</li>
+          <li>支持直接链接或相对链接</li>
+          <li>示例：<code>GSS-https://example.com/image.jpg</code></li>
+          <li>示例：<code>GSS-cdn.discordapp.com/attachments/.../image.png</code></li>
         </ul>
         <div class="highlight-box">
-          <p><strong>🔍 如何从网址获取 ID：</strong></p>
+          <p><strong>🔍 链接获取方式：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            贴纸网址示例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+            1. 在网络上看到喜欢的图片<br>
+            2. 右键复制图片链接<br>
+            3. 加上 <code>GSS-</code> 前缀即可使用<br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 支持 Discord、Imgur、或其他任何图片链接</span>
+          </p>
+        </div>
+
+        <h3>CatBox 图片/视频</h3>
+        <p>格式：<code>CB-xxx.ext</code></p>
+        <p>支持格式：<code>.gif</code>, <code>.png</code></p>
+        <p>示例：<code>CB-z8dta6.gif</code></p>
+        <div class="highlight-box">
+          <p><strong>🔍 CatBox ID 获取方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            CatBox 网址示例：<code>https://files.catbox.moe/z8dta6.gif</code>
           </p>
           <p style="margin-top: 8px;">
-            网址最后一段 <code>826c4ac1e004273_498281</code> 就是 ID<br>
-            使用时请加上 <code>DL-</code> 前缀，变成 <code>DL-826c4ac1e004273_498281</code>
+            网址最后一段 <code>z8dta6.gif</code> 就是 ID
           </p>
         </div>
 
@@ -453,18 +692,54 @@
         <h3>meee.com.tw 图片/视频</h3>
         <p>格式：<code>ME-xxx.ext</code></p>
         <ul>
-          <li>支持格式：.gif, .jpg（其他格式待确认）</li>
-          <li>示例：<code>ME-LXEcxGi.gif</code>、<code>ME-abc1234.jpg</code></li>
+          <li>支持格式：.gif, .png（其他格式待确认）</li>
+          <li>示例：<code>ME-LXEcxGi.gif</code>、<code>ME-HUi2Bs0.png</code></li>
         </ul>
         <div class="highlight-box">
           <p><strong>🔍 meee ID 获取方式：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            meee 网址示例：<code>https://i.meee.com.tw/LXEcxGi.gif</code>
+            meee 网址示例：<code>https://meee.com.tw/LXEcxGi</code>
           </p>
           <p style="margin-top: 8px;">
             网址最后一段 <code>LXEcxGi</code> 就是 ID<br>
-            使用时请加上 <code>ME-</code> 前缀和扩展名（如 .gif/.jpg），变成 <code>ME-LXEcxGi.gif</code><br>
-            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道扩展名，可先尝试 .gif 或 .jpg</span>
+            使用时请加上 <code>ME-</code> 前缀和扩展名（如 .gif/.png），变成 <code>ME-LXEcxGi.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 若不知道扩展名，可先尝试 .gif 或 .png</span>
+          </p>
+        </div>
+
+        <h3>🎬 YouTube 视频</h3>
+        <p>统一格式：<code>YT-xxx</code>（系统自动识别视频类型）</p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          <code>https://www.youtube.com/watch?v=xxxx</code><br>
+          <code>https://www.youtube.com/shorts/xxxx</code>
+        </p>
+
+        <div class="highlight-box" style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4);">
+          <p><strong>🤖 智能模式：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Shorts 短视频</strong>（9:16 比例）→ 自动静音循环播放，可点击播放</li>
+            <li><strong>普通视频</strong>（16:9 比例）→ 显示缩略图，点击播放</li>
+            <li>系统自动检测影片类型</li>
+          </ul>
+        </div>
+
+        <ul>
+          <li>在聊天室输入会自动显示缩略图，点击开启内置播放器</li>
+          <li>示例：<code>YT-tGXZNHNhI0I</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 ID 获取方式：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <code>youtube.com/watch?v=xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code><br>
+            <code>youtu.be/xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code><br>
+            <code>youtube.com/shorts/xxx</code> → ID 是 <code>xxx</code> → 使用 <code>YT-xxx</code>
+          </p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>📋 平台支持状态：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <strong>DLive / Twitch / KICK：</strong>完整支持缩略图与播放器<br>
+            <strong>Vaughn Live：</strong>YT- 会显示缩略图，但完整 YouTube 链接不会转换（避免官方拦截）
           </p>
         </div>
       </div>
@@ -472,7 +747,7 @@
       <div class="content-section">
         <h2>🏷️ 标签功能</h2>
         <p>每张贴纸可添加最多 <strong>4 个标签</strong>，方便分类和搜索。</p>
-        <p>格式：<code>DL-xxx #meme #reaction</code></p>
+        <p>格式：<code>CB-xxx #meme #reaction</code></p>
         <ul>
           <li>标签以 <code>#</code> 开头</li>
           <li>每个标签最多 16 个字符</li>
@@ -509,6 +784,62 @@
           <p style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);">※ 快捷键仅在全屏模式下有效，剧院模式不适用</p>
         </div>
       </div>
+
+      <div class="content-section">
+        <h2>🧶 TexoStreamCore (TSC) 实况管理</h2>
+        <p>TSC 是 GSS 的实况主管理平台，让你在直播页面快速切换不同实况主的频道，并使用<strong>共用聊天室</strong>功能。</p>
+
+        <h3>📋 设定格式</h3>
+        <p>在管理面板的<strong>【编织】</strong>标签输入：</p>
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 实况主名称<br>
+            <span style="color:#ffaa66;">#</span> 直播平台网址<br>
+            <span style="color:#ffaa66;">!</span> 共用聊天室（支持 Twitch / KICK）
+          </p>
+        </div>
+
+        <h3>🎯 核心功能</h3>
+        <ul>
+          <li><strong>多位实况主管理：</strong>同时追踪多位实况主的开台状态</li>
+          <li><strong>实时状态显示：</strong>🟢 在线 / 🔴 离线 / ⚫ 未知</li>
+          <li><strong>面板控制：</strong>点击网站标志右侧的 ▼ 箭头展开/收合 TSC 面板，再点击平台徽章直接跳转</li>
+          <li><strong>共用聊天室：</strong>例如将 Twitch / KICK 聊天嵌入 DLive / Vaughn 页面，完全支持 GSS 贴纸（注意：Twitch 聊天因安全策略无法在 KICK
+            页面嵌入；KICK 聊天因 CSRF 保护限制，在第三方页面只能查看无法发言（等待 KICK 官方开放嵌入 API）；Vaughn Live 因无可靠检测方法，开台状态暂时显示 ⚫ 未知）</li>
+          <li><strong>自动抓取：</strong>在直播页面放置 <code>#GSS-TexoStreamCore</code> 标记，插件会自动读取下方资料</li>
+        </ul>
+
+        <h3>🤖 自动抓取设定</h3>
+        <p>在直播说明或页面任意位置加入以下格式，TSC 会自动侦测并汇入：</p>
+
+
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>#GSS-TexoStreamCore
+&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 实况主名称<br>
+            <span style="color:#ffaa66;">#</span> 直播平台网址（支持 DLive / Twitch / KICK / Vaughn / YouTube）<br>
+            <span style="color:#ffaa66;">!</span> 共用聊天室（支持 Twitch / KICK）
+          </p>
+        </div>
+
+        <h3>🌐 支持平台</h3>
+        <p><strong>贴图发送：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>开台状态检测：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 尚未支持）</p>
+      </div>
     </div>
 
     <!-- 日本語内容 -->
@@ -518,30 +849,45 @@
         <div class="highlight-box">
           <p><strong>使用手順：</strong></p>
           <ol style="margin-left: 20px; margin-top: 8px;">
-            <li>DLive または Twitch にログインしてチャンネルページへ</li>
+            <li>Twitch、YouTube、Vaughn Live、beamstream、w.tv または KICK にログインしてチャンネルページへ</li>
             <li>拡張機能を開き、ステッカーIDリストを入力</li>
             <li>チャット横の GSS アイコンをクリックしてパネルを開く</li>
-            <li>ワンクリックでステッカーを送信！</li>
+            <li>ステッカーをクリックして送信（例: Twitch/KICK: 自動送信、他のプラットフォーム: 自動入力）</li>
           </ol>
         </div>
       </div>
 
       <div class="content-section">
         <h2>🎨 ステッカー形式</h2>
-        <h3>DLive 公式ステッカー</h3>
-        <p>形式：<code>DL-xxx</code></p>
+        <h3>🌐 GSS 汎用画像リンク</h3>
+        <p>形式：<code>GSS-[画像リンク]</code></p>
         <ul>
-          <li>DLive チャンネルページでステッカーを右クリックしてIDを素早く保存</li>
-          <li>またはステッカーURLからIDを見つける（例：<code>DL-826c4ac1e004273_498281</code>）</li>
+          <li>対応形式：.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4</li>
+          <li>直接リンクまたは相対リンクをサポート</li>
+          <li>例：<code>GSS-https://example.com/image.jpg</code></li>
+          <li>例：<code>GSS-cdn.discordapp.com/attachments/.../image.png</code></li>
         </ul>
         <div class="highlight-box">
-          <p><strong>🔍 URLからIDを取得する方法：</strong></p>
+          <p><strong>🔍 リンク取得方法：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            URL例：<code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+            1. オンラインで好きな画像を見つける<br>
+            2. 右クリックして画像リンクをコピー<br>
+            3. <code>GSS-</code> プレフィックスを追加して使用<br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ Discord、Imgur、その他の画像リンクをサポート</span>
+          </p>
+        </div>
+
+        <h3>CatBox 画像/動画</h3>
+        <p>形式：<code>CB-xxx.ext</code></p>
+        <p>対応形式：<code>.gif</code>, <code>.png</code></p>
+        <p>例：<code>CB-z8dta6.gif</code></p>
+        <div class="highlight-box">
+          <p><strong>🔍 CatBox ID 取得方法：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            CatBox URL例：<code>https://files.catbox.moe/z8dta6.gif</code>
           </p>
           <p style="margin-top: 8px;">
-            URLの最後の部分 <code>826c4ac1e004273_498281</code> がIDです<br>
-            使用時は <code>DL-</code> プレフィックスを付けて：<code>DL-826c4ac1e004273_498281</code>
+            URLの最後の部分 <code>z8dta6.gif</code> がIDです
           </p>
         </div>
 
@@ -566,18 +912,54 @@
         <h3>meee.com.tw 画像/動画</h3>
         <p>形式：<code>ME-xxx.ext</code></p>
         <ul>
-          <li>対応形式：.gif, .jpg（その他の形式は確認中）</li>
-          <li>例：<code>ME-LXEcxGi.gif</code>、<code>ME-abc1234.jpg</code></li>
+          <li>対応形式：.gif, .png（その他の形式は確認中）</li>
+          <li>例：<code>ME-LXEcxGi.gif</code>、<code>ME-HUi2Bs0.png</code></li>
         </ul>
         <div class="highlight-box">
           <p><strong>🔍 meee IDの取得方法：</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            URL例：<code>https://i.meee.com.tw/LXEcxGi.gif</code>
+            URL例：<code>https://meee.com.tw/LXEcxGi</code>
           </p>
           <p style="margin-top: 8px;">
             URLの最後の部分 <code>LXEcxGi</code> がIDです<br>
-            使用時は <code>ME-</code> プレフィックスと拡張子（.gif/.jpgなど）を付けて：<code>ME-LXEcxGi.gif</code><br>
-            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 拡張子が不明な場合は、.gif または .jpg を試行</span>
+            使用時は <code>ME-</code> プレフィックスと拡張子（.gif/.pngなど）を付けて：<code>ME-LXEcxGi.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 拡張子が不明な場合は、.gif または .png を試行</span>
+          </p>
+        </div>
+
+        <h3>🎬 YouTube 動画</h3>
+        <p>統一形式：<code>YT-xxx</code>（システムが自動で動画タイプを識別）</p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          <code>https://www.youtube.com/watch?v=xxxx</code><br>
+          <code>https://www.youtube.com/shorts/xxxx</code>
+        </p>
+
+        <div class="highlight-box" style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4);">
+          <p><strong>🤖 スマートモード：</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>ショート動画</strong>（9:16）→ 自動ミュートでループ再生、クリックで再生</li>
+            <li><strong>通常動画</strong>（16:9）→ サムネイル表示、クリックで再生</li>
+            <li>システムが自動検出</li>
+          </ul>
+        </div>
+
+        <ul>
+          <li>チャットで入力すると自動的にサムネイルを表示、クリックで内蔵プレーヤーを開く</li>
+          <li>例：<code>YT-tGXZNHNhI0I</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 IDの取得方法：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <code>youtube.com/watch?v=xxx</code> → ID は <code>xxx</code> → <code>YT-xxx</code> を使用<br>
+            <code>youtu.be/xxx</code> → ID は <code>xxx</code> → <code>YT-xxx</code> を使用<br>
+            <code>youtube.com/shorts/xxx</code> → ID は <code>xxx</code> → <code>YT-xxx</code> を使用
+          </p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>📋 プラットフォームのサポート状況：</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <strong>DLive / Twitch / KICK：</strong>サムネイルとプレーヤーを完全サポート<br>
+            <strong>Vaughn Live：</strong>YT- はサムネイルを表示しますが、完全な YouTube URL は変換されません（プラットフォームの妨害を避けるため）
           </p>
         </div>
       </div>
@@ -585,7 +967,7 @@
       <div class="content-section">
         <h2>🏷️ タグ機能</h2>
         <p>各ステッカーに最大 <strong>4つまでタグ</strong>を追加でき、分類・検索が簡単になります。</p>
-        <p>形式：<code>DL-xxx #meme #reaction</code></p>
+        <p>形式：<code>CB-xxx #meme #reaction</code></p>
         <ul>
           <li>タグは <code>#</code> で始まる</li>
           <li>タグは最大16文字まで</li>
@@ -623,6 +1005,64 @@
           </p>
         </div>
       </div>
+
+      <div class="content-section">
+        <h2>🧶 TexoStreamCore (TSC) 配信者管理</h2>
+        <p>TSCはGSSの配信者管理プラットフォームで、ライブページで異なる配信者のチャンネルを素早く切り替え、<strong>共用チャット</strong>機能を使用できます。</p>
+
+        <h3>📋 設定フォーマット</h3>
+        <p>管理パネルの<strong>【編織】</strong>タブで入力：</p>
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 配信者名<br>
+            <span style="color:#ffaa66;">#</span> プラットフォームURL<br>
+            <span style="color:#ffaa66;">!</span> 共用チャット（Twitch / KICK対応）
+          </p>
+        </div>
+
+        <h3>🎯 主な機能</h3>
+        <ul>
+          <li><strong>複数配信者管理：</strong>複数の配信者の配信状態を同時に追跡</li>
+          <li><strong>リアルタイム状態：</strong>🟢 配信中 / 🔴 オフライン / ⚫ 不明</li>
+          <li><strong>パネルコントロール：</strong>サイトロゴの右側にある ▼ 矢印をクリックして TSC パネルを展開/折りたたみ、プラットフォームバッジをクリックして移動</li>
+          <li><strong>共用チャット：</strong>例えばTwitch / KICKチャットをDLive /
+            Vaughnページに埋め込み、GSSステッカーを完全サポート（注意：TwitchチャットはセキュリティポリシーによりKICKページに埋め込めません；KICKチャットはCSRF保護のため、第三者ページでは表示のみで発言できません（KICKの埋め込みAPI公開を待機中）；Vaughn
+            Live は信頼できる検出方法がないため、配信状態は一時的に ⚫ 不明と表示されます）
+          </li>
+          <li><strong>自動検出：</strong>ライブページに <code>#GSS-TexoStreamCore</code> タグを配置すると、拡張機能が自動的に下のデータを読み取ります</li>
+        </ul>
+
+        <h3>🤖 自動検出設定</h3>
+        <p>ライブ説明またはページの任意の位置に以下の形式を追加すると、TSCが自動的に検出してインポートします：</p>
+
+
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>#GSS-TexoStreamCore
+&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 配信者名<br>
+            <span style="color:#ffaa66;">#</span> プラットフォームURL（DLive / Twitch / KICK / Vaughn / YouTube対応）<br>
+            <span style="color:#ffaa66;">!</span> 共用チャット（Twitch / KICK対応）
+          </p>
+        </div>
+
+        <h3>🌐 対応プラットフォーム</h3>
+        <p><strong>スタンプ送信：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>配信状態検出：</strong>DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 未サポート）</p>
+      </div>
     </div>
 
     <!-- 한국어 내용 -->
@@ -632,30 +1072,45 @@
         <div class="highlight-box">
           <p><strong>사용 방법:</strong></p>
           <ol style="margin-left: 20px; margin-top: 8px;">
-            <li>DLive 또는 Twitch에 로그인하고 채널 페이지로 이동</li>
+            <li>Twitch、YouTube、Vaughn Live、beamstream、w.tv 또는 KICK에 로그인하고 채널 페이지로 이동</li>
             <li>확장 프로그램을 열고 스티커 ID 목록을 입력</li>
             <li>채팅창 옆 GSS 아이콘을 클릭하여 스티커 패널 열기</li>
-            <li>원클릭으로 스티커 보내기!</li>
+            <li>스티커 클릭으로 빠른 전송 (예: Twitch/KICK: 자동 전송, 다른 플랫폼: 자동 입력)</li>
           </ol>
         </div>
       </div>
 
       <div class="content-section">
         <h2>🎨 스티커 형식</h2>
-        <h3>DLive 공식 스티커</h3>
-        <p>형식: <code>DL-xxx</code></p>
+        <h3>🌐 GSS 범용 이미지 링크</h3>
+        <p>형식: <code>GSS-[이미지_링크]</code></p>
         <ul>
-          <li>DLive 채널 페이지에서 스티커를 우클릭하여 ID를 빠르게 저장</li>
-          <li>또는 스티커 URL에서 ID 찾기 (예: <code>DL-826c4ac1e004273_498281</code>)</li>
+          <li>지원 형식: .jpg, .jpeg, .png, .gif, .webp, .bmp, .svg, .mp4</li>
+          <li>직접 링크 또는 상대 링크 지원</li>
+          <li>예시: <code>GSS-https://example.com/image.jpg</code></li>
+          <li>예시: <code>GSS-cdn.discordapp.com/attachments/.../image.png</code></li>
         </ul>
         <div class="highlight-box">
-          <p><strong>🔍 URL에서 ID 가져오기:</strong></p>
+          <p><strong>🔍 링크 가져오는 방법:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            URL 예시: <code>https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281</code>
+            1. 온라인에서 원하는 이미지 찾기<br>
+            2. 우클릭하여 이미지 링크 복사<br>
+            3. <code>GSS-</code> 접두사 추가하여 사용<br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ Discord, Imgur, 기타 모든 이미지 링크 지원</span>
+          </p>
+        </div>
+
+        <h3>CatBox 이미지/영상</h3>
+        <p>형식: <code>CB-xxx.ext</code></p>
+        <p>지원 형식: <code>.gif</code>, <code>.png</code></p>
+        <p>예시: <code>CB-z8dta6.gif</code></p>
+        <div class="highlight-box">
+          <p><strong>🔍 CatBox ID 가져오기:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            CatBox URL 예시: <code>https://files.catbox.moe/z8dta6.gif</code>
           </p>
           <p style="margin-top: 8px;">
-            URL의 마지막 부분 <code>826c4ac1e004273_498281</code> 이 ID입니다<br>
-            사용할 때 <code>DL-</code> 접두사를 붙여서: <code>DL-826c4ac1e004273_498281</code>
+            URL의 마지막 부분 <code>z8dta6.gif</code> 이 ID입니다
           </p>
         </div>
 
@@ -680,18 +1135,54 @@
         <h3>meee.com.tw 이미지/영상</h3>
         <p>형식: <code>ME-xxx.ext</code></p>
         <ul>
-          <li>지원 형식: .gif, .jpg (다른 형식은 확인 중)</li>
-          <li>예시: <code>ME-LXEcxGi.gif</code>, <code>ME-abc1234.jpg</code></li>
+          <li>지원 형식: .gif, .png (다른 형식은 확인 중)</li>
+          <li>예시: <code>ME-LXEcxGi.gif</code>, <code>ME-HUi2Bs0.png</code></li>
         </ul>
         <div class="highlight-box">
           <p><strong>🔍 meee ID 가져오기:</strong></p>
           <p style="margin-top: 8px; font-size: 12px;">
-            URL 예시: <code>https://i.meee.com.tw/LXEcxGi.gif</code>
+            URL 예시: <code>https://meee.com.tw/LXEcxGi</code>
           </p>
           <p style="margin-top: 8px;">
             URL의 마지막 부분 <code>LXEcxGi</code> 이 ID입니다<br>
-            사용할 때 <code>ME-</code> 접두사와 확장자(.gif/.jpg 등)를 붙여서: <code>ME-LXEcxGi.gif</code><br>
-            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 확장자를 모르면 .gif 또는 .jpg 시도</span>
+            사용할 때 <code>ME-</code> 접두사와 확장자(.gif/.png 등)를 붙여서: <code>ME-LXEcxGi.gif</code><br>
+            <span style="color: rgba(255,255,255,0.6); font-size: 11px;">※ 확장자를 모르면 .gif 또는 .png 시도</span>
+          </p>
+        </div>
+
+        <h3>🎬 YouTube 동영상</h3>
+        <p>통일 형식: <code>YT-xxx</code> (시스템이 자동으로 동영상 유형 인식)</p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          <code>https://www.youtube.com/watch?v=xxxx</code><br>
+          <code>https://www.youtube.com/shorts/xxxx</code>
+        </p>
+
+        <div class="highlight-box" style="background: rgba(40, 167, 69, 0.08); border-color: rgba(40, 167, 69, 0.4);">
+          <p><strong>🤖 스마트 모드:</strong></p>
+          <ul style="margin-top: 8px; font-size: 12px; margin-left: 16px;">
+            <li><strong>Shorts 짧은 동영상</strong> (9:16 비율) → 자동 음소거 루프 재생</li>
+            <li><strong>일반 동영상</strong> (16:9 비율) → 썸네일 표시, 클릭하여 재생</li>
+            <li>시스템이 자동 감지</li>
+          </ul>
+        </div>
+
+        <ul>
+          <li>채팅에 입력하면 자동으로 썸네일 표시, 클릭하면 내장 플레이어 열기</li>
+          <li>예시: <code>YT-tGXZNHNhI0I</code></li>
+        </ul>
+        <div class="highlight-box">
+          <p><strong>🔍 ID 가져오는 방법:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <code>youtube.com/watch?v=xxx</code> → ID는 <code>xxx</code> → <code>YT-xxx</code> 사용<br>
+            <code>youtu.be/xxx</code> → ID는 <code>xxx</code> → <code>YT-xxx</code> 사용<br>
+            <code>youtube.com/shorts/xxx</code> → ID는 <code>xxx</code> → <code>YT-xxx</code> 사용
+          </p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>📋 플랫폼 지원 상태:</strong></p>
+          <p style="margin-top: 8px; font-size: 12px;">
+            <strong>DLive / Twitch / KICK:</strong> 썸네일과 플레이어 완전 지원<br>
+            <strong>Vaughn Live:</strong> YT- 는 썸네일을 표시하지만, 전체 YouTube 링크는 변환되지 않습니다 (플랫폼 차단 방지)
           </p>
         </div>
       </div>
@@ -699,7 +1190,7 @@
       <div class="content-section">
         <h2>🏷️ 태그 기능</h2>
         <p>스티커당 최대 <strong>4개 태그</strong>를 추가하여 분류 및 검색이 쉬워집니다.</p>
-        <p>형식: <code>DL-xxx #meme #reaction</code></p>
+        <p>형식: <code>CB-xxx #meme #reaction</code></p>
         <ul>
           <li>태그는 <code>#</code> 으로 시작</li>
           <li>태그당 최대 16자까지</li>
@@ -737,6 +1228,64 @@
             적용되지 않음</p>
         </div>
       </div>
+
+      <div class="content-section">
+        <h2>🧶 TexoStreamCore (TSC) 스트리머 관리</h2>
+        <p>TSC는 GSS의 스트리머 관리 플랫폼으로, 라이브 페이지에서 다양한 스트리머의 채널을 빠르게 전환하고 <strong>공용 채팅</strong> 기능을 사용할 수 있습니다.</p>
+
+        <h3>📋 설정 형식</h3>
+        <p>관리 패널의 <strong>【編織】</strong> 탭에서 입력:</p>
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 스트리머 이름<br>
+            <span style="color:#ffaa66;">#</span> 플랫폼 URL<br>
+            <span style="color:#ffaa66;">!</span> 공용 채팅 (Twitch / KICK 지원)
+          </p>
+        </div>
+
+        <h3>🎯 핵심 기능</h3>
+        <ul>
+          <li><strong>다중 스트리머 관리:</strong> 여러 스트리머의 방송 상태를 동시에 추적</li>
+          <li><strong>실시간 상태:</strong> 🟢 방송중 / 🔴 오프라인 / ⚫ 알 수 없음</li>
+          <li><strong>패널 제어:</strong> 사이트 로고 오른쪽의 ▼ 화살표를 클릭하여 TSC 패널을 펼치기/접기, 플랫폼 배지를 클릭하여 이동</li>
+          <li><strong>공용 채팅:</strong> 예를 들어 Twitch / KICK 채팅을 DLive / Vaughn 페이지에 임베드, GSS 스티커 완전 지원 (참고: Twitch 채팅은 보안
+            정책으로 인해 KICK 페이지에 임베드할 수 없습니다；KICK 채팅은 CSRF 보호로 인해 타사 페이지에서는 조회만 가능하고 발언할 수 없습니다 (KICK 임베드 API 공개 대기
+            중)；Vaughn Live는 신뢰할 수 있는 감지 방법이 없어 방송 상태가 일시적으로 ⚫ 알 수 없음으로 표시됩니다)
+          </li>
+          <li><strong>자동 감지:</strong> 라이브 페이지에 <code>#GSS-TexoStreamCore</code> 태그를 배치하면 확장 프로그램이 자동으로 아래 데이터를 읽습니다</li>
+        </ul>
+
+        <h3>🤖 자동 감지 설정</h3>
+        <p>라이브 설명 또는 페이지의 임의 위치에 다음 형식을 추가하면 TSC가 자동으로 감지하고 가져옵니다：</p>
+
+
+        <div class="highlight-box">
+          <pre style="margin:0; font-size:11px;"><code>#GSS-TexoStreamCore
+&gt;Elfin
+!https://www.twitch.tv/elfinl
+#https://www.twitch.tv/elfinl
+#https://dlive.tv/ElfinL
+#https://kick.com/elfinl
+#https://vaughn.live/elfinl
+#https://www.youtube.com/@Elfin-Lee</code></pre>
+          <p style="margin-top:8px; font-size:11px; color:#868e96;">
+            <span style="color:#ffaa66;">&gt;</span> 스트리머 이름<br>
+            <span style="color:#ffaa66;">#</span> 플랫폼 URL（DLive / Twitch / KICK / Vaughn / YouTube 지원）<br>
+            <span style="color:#ffaa66;">!</span> 공용 채팅（Twitch / KICK 지원）
+          </p>
+        </div>
+
+        <h3>🌐 지원 플랫폼</h3>
+        <p><strong>스티커 전송:</strong> DLive、Twitch、KICK、YouTube、Vaughn Live</p>
+        <p><strong>방송 상태 감지:</strong> DLive、Twitch、KICK、YouTube、Vaughn Live（⚫ 미지원）</p>
+      </div>
     </div>
 
     <div class="footer">
@@ -744,7 +1293,74 @@
     </div>
   </div>
 
-  <script src="help.js"></script>
+  <script>
+    // help.js - Help page language switch functionality
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const langBtns = document.querySelectorAll('.lang-btn');
+      const contentZhTW = document.getElementById('content-zh-TW');
+      const contentZhCN = document.getElementById('content-zh-CN');
+      const contentEn = document.getElementById('content-en');
+      const contentJa = document.getElementById('content-ja');
+      const contentKo = document.getElementById('content-ko');
+      const headerSubtitle = document.getElementById('header-subtitle');
+
+      const subtitles = {
+        'zh-TW': '通用貼圖系統',
+        'zh-CN': '通用贴图系统',
+        'en': 'General Sticker System',
+        'ja': '汎用ステッカーシステム',
+        'ko': '범용 스티커 시스템'
+      };
+
+      const pageTitles = {
+        'zh-TW': 'GSS - 使用說明',
+        'zh-CN': 'GSS - 使用说明',
+        'en': 'GSS - Help',
+        'ja': 'GSS - 使い方',
+        'ko': 'GSS - 사용 방법'
+      };
+
+      function showContent(lang) {
+        // Hide all content
+        contentZhTW.classList.add('hidden');
+        contentZhCN.classList.add('hidden');
+        contentEn.classList.add('hidden');
+        contentJa.classList.add('hidden');
+        contentKo.classList.add('hidden');
+
+        // Show selected content
+        if (lang === 'zh-TW') contentZhTW.classList.remove('hidden');
+        else if (lang === 'zh-CN') contentZhCN.classList.remove('hidden');
+        else if (lang === 'en') contentEn.classList.remove('hidden');
+        else if (lang === 'ja') contentJa.classList.remove('hidden');
+        else if (lang === 'ko') contentKo.classList.remove('hidden');
+
+        // Update header subtitle
+        if (headerSubtitle && subtitles[lang]) {
+          headerSubtitle.textContent = subtitles[lang];
+        }
+
+        // Update page title
+        if (pageTitles[lang]) {
+          document.title = pageTitles[lang];
+        }
+      }
+
+      langBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lang = btn.dataset.lang;
+
+          // Update button states
+          langBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          // Show selected content
+          showContent(lang);
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>

@@ -1,0 +1,46 @@
+{
+  "extName": {
+    "message": "General Sticker System (GSS)",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "Save sticker IDs and send them as chat messages with one click.",
+    "description": "Extension description"
+  },
+  "tscEnabledLabel": {
+    "message": "Enable System",
+    "description": "TSC system enabled label"
+  },
+  "tscAutoCollectLabel": {
+    "message": "Auto Collect",
+    "description": "TSC auto collect label"
+  },
+  "tscAutoCollectEnabled": {
+    "message": "Auto Collect Enabled",
+    "description": "TSC auto collect enabled message"
+  },
+  "tscAutoCollectDisabled": {
+    "message": "Auto Collect Disabled",
+    "description": "TSC auto collect disabled message"
+  },
+  "tscAutoCollectActivated": {
+    "message": "✅ TSC Auto Collect Activated",
+    "description": "TSC auto collect activated message"
+  },
+  "tscAutoCollectDeactivated": {
+    "message": "✅ TSC Auto Collect Deactivated",
+    "description": "TSC auto collect deactivated message"
+  },
+  "helpAutoCollect": {
+    "message": "Auto Collect",
+    "description": "Help page auto collect label"
+  },
+  "helpAutoCollectDesc": {
+    "message": "Place <code>#GSS-TexoStreamCore</code> tag on the live page, the extension will automatically read the data below",
+    "description": "Help page auto collect description"
+  },
+  "helpAutoCollectSettings": {
+    "message": "Auto Collect Settings",
+    "description": "Help page auto collect settings title"
+  }
+}

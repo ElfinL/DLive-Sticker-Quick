@@ -1,7 +1,47 @@
 /* global DLSQ */
+/* =========================================================================
+   【GSS 聊天面板】content.js
+   - 這是注入到直播網頁的內容腳本（顯示浮動貼圖發送面板）
+   - 功能：發送貼圖、頁面元素控制、劇院模式
+   - 對應：popup.html 是「管理面板」（擴充彈出視窗）
+   ========================================================================= */
+
+// 【調試工具】確保 testYouTubeLive 可用（如果 gsstracker.js 還沒載入，提供臨時版本）
+if (typeof window.testYouTubeLive === 'undefined') {
+  window.testYouTubeLive = function () {
+    if (window._gssTracker && window._gssTracker.debugYouTubeLive) {
+      return window._gssTracker.debugYouTubeLive();
+    }
+    console.log('[GSS Tracker] 尚未初始化，請等待頁面載入完成');
+    return null;
+  };
+}
+
 const TAG = typeof DLSQ !== 'undefined' ? DLSQ : null;
 
+// 當前版本（用於更新通知）
+// 直接讀取 manifest.json 的版本號（只需改 manifest.json 即可）
+const CURRENT_VERSION = chrome.runtime.getManifest().version;
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ========= 平台適配器架構開關 =========
+// true = 使用新的 platforms/ 架構
+// false = 使用舊的內建函數 (向後相容後備)
+const USE_NEW_PLATFORM_ADAPTER = true;
+
+// 輔助函數：取得平台適配器
+function getPlatformAdapter() {
+  if (typeof window !== 'undefined' && window.GSS && window.GSS.Platform) {
+    return window.GSS.Platform.getPlatformAdapter();
+  }
+  return null;
+}
+
+// 輔助函數：檢查新架構是否可用
+function isNewPlatformAvailable() {
+  return USE_NEW_PLATFORM_ADAPTER && getPlatformAdapter() !== null;
+}
 
 // ========= 語言設定 =========
 let currentLang = 'zh';
@@ -46,13 +86,24 @@ const UI_I18N = {
     all: '全部 / ALL',
     dl: 'DL',
     im: 'IM',
+    me: 'ME',
+    yt: 'YT',
+    wtv: 'WTV',
     hiddenTab: (n) => `隱藏 (${n})`,
     notInListMsg: '不在清單內',
     emptyVocabMsg: '詞庫為空時仍可用上方「常用／隱藏」；要套用其他 #標籤請到 popup 建立詞庫',
     permDelete: '從清單永久刪除…',
     uncategorizedTab: (n) => `未分類 (${n})`,
     prevPage: '< 上一頁',
-    nextPage: '下一頁 >'
+    nextPage: '下一頁 >',
+    extensionUpdated: '❌ 擴充已更新，請重新整理頁面',
+    sendFailed: '貼圖送出失敗',
+    sendFailedPrefix: '發送失敗:',
+    unknownError: '未知錯誤',
+    updateChangelog: '查看更新日誌',
+    updateNewVersion: '📢 有新更新！點擊查看',
+    helpPage: '查看使用說明',
+    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。'
   },
   'zh-CN': {
     addToQuick: '添加到 GSS',
@@ -77,13 +128,24 @@ const UI_I18N = {
     all: '全部 / ALL',
     dl: 'DL',
     im: 'IM',
+    me: 'ME',
+    yt: 'YT',
+    wtv: 'WTV',
     hiddenTab: (n) => `隐藏 (${n})`,
     notInListMsg: '不在清单内',
     emptyVocabMsg: '词库为空时仍可用上方「常用／隐藏」；要套用其他 #标签请到 popup 建立词库',
     permDelete: '从清单永久删除…',
     uncategorizedTab: (n) => `未分类 (${n})`,
     prevPage: '< 上一页',
-    nextPage: '下一页 >'
+    nextPage: '下一页 >',
+    extensionUpdated: '❌ 扩展已更新，请刷新页面',
+    sendFailed: '贴图发送失败',
+    sendFailedPrefix: '发送失败:',
+    unknownError: '未知错误',
+    updateChangelog: '查看更新日志',
+    updateNewVersion: '📢 有新更新！点击查看',
+    helpPage: '查看使用说明',
+    sharedChatKickTwitchWarning: '⚠️ Twitch 聊天室無法在 KICK 頁面嵌入\n\n這是 Twitch 的安全策略限制，\n請在支援的直播平台頁面使用 Twitch 共用聊天。'
   },
   en: {
     addToQuick: 'Add to GSS',
@@ -108,13 +170,24 @@ const UI_I18N = {
     all: 'All',
     dl: 'DL',
     im: 'IM',
+    me: 'ME',
+    yt: 'YT',
+    wtv: 'WTV',
     hiddenTab: (n) => `Hidden (${n})`,
     notInListMsg: 'Not in list',
     emptyVocabMsg: 'When vocabulary is empty, you can still use "Favorite/Hide" above; to apply other #tags, add them in popup',
     permDelete: 'Permanently delete from list…',
     uncategorizedTab: (n) => `Uncategorized (${n})`,
     prevPage: '< Prev',
-    nextPage: 'Next >'
+    nextPage: 'Next >',
+    extensionUpdated: '❌ Extension updated, please refresh page',
+    sendFailed: 'Failed to send sticker',
+    sendFailedPrefix: 'Send failed:',
+    unknownError: 'Unknown error',
+    updateChangelog: 'View Changelog',
+    updateNewVersion: '📢 New update available! Click to view',
+    helpPage: 'View Help',
+    sharedChatKickTwitchWarning: '⚠️ Twitch chat cannot be embedded on KICK pages\n\nThis is a Twitch security policy restriction.\nPlease use Twitch shared chat on supported streaming platform pages.'
   },
   ja: {
     addToQuick: 'GSSに追加',
@@ -139,13 +212,24 @@ const UI_I18N = {
     all: '全て / ALL',
     dl: 'DL',
     im: 'IM',
+    me: 'ME',
+    yt: 'YT',
+    wtv: 'WTV',
     hiddenTab: (n) => `非表示 (${n})`,
     notInListMsg: 'リストにありません',
     emptyVocabMsg: '辞書が空でも「お気に入り／非表示」は使用可能；その他の #タグ を追加するには popup で辞書を作成してください',
     permDelete: 'リストから完全に削除…',
     uncategorizedTab: (n) => `未分類 (${n})`,
     prevPage: '< 前へ',
-    nextPage: '次へ >'
+    nextPage: '次へ >',
+    extensionUpdated: '❌ 拡張機能が更新されました。ページを更新してください',
+    sendFailed: 'スタンプの送信に失敗しました',
+    sendFailedPrefix: '送信失敗:',
+    unknownError: '不明なエラー',
+    updateChangelog: '更新履歴を見る',
+    updateNewVersion: '📢 新しい更新があります！クリックして見る',
+    helpPage: '使い方を見る',
+    sharedChatKickTwitchWarning: '⚠️ TwitchチャットはKICKページに埋め込めません\n\nこれはTwitchのセキュリティポリシーによる制限です。\nサポートされている配信プラットフォームページでTwitch共用チャットをご利用ください。'
   },
   ko: {
     addToQuick: 'GSS에 추가',
@@ -170,13 +254,24 @@ const UI_I18N = {
     all: '전체 / ALL',
     dl: 'DL',
     im: 'IM',
+    me: 'ME',
+    yt: 'YT',
+    wtv: 'WTV',
     hiddenTab: (n) => `숨김 (${n})`,
     notInListMsg: '목록에 없음',
     emptyVocabMsg: '사전이 비어있어도 "즐겨찾기／숨김"은 사용 가능；다른 #태그 를 추가하려면 popup에서 사전을 만드세요',
     permDelete: '목록에서 영구 삭제…',
     uncategorizedTab: (n) => `미분류 (${n})`,
     prevPage: '< 이전',
-    nextPage: '다음 >'
+    nextPage: '다음 >',
+    extensionUpdated: '❌ 확장 프로그램이 업데이트되었습니다. 페이지를 새로고침해 주세요',
+    sendFailed: '스티커 전송 실패',
+    sendFailedPrefix: '전송 실패:',
+    unknownError: '알 수 없는 오류',
+    updateChangelog: '업데이트 내역 보기',
+    updateNewVersion: '📢 새로운 업데이트가 있습니다! 클릭해서 보기',
+    helpPage: '사용 방법 보기',
+    sharedChatKickTwitchWarning: '⚠️ 트위치 채팅은 KICK 페이지에 임베드할 수 없습니다\n\n이것은 트위치 보안 정책의 제한입니다.\n지원되는 스트리밍 플랫폼 페이지에서 트위치 공용 채팅을 사용해 주세요.'
   }
 };
 
@@ -213,6 +308,86 @@ try {
   });
 } catch (e) {
   // Extension context invalidated
+}
+
+// ========= GSS-分類安全檢查 =========
+// 安全檢查：確保圖片連結是安全的
+function isSafeImageUrl(url) {
+  try {
+    // 檢查 URL 格式
+    const urlObj = new URL(url);
+
+    // 只允許 HTTP/HTTPS 協議
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return false;
+    }
+
+    // 檢查文件擴展名
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.mp4'];
+    const hasAllowedExtension = allowedExtensions.some(ext =>
+      urlObj.pathname.toLowerCase().endsWith(ext)
+    );
+
+    if (!hasAllowedExtension) {
+      return false;
+    }
+
+    // 檢查域名白名單（可選）
+    const trustedDomains = [
+      'i.imgur.com', 'imgur.com',
+      'cdn.discordapp.com', 'media.discordapp.net',
+      'i.redd.it', 'preview.redd.it',
+      'pbs.twimg.com',
+      'cdn.pixil.art',
+      'i.nhentai.net', // 如果需要的話
+      'storage.googleapis.com',
+      'github.com', 'raw.githubusercontent.com'
+    ];
+
+    // 如果是受信任的域名，直接允許
+    if (trustedDomains.some(domain => urlObj.hostname.includes(domain))) {
+      return true;
+    }
+
+    // 對於其他域名，進行額外檢查
+    // 不允許的域名模式
+    const blockedPatterns = [
+      /localhost/i,
+      /127\.0\.0\.1/,
+      /192\.168\./,
+      /10\./,
+      /\.onion/i,
+      /\.bit/i
+    ];
+
+    if (blockedPatterns.some(pattern => pattern.test(urlObj.hostname))) {
+      return false;
+    }
+
+    // 檢查 URL 長度限制
+    if (url.length > 2048) {
+      return false;
+    }
+
+    // 檢查是否包含可疑字符
+    const suspiciousPatterns = [
+      /javascript:/i,
+      /data:/i,
+      /vbscript:/i,
+      /<script/i,
+      /onload=/i,
+      /onerror=/i
+    ];
+
+    if (suspiciousPatterns.some(pattern => pattern.test(url))) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('[GSS] URL 安全檢查失敗:', error);
+    return false;
+  }
 }
 
 // ========= 零寬字符隱藏訊息功能 =========
@@ -264,7 +439,7 @@ async function sendHiddenMessage(message, visibleMarker = ' ') {
     await sendChatMessage(fullText);
     return true;
   } catch (err) {
-    showSendFailureToast(`發送失敗: ${err.message}`);
+    showSendFailureToast(`${t('sendFailedPrefix')} ${err.message}`);
     return false;
   }
 }
@@ -279,7 +454,10 @@ const UI = {
   panelTagMenuId: 'dlsq_panel_tag_menu',
   failToastId: 'dlsq_fail_overlay',
   tabDLId: 'dlsq_tab_dl',
+  tabCBId: 'dlsq_tab_cb',
+  tabMEId: 'dlsq_tab_me',
   tabIMId: 'dlsq_tab_im',
+  tabYTId: 'dlsq_tab_yt',
   zoomOverlayId: 'dlsq_zoom_overlay'
 };
 
@@ -339,11 +517,72 @@ function ensureStyles() {
     }
     #${UI.btnId}:hover { background: rgba(28,30,36,0.96); border-color: rgba(120,190,255,0.45); }
 
+    /* ===== Update button pulse animation ===== */
+    @keyframes dlsq-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.15); }
+    }
+
+    /* ===== 统一图片样式 - 全部在下一行 (display: block) ===== */
+    .dlsq-chat-img {
+      max-width: 100px;
+      max-height: 100px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      cursor: default;
+      display: block;
+      margin: 4px 0;
+      border: 2px solid transparent;
+      object-fit: contain;
+      clear: both;
+    }
+    /* 视频样式 - 也在下一行 */
+    .dlsq-chat-video {
+      max-width: 100px;
+      max-height: 100px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      cursor: default;
+      display: block;
+      margin: 4px 0;
+      border: 2px solid transparent;
+      clear: both;
+    }
+    /* YouTube 缩略图 - 更大尺寸 */
+    .dlsq-chat-yt {
+      max-width: 160px;
+      max-height: 90px;
+      border-radius: 8px;
+      display: block;
+      cursor: pointer;
+      object-fit: cover;
+    }
+    /* YouTube 缩略图容器 - 确保播放按钮居中定位 */
+    .dlsq-yt-thumbnail, .gss-yt-thumbnail {
+      position: relative !important;
+      display: block !important;
+      width: fit-content !important;
+      height: fit-content !important;
+      line-height: 0 !important;
+      margin: 4px 0 !important;
+      clear: both !important;
+    }
+    .dlsq-yt-thumbnail img, .gss-yt-thumbnail img {
+      display: block !important;
+    }
+    /* 零宽解码标记 */
+    .dlsq-hidden-decoded {
+      opacity: 0.85;
+    }
+
     #${UI.panelId} {
       position: fixed;
       right: 16px;
       bottom: 100px;
       width: 384px;
+      max-width: calc(100vw - 32px);
       max-height: 480px;
       overflow: hidden;
       display: none;
@@ -352,6 +591,24 @@ function ensureStyles() {
       border-radius: 10px;
       box-shadow: 0 16px 44px rgba(0,0,0,0.55);
       z-index: 2147483647;
+    }
+    /* iframe 模式：更窄的面板 */
+    #${UI.panelId}.iframe-mode {
+      width: 320px;
+      right: 10px;
+      bottom: 90px;
+      max-height: 480px; 
+    }
+    #${UI.panelId}.iframe-mode .body {
+      max-height: 520px !important;
+    }
+    #${UI.panelId}.iframe-mode .grid {
+      grid-template-columns: repeat(3, 1fr);
+      height: 320px !important;
+      max-height: none !important;
+    }
+    #${UI.panelId}.iframe-mode .tabs {
+      height: 70px;
     }
     #${UI.panelId}.open { display: block; }
     #${UI.panelId} .hdr {
@@ -627,7 +884,7 @@ function ensureStyles() {
       transition: none;
     }
 
-    /* ===== DLive Layout Compress Styles ===== */
+    /* ===== Layout Compress Styles ===== */
     .dlsq-donation-hidden {
       display: none !important;
     }
@@ -772,8 +1029,42 @@ function hideSendFailureToast() {
   if (wrap) wrap.classList.remove('open');
 }
 
+function showToast(message, duration = 3000) {
+  ensureStyles();
+  const toastId = 'dlsq_toast_msg';
+  let toast = document.getElementById(toastId);
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = toastId;
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 22, 26, 0.98);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px 20px;
+      color: #fff;
+      font-size: 13px;
+      z-index: 2147483647;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: opacity 0.3s;
+    `;
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.style.opacity = '1';
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, duration);
+}
+
 function showSendFailureToast(message) {
-  const text = String(message || '').trim() || '未知錯誤';
+  const text = String(message || '').trim() || t('unknownError');
   ensureStyles();
   let wrap = document.getElementById(UI.failToastId);
   if (!wrap) {
@@ -855,6 +1146,10 @@ function applyStickerTypeFilter() {
       tile.style.display = type === 'DL' ? '' : 'none';
     } else if (panelFilterType === 'IM') {
       tile.style.display = type === 'IM' ? '' : 'none';
+    } else if (panelFilterType === 'ME') {
+      tile.style.display = type === 'ME' ? '' : 'none';
+    } else if (panelFilterType === 'YT') {
+      tile.style.display = type === 'YT' ? '' : 'none';
     }
   });
 }
@@ -874,12 +1169,16 @@ async function refreshTagTabs() {
   // 根據當前類型過濾 rows 統計數量
   const isIMId = (id) => id && id.startsWith('IM-');
   const isMEId = (id) => id && id.startsWith('ME-');
-  const isDLId = (id) => id && (id.startsWith('DL-') || (/^[A-Za-z0-9_]+$/.test(id) && !id.startsWith('IM-') && !id.startsWith('ME-')));
+  const isCBId = (id) => id && id.startsWith('CB-');
+  const isGSSId = (id) => id && id.startsWith('GSS-');
+  const isDLId = (id) => id && (id.startsWith('DL-') || (/^[A-Za-z0-9_]+$/.test(id) && !id.startsWith('IM-') && !id.startsWith('ME-') && !id.startsWith('CB-') && !id.startsWith('GSS-')));
 
   const filteredRows = parsed.rows.filter((r) => {
-    if (panelFilterType === 'DL') return isDLId(r.id);
-    if (panelFilterType === 'IM') return isIMId(r.id);
+    // 移除 DL 過濾類型
+    if (panelFilterType === 'CB') return isCBId(r.id);
     if (panelFilterType === 'ME') return isMEId(r.id);
+    if (panelFilterType === 'IM') return isIMId(r.id);
+    if (panelFilterType === 'GSS') return isGSSId(r.id);
     return true;
   });
 
@@ -1001,10 +1300,60 @@ async function applyTagFilter() {
 }
 
 function createPanelIfNeeded() {
-  if (document.getElementById(UI.panelId)) return;
+  const existingPanel = document.getElementById(UI.panelId);
+  if (existingPanel) {
+    // 面板已存在，檢查是否需要更新高亮狀態（例如版本更新後）
+    // 在整個 panel 裡找 📢 按鈕
+    const spans = existingPanel.querySelectorAll('span');
+    let updateBtn = null;
+    for (const span of spans) {
+      if (span.textContent === '📢') {
+        updateBtn = span;
+        break;
+      }
+    }
+    if (updateBtn) {
+      try {
+        chrome.storage.local.get(['lastSeenVersion'], (result) => {
+          if (result.lastSeenVersion !== CURRENT_VERSION) {
+            // 確保 CSS 動畫已注入（對於已存在的面板）
+            ensureStyles();
+
+            updateBtn.dataset.highlighted = 'true';
+            updateBtn.style.opacity = '1';
+            updateBtn.style.animation = 'dlsq-pulse 1.5s infinite';
+            updateBtn.style.color = '#ffd43b'; // 黃色文字強制高亮
+            updateBtn.style.textShadow = '0 0 8px rgba(255, 212, 59, 0.8)'; // 發光效果
+            updateBtn.style.position = 'relative'; // 為紅點定位
+            updateBtn.title = t('updateNewVersion');
+
+            // 動態添加紅點（模擬主面板的 ::after 效果）
+            if (!updateBtn.querySelector('.gss-red-dot')) {
+              const redDot = document.createElement('span');
+              redDot.className = 'gss-red-dot';
+              redDot.style.cssText = 'position:absolute;top:-1px;right:-1px;width:5px;height:5px;background:#ff4444;border-radius:50%;box-shadow:0 0 3px rgba(255,68,68,0.8);';
+              updateBtn.appendChild(redDot);
+            }
+
+          }
+        });
+      } catch (e) {
+        // Extension context invalidated - 擴充重新載入後無法使用 storage
+        console.log('[GSS] Extension context invalidated, skipping update button highlight');
+      }
+    }
+    return;
+  }
   ensureStyles();
   const panel = document.createElement('div');
   panel.id = UI.panelId;
+
+  // 检测是否在 iframe 中（共用聊天室模式）
+  const isInIframe = window.self !== window.top;
+  if (isInIframe) {
+    panel.classList.add('iframe-mode');
+  }
+
   const hdr = document.createElement('div');
   hdr.className = 'hdr';
 
@@ -1012,7 +1361,99 @@ function createPanelIfNeeded() {
   const title = document.createElement('div');
   title.textContent = 'GSS';
 
-  // 中間：DL/IM 切換 Tab
+  // 標題右側：更新與說明圖示
+  const iconsContainer = document.createElement('div');
+  iconsContainer.style.display = 'flex';
+  iconsContainer.style.gap = '6px';
+  iconsContainer.style.alignItems = 'center';
+  iconsContainer.style.marginLeft = '8px';
+
+  // 更新通知圖示 📢
+  const updateBtn = document.createElement('span');
+  updateBtn.textContent = '📢';
+  updateBtn.dataset.updateBtn = 'true'; // 用於後續選取
+  updateBtn.style.fontSize = '14px';
+  updateBtn.style.cursor = 'pointer';
+  updateBtn.style.opacity = '0.7';
+  updateBtn.style.transition = 'opacity 0.2s, transform 0.2s';
+  updateBtn.title = t('updateChangelog');
+  updateBtn.addEventListener('mouseenter', () => {
+    updateBtn.style.opacity = '1';
+    updateBtn.style.transform = 'scale(1.1)';
+  });
+  updateBtn.addEventListener('mouseleave', () => {
+    updateBtn.style.opacity = updateBtn.dataset.highlighted === 'true' ? '1' : '0.7';
+    updateBtn.style.transform = 'scale(1)';
+  });
+  updateBtn.addEventListener('click', () => {
+    try {
+      // 標記為已讀
+      chrome.storage.local.set({ lastSeenVersion: CURRENT_VERSION });
+      // 移除高亮
+      updateBtn.dataset.highlighted = 'false';
+      updateBtn.style.opacity = '0.7';
+      updateBtn.style.animation = 'none';
+      updateBtn.style.color = '';
+      updateBtn.style.textShadow = '';
+      updateBtn.style.position = '';
+      // 移除紅點
+      const redDot = updateBtn.querySelector('.gss-red-dot');
+      if (redDot) redDot.remove();
+      // 開啟更新日誌 - 直接開啟外部連結
+      const updatelogUrl = 'https://elfinl.github.io/General-Sticker-System/updatelog.html';
+      window.open(updatelogUrl, '_blank');
+    } catch (e) {
+      console.error('[GSS] Error in update button click:', e);
+    }
+  });
+
+  // 說明圖示 ❓
+  const helpBtn = document.createElement('span');
+  helpBtn.textContent = '❓';
+  helpBtn.style.fontSize = '14px';
+  helpBtn.style.cursor = 'pointer';
+  helpBtn.style.opacity = '0.7';
+  helpBtn.style.transition = 'opacity 0.2s, transform 0.2s';
+  helpBtn.title = t('helpPage');
+  helpBtn.addEventListener('mouseenter', () => {
+    helpBtn.style.opacity = '1';
+    helpBtn.style.transform = 'scale(1.1)';
+  });
+  helpBtn.addEventListener('mouseleave', () => {
+    helpBtn.style.opacity = '0.7';
+    helpBtn.style.transform = 'scale(1)';
+  });
+  helpBtn.addEventListener('click', () => {
+    try {
+      const helpUrl = 'https://elfinl.github.io/General-Sticker-System/help.html';
+      window.open(helpUrl, '_blank');
+    } catch (e) {
+      window.open(helpUrl, '_blank');
+    }
+  });
+
+  iconsContainer.appendChild(updateBtn);
+  iconsContainer.appendChild(helpBtn);
+
+  // 檢查是否需要高亮更新圖示
+  chrome.storage.local.get(['lastSeenVersion'], (result) => {
+    if (result.lastSeenVersion !== CURRENT_VERSION) {
+      updateBtn.dataset.highlighted = 'true';
+      updateBtn.style.opacity = '1';
+      updateBtn.style.animation = 'dlsq-pulse 1.5s infinite';
+      updateBtn.style.color = '#ffd43b';
+      updateBtn.style.textShadow = '0 0 8px rgba(255, 212, 59, 0.8)';
+      updateBtn.style.position = 'relative';
+      updateBtn.title = t('updateNewVersion');
+      // 添加紅點
+      const redDot = document.createElement('span');
+      redDot.className = 'gss-red-dot';
+      redDot.style.cssText = 'position:absolute;top:-1px;right:-1px;width:5px;height:5px;background:#ff4444;border-radius:50%;box-shadow:0 0 3px rgba(255,68,68,0.8);';
+      updateBtn.appendChild(redDot);
+    }
+  });
+
+  // 中間：類型切換 Tab（DL CB ME IM YT）
   const tabsContainer = document.createElement('div');
   tabsContainer.style.display = 'flex';
   tabsContainer.style.gap = '6px';
@@ -1022,7 +1463,7 @@ function createPanelIfNeeded() {
 
   const tabAll = document.createElement('button');
   tabAll.id = 'dlsq_tab_all';
-  tabAll.textContent = t('all');
+  tabAll.textContent = 'ALL';
   tabAll.style.padding = '3px 8px';
   tabAll.style.borderRadius = '6px';
   tabAll.style.border = '1px solid rgba(255,255,255,0.14)';
@@ -1039,19 +1480,20 @@ function createPanelIfNeeded() {
     refreshPanelStickers();
   });
 
-  const tabDL = document.createElement('button');
-  tabDL.id = UI.tabDLId;
-  tabDL.textContent = 'DL';
-  tabDL.style.padding = '3px 8px';
-  tabDL.style.borderRadius = '6px';
-  tabDL.style.border = '1px solid rgba(255,255,255,0.14)';
-  tabDL.style.background = 'rgba(10,12,16,0.88)';
-  tabDL.style.color = 'rgba(255,255,255,0.88)';
-  tabDL.style.fontSize = '10px';
-  tabDL.style.cursor = 'pointer';
-  tabDL.style.fontWeight = '600';
-  tabDL.addEventListener('click', async () => {
-    panelFilterType = 'DL';
+
+  const tabCB = document.createElement('button');
+  tabCB.id = UI.tabCBId;
+  tabCB.textContent = 'CB';
+  tabCB.style.padding = '3px 8px';
+  tabCB.style.borderRadius = '6px';
+  tabCB.style.border = '1px solid rgba(255,255,255,0.14)';
+  tabCB.style.background = 'rgba(10,12,16,0.88)';
+  tabCB.style.color = 'rgba(255,255,255,0.88)';
+  tabCB.style.fontSize = '10px';
+  tabCB.style.cursor = 'pointer';
+  tabCB.style.fontWeight = '600';
+  tabCB.addEventListener('click', async () => {
+    panelFilterType = 'CB';
     panelCurrentPage = 1; // 重置頁碼
     updatePanelTypeTabs();
     await refreshTagTabs();
@@ -1096,10 +1538,51 @@ function createPanelIfNeeded() {
     refreshPanelStickers();
   });
 
+  const tabYT = document.createElement('button');
+  tabYT.id = 'dlsq_tab_yt';
+  tabYT.textContent = 'YT';
+  tabYT.style.padding = '3px 8px';
+  tabYT.style.borderRadius = '6px';
+  tabYT.style.border = '1px solid rgba(255,255,255,0.14)';
+  tabYT.style.background = 'rgba(10,12,16,0.88)';
+  tabYT.style.color = 'rgba(255,255,255,0.88)';
+  tabYT.style.fontSize = '10px';
+  tabYT.style.cursor = 'pointer';
+  tabYT.style.fontWeight = '600';
+  tabYT.addEventListener('click', async () => {
+    panelFilterType = 'YT';
+    panelCurrentPage = 1; // 重置頁碼
+    updatePanelTypeTabs();
+    await refreshTagTabs();
+    refreshPanelStickers();
+  });
+
   tabsContainer.appendChild(tabAll);
-  tabsContainer.appendChild(tabDL);
-  tabsContainer.appendChild(tabIM);
+
+  const tabGSS = document.createElement('button');
+  tabGSS.id = 'dlsq_tab_gss';
+  tabGSS.textContent = 'GSS';
+  tabGSS.style.padding = '3px 8px';
+  tabGSS.style.borderRadius = '6px';
+  tabGSS.style.border = '1px solid rgba(255,255,255,0.14)';
+  tabGSS.style.background = 'rgba(10,12,16,0.88)';
+  tabGSS.style.color = 'rgba(255,255,255,0.88)';
+  tabGSS.style.fontSize = '10px';
+  tabGSS.style.cursor = 'pointer';
+  tabGSS.style.fontWeight = '600';
+  tabGSS.addEventListener('click', async () => {
+    panelFilterType = 'GSS';
+    panelCurrentPage = 1; // 重置頁碼
+    updatePanelTypeTabs();
+    await refreshTagTabs();
+    refreshPanelStickers();
+  });
+
+  tabsContainer.appendChild(tabGSS);
+  tabsContainer.appendChild(tabCB);
   tabsContainer.appendChild(tabME);
+  tabsContainer.appendChild(tabIM);
+  tabsContainer.appendChild(tabYT);
 
   // 右側：關閉按鈕
   const closeBtn = document.createElement('div');
@@ -1109,6 +1592,7 @@ function createPanelIfNeeded() {
   closeBtn.addEventListener('click', () => togglePanel(false));
 
   hdr.appendChild(title);
+  hdr.appendChild(iconsContainer);
   hdr.appendChild(tabsContainer);
   hdr.appendChild(closeBtn);
 
@@ -1197,6 +1681,7 @@ function createPanelIfNeeded() {
 
   const status = document.createElement('div');
   status.className = 'status';
+
   body.appendChild(tabs);
   body.appendChild(pagination);
   body.appendChild(grid);
@@ -1226,10 +1711,11 @@ function goToPage(page) {
 
 function updatePanelTypeTabs() {
   const tabAll = document.getElementById('dlsq_tab_all');
-  const tabDL = document.getElementById(UI.tabDLId);
+  const tabCB = document.getElementById(UI.tabCBId);
+  const tabME = document.getElementById(UI.tabMEId);
   const tabIM = document.getElementById(UI.tabIMId);
-  const tabME = document.getElementById('dlsq_tab_me');
-  if (!tabAll || !tabDL || !tabIM || !tabME) return;
+  const tabGSS = document.getElementById('dlsq_tab_gss');
+  if (!tabAll || !tabCB || !tabIM || !tabME || !tabGSS) return;
 
   // 重置所有樣式
   const inactiveStyle = {
@@ -1250,13 +1736,14 @@ function updatePanelTypeTabs() {
     tabAll.style.color = inactiveStyle.color;
   }
 
-  // DL
-  if (panelFilterType === 'DL') {
-    tabDL.style.background = activeStyle.background;
-    tabDL.style.color = activeStyle.color;
+
+  // CB
+  if (panelFilterType === 'CB') {
+    tabCB.style.background = activeStyle.background;
+    tabCB.style.color = activeStyle.color;
   } else {
-    tabDL.style.background = inactiveStyle.background;
-    tabDL.style.color = inactiveStyle.color;
+    tabCB.style.background = inactiveStyle.background;
+    tabCB.style.color = inactiveStyle.color;
   }
 
   // IM
@@ -1275,6 +1762,27 @@ function updatePanelTypeTabs() {
   } else {
     tabME.style.background = inactiveStyle.background;
     tabME.style.color = inactiveStyle.color;
+  }
+
+  // GSS
+  if (panelFilterType === 'GSS') {
+    tabGSS.style.background = activeStyle.background;
+    tabGSS.style.color = activeStyle.color;
+  } else {
+    tabGSS.style.background = inactiveStyle.background;
+    tabGSS.style.color = inactiveStyle.color;
+  }
+
+  // YT
+  const tabYT = document.getElementById('dlsq_tab_yt');
+  if (tabYT) {
+    if (panelFilterType === 'YT') {
+      tabYT.style.background = activeStyle.background;
+      tabYT.style.color = activeStyle.color;
+    } else {
+      tabYT.style.background = inactiveStyle.background;
+      tabYT.style.color = inactiveStyle.color;
+    }
   }
 }
 
@@ -1413,55 +1921,28 @@ function dispatchContextMenuPointer(e, menu) {
       } else if (action === 'openTagMenu') {
         showPanelTagMenuAt((e.clientX || 0) + 6, (e.clientY || 0) + 6, id);
         return;
-      } else if (action === 'sendSameSticker') {
-        // 發送相同圖片 - 遵循平台規則（與面板點擊邏輯一致）
-        // 判斷 ID 類型：DL-xxx、IM-xxx、ME-xxx 或純 DLive ID
-        const isIM = id.startsWith('IM-');
-        const isME = id.startsWith('ME-');
-        const isDLWithPrefix = id.startsWith('DL-');
-        const isRawDLId = !isIM && !isME && !isDLWithPrefix && /^[A-Za-z0-9_]+$/.test(id);
-
-        // 將 ID 轉換為 code 格式
-        let code = id;
-        if (isDLWithPrefix) {
-          // DL-xxx → :emote/mine/dlive/xxx:
-          const cleanId = id.slice(3);
-          code = `:emote/mine/dlive/${cleanId}:`;
-        } else if (isRawDLId) {
-          // 純 DLive ID → :emote/mine/dlive/xxx:
-          code = `:emote/mine/dlive/${id}:`;
-        }
-
-        // 在 DLive 上，IM/ME 使用零寬編碼；DL 和其他平台直接發送
-        if ((isIM || isME) && isDLive()) {
-          // DLive 的 IM/ME 使用零寬編碼
-          sendHiddenMessage(code).catch((e) => {
-            showSendFailureToast(e?.message || e);
-          });
-        } else {
-          // 直接發送：Twitch 或 DLive 的 DL
-          let sendCode = code;
-          if (isTwitch() && (isDLWithPrefix || isRawDLId)) {
-            // Twitch 上 DL 貼圖：轉換為 DL-xxx
-            if (isDLWithPrefix) {
-              sendCode = id;
-            } else {
-              sendCode = `DL-${id}`;
-            }
-          } else if (isTwitch() && (isIM || isME)) {
-            // Twitch 的 IM/ME：IM-xxx.gif → IM-xxx-gif（用 - 代替 .）
-            sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
-          }
-          sendChatMessage(sendCode).catch((e) => {
-            showSendFailureToast(e?.message || e);
-          });
-        }
-        return;
+      } else if (action === 'addStickerId') {
+        // 新增貼圖到 GSS
         const r = await addStickerIdToStorage(id);
         setPanelStatus(
           r.added ? t('added', r.count) : t('exists', r.count),
           r.added ? '#28a745' : '#adb5bd'
         );
+      } else if (action === 'sendSameSticker') {
+        // 發送相同圖片 - 使用 StickerRegistry 獲取正確的發送代碼
+        const platform = getCurrentPlatform();
+        const sendCode = StickerRegistry.getSendCode(id, platform);
+
+        if (!sendCode) {
+          showSendFailureToast('無法獲取發送代碼');
+          return;
+        }
+
+        // 發送代碼
+        sendChatMessage(sendCode).catch((e) => {
+          showSendFailureToast(e?.message || e);
+        });
+        return;
       } else if (action === 'toggleFavorite') {
         const r = await toggleFavoriteIdInStorage(id);
         setPanelStatus(
@@ -1632,20 +2113,21 @@ function hideContextMenu() {
 }
 
 function findEmoteImageById(id) {
-  // 處理 IM/ME 類型：移除 IM-/ME- 前綴來比對 URL
+  // 處理 IM/ME/YT 類型：移除前綴來比對 URL
   const isIM = id && id.startsWith('IM-');
   const isME = id && id.startsWith('ME-');
-  const searchId = isIM || isME ? id.slice(3) : id;
+  const isYT = id && id.startsWith('YT-');
+  const searchId = isIM || isME ? id.slice(3) : (isYT ? id.slice(3) : id);
 
   // 搜尋 img 元素
   const imgs = document.querySelectorAll('img');
   for (const img of imgs) {
     const src = img.src || '';
-    if (src.includes(id) || (!isIM && !isME && src.includes(id.replace('DL-', '')))) {
+    if (src.includes(id) || (!isIM && !isME && !isYT && src.includes(id.replace('DL-', '')))) {
       return { element: img, isVideo: false };
     }
-    // 對於 IM/ME 類型，比對不含前綴的 ID
-    if ((isIM || isME) && src.includes(searchId)) {
+    // 對於 IM/ME/YT 類型，比對不含前綴的 ID
+    if ((isIM || isME || isYT) && src.includes(searchId)) {
       return { element: img, isVideo: false };
     }
   }
@@ -1787,7 +2269,7 @@ function showPanelTagMenuAt(x, y, id) {
 
   menu.setAttribute('data-id', id);
   const sub = menu.querySelector('[data-panel-tag-sub]');
-  if (sub) sub.textContent = id;
+  if (sub) sub.textContent = '';
   const actions = ensurePanelTagMenuActionsSlot(menu);
   actions.innerHTML = '';
   const list = menu.querySelector('[data-panel-tag-list]');
@@ -1943,7 +2425,7 @@ function showContextMenuAt(x, y, id, targetElement) {
   });
 }
 
-function extractEmoteIdFromSrc(src) {
+function extractEmoteIdFromSrc(src, imgElement = null) {
   if (!src) return null;
   const s = String(src);
 
@@ -1957,6 +2439,21 @@ function extractEmoteIdFromSrc(src) {
   const meeeMatch = s.match(/meee\.com\.tw\/([a-zA-Z0-9]+\.(?:gif|png|jpg|jpeg|mp4))/i);
   if (meeeMatch) {
     return `ME-${meeeMatch[1]}`;
+  }
+
+  // YouTube 縮圖 URL：img.youtube.com/vi/xxx/mqdefault.jpg → YT-xxx
+  const ytMatch = s.match(/img\.youtube\.com\/vi\/([a-zA-Z0-9_-]+)\//i);
+  if (ytMatch) {
+    const videoId = ytMatch[1];
+    return `YT-${videoId}`;
+  }
+
+  // Catbox 圖片 URL：files.catbox.moe/xxx.gif → CB-xxx.gif
+  const catboxMatch = s.match(/files\.catbox\.moe\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
+  if (catboxMatch) {
+    const id = catboxMatch[1];
+    const ext = catboxMatch[2] || 'gif';
+    return ext === 'gif' ? `CB-${id}` : `CB-${id}.${ext}`;
   }
 
   const patterns = [
@@ -1975,11 +2472,9 @@ function extractEmoteIdFromText(text) {
   const t = String(text || '').trim();
   if (!t) return null;
   // 只匹配特定格式的 emote ID
-  // 1. DLive emote 格式 :emote/mine/dlive/xxx:
-  const m1 = t.match(/:emote\/mine\/dlive\/([A-Za-z0-9_]+):/);
-  if (m1?.[1]) return m1[1];
-  // 2. 其他格式：以 DL-, IM-, ME- 開頭的貼圖 ID
-  const m2 = t.match(/^(DL|IM|ME)-([A-Za-z0-9_]+)/i);
+  // 移除 DLive emote 格式處理
+  // 1. 其他格式：以 IM-, ME-, YT-, CB-, GSS- 開頭的貼圖 ID
+  const m2 = t.match(/^(IM|ME|YT|CB|GSS)-([A-Za-z0-9_.-]+)/i);
   if (m2) return t;
   return null;
 }
@@ -1987,10 +2482,31 @@ function extractEmoteIdFromText(text) {
 function getCandidateIdFromRightClick(target) {
   if (!target) return null;
 
+  // 【統一】檢查是否點擊在 YouTube 遮罩層上（YT- 使用 data-yt-id）
+  const ytOverlay = target.closest ? target.closest('[data-yt-id]') : null;
+  if (ytOverlay) {
+    const ytId = ytOverlay.getAttribute('data-yt-id');
+    if (ytId) return ytId;
+  }
+
   const img = target.closest ? target.closest('img') : null;
   if (img?.src) {
-    const idFromSrc = extractEmoteIdFromSrc(img.src);
+    // 【WTV 特殊處理】檢查是否有 data-sticker-id 屬性
+    if (img.dataset.stickerId) {
+      return img.dataset.stickerId;
+    }
+
+    const idFromSrc = extractEmoteIdFromSrc(img.src, img);
     if (idFromSrc) return idFromSrc;
+  }
+
+  // 檢查 video 元素（支援 GSS- 格式的影片）
+  const video = target.closest ? target.closest('video') : null;
+  if (video?.src) {
+    // 檢查是否有 data-sticker-id 屬性
+    if (video.dataset.stickerId) {
+      return video.dataset.stickerId;
+    }
   }
 
   const sel = window.getSelection ? window.getSelection() : null;
@@ -2003,14 +2519,6 @@ function getCandidateIdFromRightClick(target) {
   if (idFromNear) return idFromNear;
 
   return null;
-}
-
-function fallbackRowsFromStickers(stickers) {
-  if (!Array.isArray(stickers)) return [];
-  const ids = stickers
-    .map((s) => String(s?.code || '').match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/)?.[1] || null)
-    .filter(Boolean);
-  return [...new Set(ids)].map((sid) => ({ id: sid, tags: [] }));
 }
 
 function rowsFromStorageBundle(res) {
@@ -2034,51 +2542,57 @@ function rowsFromStorageBundle(res) {
     return rows;
   }
   const parsed = TAG.parseStickerIdsText(res.stickerIdsText || '');
-  if (parsed.rows.length) return parsed.rows;
-  return fallbackRowsFromStickers(res.stickers);
+  return parsed.rows;
 }
 
 async function writeStickerRows(rows, favoriteIds) {
   const fav = Array.isArray(favoriteIds) ? favoriteIds : [];
-  let sorted = Array.isArray(rows) ? rows : [];
-  if (TAG) sorted = TAG.sortRowsWithFavorites(sorted, fav);
-  else {
-    const favSet = new Set(fav);
-    sorted = [...sorted].sort((a, b) => (favSet.has(b.id) ? 1 : 0) - (favSet.has(a.id) ? 1 : 0));
-  }
-  const text = TAG ? TAG.serializeStickerRows(sorted) : sorted.map((r) => r.id).join('\n');
-  const stickers = sorted.map((row, index) => ({
-    name: `ID${index + 1}`,
-    code: `:emote/mine/dlive/${row.id}:`,
-    imageUrl: `https://images.prd.dlivecdn.com/emote/${row.id}`
-  }));
+  const originalRows = Array.isArray(rows) ? rows : [];
+  // 【修復】儲存時保持原始順序，不依照常用排序（避免改變實際 ID 排列）
+  // 常用排序只在顯示時（refreshPanelStickers）處理
+  const text = TAG ? TAG.serializeStickerRows(originalRows) : originalRows.map((r) => r.id).join('\n');
   await new Promise((resolve, reject) => {
-    chrome.storage.local.set({ stickerIdsText: text, stickers, favoriteStickerIds: fav }, () => {
+    chrome.storage.local.set({ stickerIdsText: text, favoriteStickerIds: fav }, () => {
       const le = chrome.runtime.lastError;
       if (le) reject(new Error(le.message));
       else resolve();
     });
   });
-  return { sorted, text, stickers };
+  // 回傳排序後的結果供顯示使用，但不影響儲存
+  let sortedForDisplay = [...originalRows];
+  if (TAG) sortedForDisplay = TAG.sortRowsWithFavorites(sortedForDisplay, fav);
+  else {
+    const favSet = new Set(fav);
+    sortedForDisplay.sort((a, b) => (favSet.has(b.id) ? 1 : 0) - (favSet.has(a.id) ? 1 : 0));
+  }
+  return { sorted: sortedForDisplay, text };
 }
 
 async function toggleFavoriteIdInStorage(id) {
   let trimmed = String(id || '').trim();
+
+  // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
+  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+
+  // GSS- 格式：保持原始格式，不做任何修改
 
   // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
   if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
-  const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
+  // 支援 IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
+  // 移除 DL- 前綴支援
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM && !isValidME) {
+  const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidCB = /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(trimmed);
+  const isValidGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  if (!isValidIM && !isValidME && !isValidYT && !isValidCB && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
-  const res = await chrome.storage.local.get(['favoriteStickerIds', 'stickerIdsText', 'stickers']);
+  const res = await chrome.storage.local.get(['favoriteStickerIds', 'stickerIdsText']);
   const currentFav = Array.isArray(res.favoriteStickerIds) ? res.favoriteStickerIds : [];
   const set = new Set(currentFav);
   const wasFav = set.has(trimmed);
@@ -2095,20 +2609,30 @@ async function toggleFavoriteIdInStorage(id) {
 async function addStickerIdToStorage(id) {
   let trimmed = String(id || '').trim();
 
+  // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
+  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+
+  // GSS- 格式：保持原始格式，不做任何修改
+
   // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
   if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
-  const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
+  // 移除 DLive 格式統一邏輯
+
+  // 支援 IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、CB-（Catbox）、GSS-（圖片/影片連結）
+  // 移除 DL- 前綴支援
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM && !isValidME) {
+  const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidCB = /^CB-[a-zA-Z0-9_-]+(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(trimmed);
+  const isValidGSS = isGSSFormat;
+  if (!isValidIM && !isValidME && !isValidYT && !isValidCB && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
-  const res = await chrome.storage.local.get(['stickerIdsText', 'stickers', 'favoriteStickerIds']);
+  const res = await chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds']);
   const rows = rowsFromStorageBundle(res);
   const beforeSize = rows.length;
   let nextRows = rows;
@@ -2125,20 +2649,27 @@ async function addStickerIdToStorage(id) {
 async function removeStickerIdFromStorage(id) {
   let trimmed = String(id || '').trim();
 
+  // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
+  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+
+  // GSS- 格式：保持原始格式，不做任何修改
+
   // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
   if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM && !isValidME) {
+  const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidGSS = isGSSFormat;
+  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
 
-  const res = await chrome.storage.local.get(['stickerIdsText', 'stickers', 'favoriteStickerIds']);
+  const res = await chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds']);
   const rows = rowsFromStorageBundle(res);
   const hadId = rows.some((r) => r.id === trimmed);
   const nextRows = rows.filter((r) => r.id !== trimmed);
@@ -2152,16 +2683,23 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
   if (!TAG) throw new Error('標籤模組未載入');
   let trimmed = String(id || '').trim();
 
+  // 先檢查 GSS- 格式，避免被後續的格式統一邏輯影響
+  const isGSSFormat = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+
+  // GSS- 格式：保持原始格式，不做任何修改
+
   // IM/ME 格式：將 -gif, -png, -jpg, -jpeg, -mp4 結尾替換為 . 點格式
   if (trimmed.startsWith('IM-') || trimmed.startsWith('ME-')) {
     trimmed = trimmed.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
   }
 
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
+  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT-（YouTube）、GSS-（圖片/影片連結）
   const isValidDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(trimmed);
   const isValidIM = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
   const isValidME = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i.test(trimmed);
-  if (!isValidDL && !isValidIM && !isValidME) {
+  const isValidYT = /^YT-[a-zA-Z0-9_-]+$/i.test(trimmed);
+  const isValidGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(trimmed);
+  if (!isValidDL && !isValidIM && !isValidME && !isValidYT && !isValidGSS) {
     throw new Error(`ID 格式不正確：${trimmed}`);
   }
   const label = TAG.normalizeTagToken(tagLabel);
@@ -2169,7 +2707,7 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
     throw new Error('標籤格式不正確（最多 16 字元，不可含空白或 #）');
   }
 
-  const res = await chrome.storage.local.get(['stickerIdsText', 'stickers', 'favoriteStickerIds']);
+  const res = await chrome.storage.local.get(['stickerIdsText', 'favoriteStickerIds']);
   const rows = rowsFromStorageBundle(res);
   const idx = rows.findIndex((r) => r.id === trimmed);
   if (idx < 0) throw new Error('此 ID 不在清單內（請先新增）');
@@ -2197,36 +2735,6 @@ async function applyTagToStickerIdInStorage(id, tagLabel) {
   return { removed: false, count: tags.length };
 }
 
-function getDefaultStickers() {
-  return [
-    {
-      name: '金剛',
-      code: ':emote/mine/dlive/826c4ac1e004273_498281:',
-      imageUrl: 'https://images.prd.dlivecdn.com/emote/826c4ac1e004273_498281'
-    }
-  ];
-}
-
-async function loadStickersFromStorage() {
-  try {
-    const res = await chrome.storage.local.get(['stickers', 'favoriteStickerIds']);
-    const stickers = Array.isArray(res.stickers) ? res.stickers : null;
-    const fav = new Set(Array.isArray(res.favoriteStickerIds) ? res.favoriteStickerIds : []);
-    const list = stickers && stickers.length ? stickers : getDefaultStickers();
-    // 置頂常用
-    return [...list].sort((a, b) => {
-      const ida = String(a?.code || '').match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/)?.[1] || null;
-      const idb = String(b?.code || '').match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/)?.[1] || null;
-      const fa = ida && fav.has(ida) ? 1 : 0;
-      const fb = idb && fav.has(idb) ? 1 : 0;
-      return fb - fa;
-    });
-  } catch (e) {
-    // Failed to load stickers from storage
-    return getDefaultStickers();
-  }
-}
-
 async function refreshPanelStickers() {
   createPanelIfNeeded();
   updatePanelTypeTabs(); // 更新 DL/IM 切換按鈕樣式
@@ -2243,7 +2751,7 @@ async function refreshPanelStickers() {
     storage = await chrome.storage.local.get(['favoriteStickerIds', 'stickerIdsText', 'stickerTagVocabularyText']);
   } catch (e) {
     // Extension context invalidated - 擴充重新載入後無法使用 storage
-    setPanelStatus('❌ 擴充已更新，請重新整理頁面', '#dc3545');
+    setPanelStatus(t('extensionUpdated'), '#dc3545');
     return;
   }
   if (refreshSeq !== panelRefreshSeq) return;
@@ -2259,7 +2767,7 @@ async function refreshPanelStickers() {
   }
   if (refreshSeq !== panelRefreshSeq) return;
 
-  // 從 rows 創建混合 DL/IM/ME 的 stickers
+  // 從 rows 創建混合 DL/IM/ME/YT 的 stickers
   let stickers = parsedRows.map((row, index) => {
     const id = row.id;
     if (id.startsWith('IM-')) {
@@ -2282,13 +2790,48 @@ async function refreshPanelStickers() {
         isVideo: isVideo,
         isME: true
       };
+    } else if (id.startsWith('CB-')) {
+      // Catbox 貼圖
+      const cleanId = id.slice(3);
+      const isVideo = /\.mp4$/i.test(cleanId);
+      const stickerData = {
+        name: `LID ${index + 1}`,
+        code: id,
+        imageUrl: `https://files.catbox.moe/${cleanId}`,
+        isVideo: isVideo,
+        isCB: true
+      };
+      console.log('[GSS] 創建 CB 貼圖:', stickerData);
+      return stickerData;
+    } else if (id.startsWith('YT-')) {
+      // YouTube 視頻貼圖
+      const videoId = id.slice(3);
+      return {
+        name: `LID ${index + 1}`,
+        code: id,
+        imageUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        isYT: true
+      };
+    } else if (id.startsWith('GSS-')) {
+      // GSS 格式：直接使用 URL
+      let imageUrl = id.slice(4); // 去掉 "GSS-" 前綴
+      if (!imageUrl.match(/^https?:\/\//i)) {
+        imageUrl = 'https://' + imageUrl;
+      }
+      return {
+        name: `LID ${index + 1}`,
+        code: id,
+        imageUrl: imageUrl,
+        isGSS: true
+      };
     } else {
       // DL 類型
       const cleanId = id.startsWith('DL-') ? id.slice(3) : id;
+      const normalizedId = `DL-${cleanId}`;
       return {
         name: `LID ${index + 1}`,
-        code: `:emote/mine/dlive/${cleanId}:`,
-        imageUrl: `https://images.prd.dlivecdn.com/emote/${cleanId}`
+        code: normalizedId,
+        imageUrl: `https://via.placeholder.com/100x100.png?text=Unsupported+Format`
       };
     }
   });
@@ -2296,40 +2839,53 @@ async function refreshPanelStickers() {
   // 保存全部贴图（用于创建 DOM）
   const allStickers = stickers.slice();
 
-  // 使用總數固定面板高度（讓 DL/IM/全部 切換時大小一致）
+  // 使用總數固定面板高度（讓 IM/ME/YT/CB/GSS/全部 切換時大小一致）
   const totalStickerCount = stickers.length;
   applyStableGridHeight(grid, totalStickerCount);
 
   // 根據 panelFilterType 過濾類型（僅用於標籤統計，不改變 allStickers）
   let filteredForTags = allStickers;
-  if (panelFilterType === 'DL') {
-    filteredForTags = allStickers.filter(s => !s.isIM && !s.isME);
+  // 移除 DL 過濾類型
+  if (panelFilterType === 'CB') {
+    filteredForTags = allStickers.filter(s => s.isCB);
   } else if (panelFilterType === 'IM') {
-    filteredForTags = allStickers.filter(s => s.isIM && !s.isME);
+    filteredForTags = allStickers.filter(s => s.isIM);
   } else if (panelFilterType === 'ME') {
     filteredForTags = allStickers.filter(s => s.isME);
+  } else if (panelFilterType === 'GSS') {
+    filteredForTags = allStickers.filter(s => s.isGSS);
+  } else if (panelFilterType === 'YT') {
+    filteredForTags = allStickers.filter(s => s.isYT);
   }
 
   if (tabs && TAG) {
     // 根據當前類型過濾 rows 統計數量
-    // 【修正】使用 TAG 的驗證函數，確保 IM 和 ME 分開統計
+    // 【修正】使用 TAG 的驗證函數，確保各類型分開統計
     const isIMId = (id) => id && TAG.isValidIMId(id);
     const isMEId = (id) => id && TAG.isValidMEId(id);
+    const isCBId = (id) => id && TAG.isValidCBId(id);
+    const isGSSId = (id) => id && TAG.isValidGSSId(id);
     const isDLId = (id) => id && TAG.isValidDLId(id);
+    const isYTId = (id) => id && TAG.isValidYTId(id);
 
     const filteredRows = parsedRows.filter((r) => {
-      if (panelFilterType === 'DL') return isDLId(r.id);
-      if (panelFilterType === 'IM') return isIMId(r.id);
+      // 移除 DL 過濾類型
+      if (panelFilterType === 'CB') return isCBId(r.id);
       if (panelFilterType === 'ME') return isMEId(r.id);
+      if (panelFilterType === 'IM') return isIMId(r.id);
+      if (panelFilterType === 'YT') return isYTId(r.id);
+      if (panelFilterType === 'GSS') return isGSSId(r.id);
       return true; // 全部
     });
 
-    // 為標籤統計，也過濾 sticker 對象以匹配
+    // 為標籤統計，也過濾 sticker 對象以匹配（移除 DLive 格式支援）
     const stickerIdsInFilteredRows = new Set(filteredRows.map(r => r.id));
     const filteredStickersForTagCounts = allStickers.filter(s => {
       const code = String(s?.code || '');
       let sid = null;
-      if (code.startsWith('IM-') || code.startsWith('ME-')) {
+      if (code.startsWith('IM-') || code.startsWith('ME-') || code.startsWith('YT-') || code.startsWith('CB-')) {
+        sid = code;
+      } else if (code.startsWith('DL-')) {
         sid = code;
       } else {
         const dlMatch = code.match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/);
@@ -2393,21 +2949,23 @@ async function refreshPanelStickers() {
 
   const active = panelFilterTag || '__all__';
 
-  // 決定要渲染的貼圖：先用標籤過濾，再應用 DL/IM 過濾
+  // 決定要渲染的貼圖：先用標籤過濾，再應用 IM/ME/YT/CB/GSS 過濾
   let stickersToRender = allStickers;
 
   if (TAG) {
     const hiddenKey = PANEL_HIDDEN_TAG.toLowerCase();
-    // 取得 ID 用於常用標記和標籤存儲
+    // 取得 ID 用於常用標記和標籤存儲（移除 DLive 格式支援）
     const getId = (s) => {
       const code = String(s?.code || '');
-      // DL 格式
-      const dlMatch = code.match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/);
-      if (dlMatch) return `DL-${dlMatch[1]}`;
+      // 移除 DL 格式處理
       // IM 格式
       if (code.startsWith('IM-')) return code;
       // ME 格式
       if (code.startsWith('ME-')) return code;
+      // CB 格式
+      if (code.startsWith('CB-')) return code;
+      // YT 格式
+      if (code.startsWith('YT-')) return code;
       return null;
     };
     const isHidden = (sid) => {
@@ -2438,21 +2996,32 @@ async function refreshPanelStickers() {
     }
   }
 
-  // 應用 DL/IM/ME 類型過濾（切換時無閃爍）
-  if (panelFilterType === 'DL') {
-    stickersToRender = stickersToRender.filter(s => !s.isIM && !s.isME);
-  } else if (panelFilterType === 'IM') {
-    stickersToRender = stickersToRender.filter(s => s.isIM && !s.isME);
+  // 應用 CB/ME/IM/YT/GSS 類型過濾（切換時無閃爍）
+  if (panelFilterType === 'CB') {
+    stickersToRender = stickersToRender.filter(s => s.isCB);
   } else if (panelFilterType === 'ME') {
     stickersToRender = stickersToRender.filter(s => s.isME);
+  } else if (panelFilterType === 'IM') {
+    stickersToRender = stickersToRender.filter(s => s.isIM);
+  } else if (panelFilterType === 'YT') {
+    stickersToRender = stickersToRender.filter(s => s.isYT);
+  } else if (panelFilterType === 'GSS') {
+    stickersToRender = stickersToRender.filter(s => s.isGSS);
   }
+  // 「全部」分類不做任何過濾，顯示所有圖片
 
   if (refreshSeq !== panelRefreshSeq) return;
 
-  // 常用置頂排序
+  // 常用置頂排序（移除 DLive 格式支援）
   stickersToRender.sort((a, b) => {
-    const ida = a.code?.startsWith('IM-') || a.code?.startsWith('ME-') ? a.code : (String(a.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
-    const idb = b.code?.startsWith('IM-') || b.code?.startsWith('ME-') ? b.code : (String(b.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+    const getSortId = (s) => {
+      const code = String(s?.code || '');
+      if (code.startsWith('IM-') || code.startsWith('ME-') || code.startsWith('YT-')) return code;
+      // 移除 DL 格式處理
+      return null;
+    };
+    const ida = getSortId(a);
+    const idb = getSortId(b);
     const fa = ida && favSet.has(ida) ? 1 : 0;
     const fb = idb && favSet.has(idb) ? 1 : 0;
     return fb - fa;
@@ -2489,13 +3058,20 @@ async function refreshPanelStickers() {
   for (const s of stickersToRender) {
     const tile = document.createElement('div');
     tile.className = 'tile';
-    tile.classList.add(s.isIM ? 'type-im' : (s.isME ? 'type-me' : 'type-dl'));
-    tile.setAttribute('data-type', s.isIM ? 'IM' : (s.isME ? 'ME' : 'DL'));
+    const isYT = s.code?.startsWith('YT-');
+    tile.classList.add(s.isIM ? 'type-im' : (s.isME ? 'type-me' : (isYT ? 'type-yt' : 'type-other')));
+    tile.setAttribute('data-type', s.isIM ? 'IM' : (s.isME ? 'ME' : (isYT ? 'YT' : 'OTHER')));
     tile.setAttribute('data-code', s.code);
     tile.title = s.name || '';
 
-    // 取得 ID 用於常用標記和標籤存儲
-    const sid = s.code?.startsWith('IM-') || s.code?.startsWith('ME-') ? s.code : (String(s.code).match(/^:emote\/mine\/dlive\/([A-Za-z0-9_]+):$/) ? `DL-${RegExp.$1}` : null);
+    // 取得 ID 用於常用標記和標籤存儲（移除 DLive 格式支援）
+    const getSid = (code) => {
+      if (!code) return null;
+      if (code.startsWith('IM-') || code.startsWith('ME-') || code.startsWith('YT-') || code.startsWith('CB-') || code.startsWith('GSS-')) return code;
+      // 移除 DL 格式處理
+      return null;
+    };
+    const sid = getSid(s.code);
     if (sid) {
       tile.setAttribute('data-id', sid);
       // 存儲標籤信息供輕量級過濾使用
@@ -2512,7 +3088,22 @@ async function refreshPanelStickers() {
     tile.appendChild(favMark);
 
     // 顯示圖片或視頻
-    if (s.isVideo) {
+    if (isYT) {
+      // YouTube 視頻貼圖：顯示縮略圖
+      const img = document.createElement('img');
+      img.src = s.imageUrl;
+      img.style.maxWidth = '48px';
+      img.style.maxHeight = '48px';
+      img.style.pointerEvents = 'none';
+      img.style.borderRadius = '4px';
+      img.onerror = () => {
+        const fallback = document.createElement('div');
+        fallback.className = 'fallback';
+        fallback.textContent = '🎬';
+        tile.appendChild(fallback);
+      };
+      tile.appendChild(img);
+    } else if (s.isVideo) {
       const video = document.createElement('video');
       video.src = s.imageUrl;
       video.style.maxWidth = '48px';
@@ -2551,6 +3142,9 @@ async function refreshPanelStickers() {
     // 右鍵選單（支援 DL 和 IM 類型）
     if (sid) {
       tile.addEventListener('contextmenu', (e) => {
+        // 如果設置為禁用 GSS 右鍵面板，則不攔截
+        if (window.gssDisableNativeContextMenu) return;
+
         e.preventDefault();
         e.stopPropagation();
         showPanelTagMenuAt(e.clientX, e.clientY, sid);
@@ -2562,31 +3156,45 @@ async function refreshPanelStickers() {
       if (isTileClickSuppressed()) return;
       // 檢查當前是否可見（過濾後的）
       if (tile.style.display === 'none') return;
+      // 防止重複發送
+      if (tile._isSending) return;
+      tile._isSending = true;
       const code = s.code;
+      console.log('[GSS] 點擊貼圖 code:', code);
       togglePanel(false);
 
-      // 在 Twitch 上，DL/IM/ME 都直接發送明文 ID；在 DLive 上，DL 直接發送，IM/ME 使用零寬編碼
-      if ((s.isIM || s.isME) && isDLive()) {
-        // 只在 DLive 使用零寬編碼
-        sendHiddenMessage(code).catch((e) => {
-          showSendFailureToast(e?.message || e);
-        });
+      // 使用 StickerRegistry 获取平台特定发送代码
+      const platform = getCurrentPlatform();
+      const sendCode = StickerRegistry.getSendCode(code, platform);
+      console.log('[GSS] 平台:', platform, 'sendCode:', sendCode);
+      if (!sendCode) {
+        console.error('[GSS] 無法獲取 sendCode');
+        tile._isSending = false;
+        return;
+      }
+
+      // 判断是否使用零宽编码（移除 DLive 平台支援，其他平台不使用零寬編碼）
+      const info = StickerRegistry.getStickerInfo(code);
+      console.log('[GSS] 貼圖 info:', info);
+      const useHiddenMessage = false; // 移除 DLive 後，其他平台不使用零寬編碼
+      console.log('[GSS] useHiddenMessage:', useHiddenMessage);
+
+      if (useHiddenMessage) {
+        sendHiddenMessage(sendCode)
+          .catch((e) => {
+            showSendFailureToast(e?.message || e);
+          })
+          .finally(() => {
+            tile._isSending = false;
+          });
       } else {
-        // Twitch 或 DLive 的 DL：直接發送
-        let sendCode = code;
-        if (isTwitch() && code.startsWith(':emote/mine/dlive/')) {
-          // 從 :emote/mine/dlive/xxx: 提取 ID 並轉換為 DL-xxx
-          const match = code.match(/:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/);
-          if (match) {
-            sendCode = `DL-${match[1]}`;
-          }
-        } else if (isTwitch() && (code.startsWith('IM-') || code.startsWith('ME-'))) {
-          // 【Twitch 格式】IM-xxx.gif → IM-xxx-gif，ME-xxx.jpg → ME-xxx-jpg（用 - 代替 .）
-          sendCode = code.replace(/\.(gif|png|jpg|jpeg|mp4)$/i, '-$1');
-        }
-        sendChatMessage(sendCode).catch((e) => {
-          showSendFailureToast(e?.message || e);
-        });
+        sendChatMessage(sendCode)
+          .catch((e) => {
+            showSendFailureToast(e?.message || e);
+          })
+          .finally(() => {
+            tile._isSending = false;
+          });
       }
     });
 
@@ -2606,13 +3214,29 @@ async function refreshPanelStickers() {
 function findChatContainer() {
   // DLive: .chatroom-input
   // Twitch: 需要找到包含輸入框和表情按鈕的容器
+  // Vaughn: .vs_chatv9_input_box (容器), #vs_chatv9_input_box (textarea)
+  // Kick: #chat-input-wrapper, [data-testid="chat-input"]
+  // YouTube: yt-live-chat-renderer, yt-live-chat-app
   const selectors = [
     '.chatroom-input',                           // DLive
     '[data-a-target="chat-input-container"]',   // Twitch
     '.chat-input__container',                    // Twitch alternate
     '.chat-input-container',                     // Twitch alternate
     '.chat-input__textarea',                     // Twitch textarea container
+    '.vs_chatv9_input_box',                      // Vaughn container
+    '#chat-input-wrapper',                       // Kick 主容器
+    '[data-testid="chat-input"]',               // Kick 輸入框
+    '.chat-container',                           // Kick chatroom 容器
+    '.chat-wrapper',                             // Kick chatroom 包裝
+    'yt-live-chat-renderer',                     // YouTube 主容器
+    'yt-live-chat-app',                          // YouTube app 容器
+    'yt-live-chat-text-input-field-renderer',    // YouTube 輸入框容器
+    '.q-field__native.q-placeholder',          // Beamstream 輸入框
+    'input[enterkeyhint="send"]',                // Beamstream enterkey
+    '[data-testid="chat-message-input"]',       // WTV 輸入框容器
+    '[data-chat-scroll-container]',              // WTV 聊天容器
     '[class*="chat-input"]',                      // Generic fallback
+    '.chat',                                     // 最簡單的 chat
   ];
 
   for (const selector of selectors) {
@@ -2628,59 +3252,398 @@ function ensureChatButton() {
   const chat = findChatContainer();
   if (!chat) return false;
 
-  if (!document.getElementById(UI.btnId)) {
-    ensureStyles();
-    createPanelIfNeeded();
+  // 檢查是否已存在 GSS 按鈕（包括傳統按鈕和 w.tv 按鈕）
+  if (document.getElementById(UI.btnId)) return true;
 
-    const btn = document.createElement('button');
-    btn.id = UI.btnId;
-    btn.type = 'button';
-    btn.title = 'GSS 通用貼圖系統';
-    const iconImg = document.createElement('img');
-    iconImg.src = chrome.runtime.getURL('icons/icon16.png');
-    iconImg.style.width = '24px';
-    iconImg.style.height = '24px';
-    iconImg.style.display = 'block';
-    btn.appendChild(iconImg);
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePanel();
-    });
-
-    // 根據平台調整按鈕插入位置
-    if (isTwitch()) {
-      // 查找笑臉表情按鈕
-      const emojiBtn = document.querySelector('[data-a-target="emote-picker-button"]');
-
-      if (emojiBtn) {
-        // 找到笑臉按鈕的父容器（div.bkOPih 或類似的容器）
-        let container = emojiBtn.parentElement;
-
-        // 如果父容器存在，直接在其中插入
-        if (container) {
-          // 設置按鈕樣式
-          btn.style.cssText = '';
-          btn.style.background = 'transparent';
-          btn.style.border = 'none';
-          btn.style.cursor = 'pointer';
-          btn.style.padding = '4px';
-          btn.style.marginLeft = '4px';
-          btn.style.width = '30px';
-          btn.style.height = '30px';
-          btn.style.display = 'inline-flex';
-          btn.style.alignItems = 'center';
-          btn.style.justifyContent = 'center';
-          btn.style.verticalAlign = 'middle';
-
-          // 插入到笑臉按鈕之後
-          emojiBtn.after(btn);
+  // w.tv 特殊檢查：檢查是否已存在按鈕並更新圖標大小
+  if (isWTV()) {
+    // 檢查聊天選項按鈕左邊是否已有 GSS 按鈕
+    const chatOptionsButton = document.querySelector('button[data-testid="chat-options-button"]');
+    if (chatOptionsButton && chatOptionsButton.parentElement) {
+      const existingBtn = chatOptionsButton.parentElement.querySelector(`#${UI.btnId}`);
+      if (existingBtn) {
+        // 更新現有按鈕的圖標大小和來源
+        const iconImg = existingBtn.querySelector('img');
+        if (iconImg) {
+          iconImg.src = chrome.runtime.getURL('icons/icon48.png');
+          iconImg.style.setProperty('width', '20px', 'important');
+          iconImg.style.setProperty('height', '20px', 'important');
+          iconImg.style.setProperty('min-width', '20px', 'important');
+          iconImg.style.setProperty('min-height', '20px', 'important');
+          iconImg.style.setProperty('max-width', '20px', 'important');
+          iconImg.style.setProperty('max-height', '20px', 'important');
         }
+        return true;
       }
+    }
+
+    // 檢查發送按鈕左邊是否已有 GSS 按鈕
+    const sendButton = document.querySelector('button[data-testid="send-message-button"]');
+    if (sendButton && sendButton.parentElement) {
+      const existingBtn = sendButton.parentElement.querySelector(`#${UI.btnId}`);
+      if (existingBtn) {
+        // 更新現有按鈕的圖標大小和來源
+        const iconImg = existingBtn.querySelector('img');
+        if (iconImg) {
+          iconImg.src = chrome.runtime.getURL('icons/icon48.png');
+          iconImg.style.setProperty('width', '20px', 'important');
+          iconImg.style.setProperty('height', '20px', 'important');
+          iconImg.style.setProperty('min-width', '20px', 'important');
+          iconImg.style.setProperty('min-height', '20px', 'important');
+          iconImg.style.setProperty('max-width', '20px', 'important');
+          iconImg.style.setProperty('max-height', '20px', 'important');
+        }
+        return true;
+      }
+    }
+
+    // 檢查輸入框內是否已有 GSS 按鈕
+    const editableContainer = document.querySelector('div[contenteditable="true"]')?.parentElement;
+    if (editableContainer) {
+      const existingBtn = editableContainer.querySelector(`#${UI.btnId}`);
+      if (existingBtn) {
+        // 更新現有按鈕的圖標大小和來源
+        const iconImg = existingBtn.querySelector('img');
+        if (iconImg) {
+          iconImg.src = chrome.runtime.getURL('icons/icon48.png');
+          iconImg.style.setProperty('width', '20px', 'important');
+          iconImg.style.setProperty('height', '20px', 'important');
+          iconImg.style.setProperty('min-width', '20px', 'important');
+          iconImg.style.setProperty('min-height', '20px', 'important');
+          iconImg.style.setProperty('max-width', '20px', 'important');
+          iconImg.style.setProperty('max-height', '20px', 'important');
+        }
+        return true;
+      }
+    }
+  }
+
+  ensureStyles();
+  createPanelIfNeeded();
+
+  // 根據平台創建不同結構
+  if (isVaughn()) {
+    // ===== Vaughn: 模仿官方按鈕結構（div 包裹 img）=====
+    const emojiBtn = chat.querySelector('.vs_chatv9_input_emojis');
+    if (emojiBtn) {
+      // 創建外層 div（只用 inline style，不設 class）
+      const wrapper = document.createElement('div');
+      wrapper.id = UI.btnId;
+      wrapper.style.cssText = 'width: 35px !important; height: 53px !important; padding: 0px 5px 7px 5px !important; margin: 0 !important; box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer;';
+
+      // 創建內層 img（不設 class，避免影響外層尺寸）
+      const iconImg = document.createElement('img');
+      iconImg.src = chrome.runtime.getURL('icons/icon16.png');
+      iconImg.style.width = '25px';
+      iconImg.style.height = '25px';
+      iconImg.style.display = 'block';
+      wrapper.appendChild(iconImg);
+
+      // 點擊事件
+      wrapper.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+      });
+
+      // 插入到表情按鈕之後
+      emojiBtn.after(wrapper);
+      return true;
+    }
+    // 找不到表情按鈕，回退到 DLive 邏輯
+  }
+
+  // ===== Twitch / DLive / Vaughn 備援：使用 button 結構 =====
+  const btn = document.createElement('button');
+  btn.id = UI.btnId;
+  btn.type = 'button';
+  btn.title = 'GSS 通用貼圖系統';
+
+  const iconImg = document.createElement('img');
+  iconImg.src = chrome.runtime.getURL('icons/icon48.png');
+  iconImg.style.width = '24px';
+  iconImg.style.height = '24px';
+  iconImg.style.display = 'block';
+  iconImg.style.objectFit = 'contain';
+  iconImg.style.flexShrink = '0';
+  btn.appendChild(iconImg);
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePanel();
+  });
+
+  if (isTwitch()) {
+    // Twitch: 插入到笑臉按鈕之後
+    const emojiBtn = document.querySelector('[data-a-target="emote-picker-button"]');
+    if (emojiBtn) {
+      btn.style.cssText = '';
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '4px';
+      btn.style.marginLeft = '4px';
+      btn.style.width = '30px';
+      btn.style.height = '30px';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.verticalAlign = 'middle';
+      emojiBtn.after(btn);
     } else {
-      // DLive: 直接附加到聊天輸入框
       chat.appendChild(btn);
     }
+  } else if (isYouTube()) {
+    // YouTube: 插入到表情按鈕附近
+    // YouTube 聊天室使用 Shadow DOM，需要仔細找
+    let emojiBtn = null;
+    let insertTarget = null;
+
+    // 方法 1: 直接找表情按鈕元素
+    emojiBtn = document.querySelector('yt-live-chat-emoji-button-renderer');
+
+    // 方法 2: 找輸入框容器內的按鈕
+    if (!emojiBtn) {
+      const inputField = document.querySelector('yt-live-chat-text-input-field-renderer');
+      if (inputField) {
+        // YouTube 可能使用 Shadow DOM，嘗試深度查詢
+        const allButtons = inputField.querySelectorAll('button, yt-icon-button, ytd-button-renderer');
+        for (const btn of allButtons) {
+          // 找包含表情圖標的按鈕或最後一個按鈕
+          if (btn.querySelector('yt-icon, svg') || btn.getAttribute('aria-label')?.includes('emoji')) {
+            emojiBtn = btn;
+            break;
+          }
+        }
+        // 如果還是找不到，用第一個或最後一個按鈕
+        if (!emojiBtn && allButtons.length > 0) {
+          emojiBtn = allButtons[allButtons.length - 1];
+        }
+      }
+    }
+
+    // 方法 3: 找輸入框的父容器，插入到容器內
+    if (!emojiBtn) {
+      const inputContainer = document.querySelector('yt-live-chat-text-input-field-renderer');
+      if (inputContainer) {
+        insertTarget = inputContainer;
+      }
+    }
+
+    if (emojiBtn) {
+      // 找到表情按鈕，在它後面插入
+      btn.style.cssText = '';
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '4px';
+      btn.style.marginLeft = '4px';
+      btn.style.width = '30px';
+      btn.style.height = '30px';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.verticalAlign = 'middle';
+      emojiBtn.after(btn);
+    } else if (insertTarget) {
+      // 沒找到表情按鈕，直接插入到輸入框容器
+      btn.style.cssText = '';
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '4px';
+      btn.style.marginLeft = '8px';
+      btn.style.width = '30px';
+      btn.style.height = '30px';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      insertTarget.appendChild(btn);
+    } else {
+      // 最後備援：直接加到 chat 容器
+      chat.appendChild(btn);
+    }
+  } else if (isKick()) {
+    // Kick: 插入到表情按鈕之後
+    // 先嘗試找 #chat-input-wrapper（主頁面），再嘗試 .chat-wrapper（chatroom 頁面）
+    let chatWrapper = document.getElementById('chat-input-wrapper');
+    if (!chatWrapper) {
+      // chatroom 頁面的容器
+      chatWrapper = document.querySelector('.chat-wrapper, .chat-container, .chat-interface');
+    }
+    if (chatWrapper) {
+      // 找表情按鈕（包含 SVG 的 button）
+      let emojiBtn = null;
+      const buttons = chatWrapper.querySelectorAll('button');
+      for (const b of buttons) {
+        if (b.querySelector('svg')) {
+          emojiBtn = b;
+          break;
+        }
+      }
+      // 如果找不到包含 SVG 的，用最後一個 button
+      if (!emojiBtn && buttons.length > 0) {
+        emojiBtn = buttons[buttons.length - 1];
+      }
+      if (emojiBtn) {
+        // 設置樣式並插入到表情按鈕後面
+        btn.style.cssText = '';
+        btn.style.background = 'transparent';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '4px';
+        btn.style.marginLeft = '4px';
+        btn.style.width = '30px';
+        btn.style.height = '30px';
+        btn.style.display = 'inline-flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.verticalAlign = 'middle';
+        emojiBtn.after(btn);
+      } else {
+        // 沒找到表情按鈕，直接加到容器末尾
+        chatWrapper.appendChild(btn);
+      }
+    } else {
+      // 備援：直接加到 chat 容器
+      chat.appendChild(btn);
+    }
+  } else if (isBeamstream()) {
+    // Beamstream: 插入到輸入框父容器
+    // Beamstream 使用 Quasar q-input 組件
+    const chatWrapper = document.querySelector('.row.items-center.relative-position');
+    if (chatWrapper) {
+      // 找表情按鈕（包含 SVG 的 button）
+      let emojiBtn = null;
+      const buttons = chatWrapper.querySelectorAll('button');
+      for (const b of buttons) {
+        if (b.querySelector('svg')) {
+          emojiBtn = b;
+          break;
+        }
+      }
+      // 如果找不到包含 SVG 的，用最後一個 button
+      if (!emojiBtn && buttons.length > 0) {
+        emojiBtn = buttons[buttons.length - 1];
+      }
+      if (emojiBtn) {
+        // 設置樣式並插入到表情按鈕後面
+        btn.style.cssText = '';
+        btn.style.background = 'transparent';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '4px';
+        btn.style.marginLeft = '4px';
+        btn.style.width = '30px';
+        btn.style.height = '30px';
+        btn.style.display = 'inline-flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.verticalAlign = 'middle';
+        emojiBtn.after(btn);
+      } else {
+        // 沒找到表情按鈕，直接加到容器末尾
+        chatWrapper.appendChild(btn);
+      }
+    } else {
+      // 備援：嘗試找到 q-field 的父元素
+      const qField = document.querySelector('.q-field._LTHqz');
+      if (qField && qField.parentElement) {
+        qField.parentElement.appendChild(btn);
+      }
+    }
+  } else if (isWTV()) {
+    // WTV: 檢測輸入狀態並放置按鈕
+    const chatOptionsButton = document.querySelector('button[data-testid="chat-options-button"]');
+    const sendButton = document.querySelector('button[data-testid="send-message-button"]');
+
+    if (sendButton && sendButton.parentElement) {
+      // 輸入狀態：放在發送按鈕左邊
+      btn.id = UI.btnId;
+
+      // 設置按鈕樣式，與發送按鈕一致
+      btn.style.cssText = '';
+      btn.className = 'font-medium items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-75 transition-colors text-base gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-disabled:bg-(--color-base-brand-bg) bg-primary hover:bg-[var(--color-base-brand-bg-hover)] active:bg-[var(--color-base-brand-bg-hover)] active:opacity-86 disabled:opacity-50 disabled:bg-[var(--color-base-brand-bg)] border-t-1 border-x-0 border-transparent border-t-[var(--color-base-border-decorative)] border-solid focus-visible:shadow-focus-ring cursor-pointer rounded-[var(--rounding-control-button-l)] py-[var(--padding-button-l-vertical)] px-[var(--padding-button-l-horizontal)] h-[44px] tracking-[var(--text-cta-letter-spacing)] block !p-2.5 text-white';
+      btn.type = 'button';
+
+      // 調整圖標大小
+      const iconImg = btn.querySelector('img');
+      if (iconImg) {
+        iconImg.style.setProperty('width', '20px', 'important');
+        iconImg.style.setProperty('height', '20px', 'important');
+        iconImg.style.setProperty('min-width', '20px', 'important');
+        iconImg.style.setProperty('min-height', '20px', 'important');
+        iconImg.style.setProperty('max-width', '20px', 'important');
+        iconImg.style.setProperty('max-height', '20px', 'important');
+        iconImg.className = 'iconify iconify--custom shrink-0';
+      }
+
+      // 插入到發送按鈕左邊
+      sendButton.parentElement.insertBefore(btn, sendButton);
+
+    } else if (chatOptionsButton && chatOptionsButton.parentElement) {
+      // 未輸入狀態：放在聊天選項按鈕左邊
+      btn.id = UI.btnId;
+
+      // 設置按鈕樣式，與聊天選項按鈕一致
+      btn.style.cssText = '';
+      btn.className = 'font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-75 transition-colors text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary border-solid disabled:bg-(--color-base-brand-bg) disabled:opacity-(--opacity-item-disabled) aria-disabled:bg-(--color-base-brand-bg) bg-transparent hover:bg-[var(--color-control-neutral-ghost-bg-hover)] active:bg-[var(--color-control-neutral-ghost-bg-hover)] active:opacity-86 border-2 border-transparent focus-visible:shadow-focus-ring cursor-pointer p-2 rounded-[var(--rounding-control-button-l)] !p-3';
+      btn.type = 'button';
+
+      // 調整圖標大小
+      const iconImg = btn.querySelector('img');
+      if (iconImg) {
+        iconImg.style.setProperty('width', '20px', 'important');
+        iconImg.style.setProperty('height', '20px', 'important');
+        iconImg.style.setProperty('min-width', '20px', 'important');
+        iconImg.style.setProperty('min-height', '20px', 'important');
+        iconImg.style.setProperty('max-width', '20px', 'important');
+        iconImg.style.setProperty('max-height', '20px', 'important');
+        iconImg.className = 'iconify iconify--custom shrink-0';
+      }
+
+      // 插入到聊天選項按鈕左邊
+      chatOptionsButton.parentElement.insertBefore(btn, chatOptionsButton);
+
+    } else {
+      // 備援：找不到這些按鈕時，插入到輸入框容器內
+      const editableContainer = document.querySelector('div[contenteditable="true"]').parentElement;
+      if (editableContainer) {
+        btn.id = UI.btnId;
+
+        btn.style.cssText = '';
+        btn.style.position = 'absolute';
+        btn.style.right = '8px';
+        btn.style.top = '50%';
+        btn.style.transform = 'translateY(-50%)';
+        btn.style.background = 'transparent';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '4px';
+        btn.style.width = '24px';
+        btn.style.height = '24px';
+        btn.style.display = 'inline-flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.zIndex = '10';
+
+        const iconImg = btn.querySelector('img');
+        if (iconImg) {
+          iconImg.style.width = '16px';
+          iconImg.style.height = '16px';
+        }
+
+        editableContainer.appendChild(btn);
+      } else {
+        // 最後備援：直接加到 chat 容器
+        btn.id = UI.btnId;
+        chat.appendChild(btn);
+      }
+    }
+  } else {
+    // DLive / Vaughn 備援: 直接附加到聊天輸入框
+    chat.appendChild(btn);
   }
 
   return true;
@@ -2690,19 +3653,55 @@ function setupUiAutoMount() {
   installFloatingMenusDocumentCapture();
   initLanguage();
 
+  // 載入禁用原生右鍵面板的設置
+  loadDisableNativeContextMenuSetting();
+
+  // 【臨時修復】強制啟用 WTV 右鍵菜單
+  setTimeout(() => {
+    if (window.location.hostname.includes('w.tv')) {
+      console.log('[GSS Debug] Force enabling context menu for WTV');
+      window.gssDisableNativeContextMenu = false;
+    }
+  }, 1000);
+
+  // 載入 TSC 系統設置
+  loadTscSettings();
+
   // 初次嘗試
   ensureChatButton();
 
-  // 用 observer 等待 SPA/動態聊天室渲染
+  // 用 observer 等待 SPA/動態聊天室渲染（帶節流）
+  let ensureBtnTimeout = null;
   const obs = new MutationObserver(() => {
-    ensureChatButton();
+    // 節流：最多每 500ms 執行一次
+    if (ensureBtnTimeout) return;
+    ensureBtnTimeout = setTimeout(() => {
+      ensureBtnTimeout = null;
+      ensureChatButton();
+    }, 500);
   });
   obs.observe(document.documentElement, { childList: true, subtree: true });
 
-  // 右鍵：新增貼圖 ID（能解析到 emote id 才攔截）
+  // 右鍵：新增貼圖 ID（能解析到 emote id 才攔截，且需檢查設置）
   document.addEventListener('contextmenu', (e) => {
+    console.log('[GSS Debug] Global contextmenu triggered:', e.target);
+    console.log('[GSS Debug] gssDisableNativeContextMenu setting:', window.gssDisableNativeContextMenu);
+
+    // 如果設置為禁用 GSS 右鍵面板，則不攔截
+    if (window.gssDisableNativeContextMenu) {
+      console.log('[GSS Debug] Native contextmenu disabled');
+      return;
+    }
+
     const id = getCandidateIdFromRightClick(e.target);
-    if (!id) return;
+    console.log('[GSS Debug] ID from right click:', id);
+
+    if (!id) {
+      console.log('[GSS Debug] No ID found, skipping');
+      return;
+    }
+
+    console.log('[GSS Debug] Preventing default and showing context menu');
     e.preventDefault();
     showContextMenuAt(e.clientX, e.clientY, id, e.target);
   });
@@ -2755,11 +3754,17 @@ function setupUiAutoMount() {
     }
   });
 
+  // 監聽共用聊天室的 GSS 按鈕事件
+  window.addEventListener('TEXO_TOGGLE_GSS_PANEL', () => {
+    ensureChatButton(); // 確保聊天按鈕存在
+    togglePanel(); // 切換面板
+  });
+
   // storage 更新時即時刷新
   try {
     chrome.storage.onChanged.addListener((changes, areaName) => {
       if (areaName !== 'local') return;
-      if (!changes.stickers && !changes.stickerIdsText && !changes.favoriteStickerIds && !changes.stickerTagVocabularyText) return;
+      if (!changes.stickerIdsText && !changes.favoriteStickerIds && !changes.stickerTagVocabularyText) return;
       const panel = document.getElementById(UI.panelId);
       if (panel?.classList.contains('open')) {
         refreshPanelStickers().catch(() => {
@@ -2772,246 +3777,24 @@ function setupUiAutoMount() {
   }
 }
 
-function getAccessToken() {
-  // DLive web 端常見 key（你給的參考就是這個）
-  const raw = localStorage.getItem('LOCAL_ACCESS_TOKEN_KEY');
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed?.token ?? null;
-  } catch {
-    return null;
-  }
-}
-
-async function gqlRequest(payload) {
-  const token = getAccessToken();
-  if (!token) {
-    const err = new Error('找不到登入 token（請先登入 DLive）');
-    err.code = 'NO_TOKEN';
-    throw err;
-  }
-
-  const res = await fetch('https://graphigo.prd.dlive.tv/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) {
-    const err = new Error(`HTTP ${res.status}`);
-    err.code = 'HTTP_ERROR';
-    throw err;
-  }
-
-  const json = await res.json();
-  if (json?.errors?.length) {
-    const err = new Error(json.errors[0]?.message || 'GraphQL error');
-    err.code = json.errors[0]?.extensions?.code || 'GQL_ERROR';
-    throw err;
-  }
-  return json?.data;
-}
-
-function getDisplayNameFromUrl() {
-  // 例如 /KingKongMovie 或 /c/KingKongMovie/xxxx
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  if (parts.length === 0) return null;
-  if (parts[0] === 'c' && parts[1]) return parts[1].toLowerCase();
-  if (parts[0] !== 'c') return parts[0].toLowerCase();
-  return null;
-}
-
-let cachedStreamer = null;
-let cachedDisplayName = null;
-let resolvingStreamer = null;
-
-async function resolveStreamerUsername() {
-  const displayName = getDisplayNameFromUrl();
-  if (!displayName) {
-    const err = new Error('目前頁面看起來不是頻道頁（無法判斷 streamer）');
-    err.code = 'NO_STREAMER';
-    throw err;
-  }
-
-  if (cachedStreamer && cachedDisplayName === displayName) return cachedStreamer;
-
-  if (resolvingStreamer) return await resolvingStreamer;
-
-  resolvingStreamer = (async () => {
-    // 參考你給的做法：用 displayname 查 username
-    const query = {
-      query: `
-        query {
-          userByDisplayName(displayname: "${displayName}") {
-            username
-          }
-        }
-      `
-    };
-
-    // 有時候剛切頁資料還沒好，最多等 5 秒重試
-    let lastErr = null;
-    for (let i = 0; i < 5; i++) {
-      try {
-        const data = await gqlRequest(query);
-        const username = data?.userByDisplayName?.username;
-        if (username) {
-          cachedStreamer = username;
-          cachedDisplayName = displayName;
-          return username;
-        }
-      } catch (e) {
-        lastErr = e;
-      }
-      await sleep(1000);
-    }
-    throw lastErr || new Error('找不到 streamer username');
-  })();
-
-  try {
-    return await resolvingStreamer;
-  } finally {
-    resolvingStreamer = null;
-  }
-}
-
 async function sendChatMessage(message, retries = 2) {
-  // 根據平台使用不同的發送方式
-  if (isTwitch()) {
-    return await sendTwitchChatMessage(message);
+  // 【新架構】使用平台適配器發送訊息
+  if (!isNewPlatformAvailable()) {
+    throw new Error('平台適配器未載入');
   }
 
-  // DLive 原有的發送邏輯
-  const streamer = await resolveStreamerUsername();
-
-  const mutation = `
-    mutation SendStreamChatMessage($input: SendStreamchatMessageInput!) {
-      sendStreamchatMessage(input: $input) {
-        err { code }
-        message { ... on ChatText { id } }
-      }
-    }
-  `;
-
-  const payload = {
-    operationName: 'SendStreamChatMessage',
-    query: mutation,
-    variables: {
-      input: {
-        streamer,
-        message,
-        // 參考版本用 Owner；若你不是台主可能會被後端忽略，但通常不影響送出
-        roomRole: 'Owner',
-        subscribing: false
-      }
-    }
-  };
-
-  let lastErr = null;
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const data = await gqlRequest(payload);
-      const errCode = data?.sendStreamchatMessage?.err?.code;
-      if (errCode) {
-        // 某些錯誤不需要重試
-        if (errCode === 'RATE_LIMIT' || errCode === 'BANNED' || errCode === 'CHAT_FROZEN') {
-          const err = new Error(`發送被拒絕: ${errCode}`);
-          err.code = errCode;
-          throw err;
-        }
-        if (i < retries) {
-          await sleep(300 + i * 200);
-          continue;
-        }
-        const err = new Error(`發送失敗: ${errCode}`);
-        err.code = errCode;
-        throw err;
-      }
-      return data?.sendStreamchatMessage?.message?.id || true;
-    } catch (e) {
-      lastErr = e;
-      // 網路錯誤或 token 問題才重試
-      if ((e.code === 'HTTP_ERROR' || e.code === 'NO_TOKEN') && i < retries) {
-        await sleep(500 + i * 300);
-        continue;
-      }
-      throw e;
-    }
-  }
-  throw lastErr || new Error('發送失敗');
-}
-
-// Twitch 聊天發送功能 - 只填充輸入框，不自動發送（避免 React DOM 衝突）
-// 【最保守策略】只觸發事件，讓 React 自己處理 DOM 更新
-async function sendTwitchChatMessage(message) {
-  // 【關鍵保護】設置標誌，暫停 IM 轉圖掃描
-  isSendingMessage = true;
-
-  try {
-    // 找到 Twitch 的聊天輸入框
-    const chatInput = document.querySelector('[data-a-target="chat-input"], .chat-wysiwyg-input__editor, [contenteditable="true"]');
-
-    if (!chatInput) {
-      throw new Error('找不到 Twitch 聊天輸入框');
-    }
-
-    // 聚焦輸入框
-    chatInput.focus();
-
-    // 【關鍵】觸發 beforeinput 事件，讓 React 準備接收輸入
-    const beforeInput = new InputEvent('beforeinput', {
-      bubbles: true,
-      cancelable: true,
-      inputType: 'insertText',
-      data: message
-    });
-    chatInput.dispatchEvent(beforeInput);
-
-    // 【關鍵】使用 execCommand 讓瀏覽器處理插入，React 應該能正確響應
-    const success = document.execCommand('insertText', false, message);
-
-    if (!success) {
-      // execCommand 失敗，嘗試另一種方式：創建一個臨時的 paste 事件
-      try {
-        const dt = new DataTransfer();
-        dt.setData('text/plain', message);
-        const pasteEvent = new ClipboardEvent('paste', {
-          bubbles: true,
-          cancelable: true,
-          clipboardData: dt
-        });
-        chatInput.dispatchEvent(pasteEvent);
-      } catch (e) {
-        // 忽略錯誤
-      }
-    }
-
-    // 【關鍵】觸發 input 事件，通知 React 值已改變
-    const inputEvent = new InputEvent('input', {
-      bubbles: true,
-      inputType: 'insertText',
-      data: message
-    });
-    chatInput.dispatchEvent(inputEvent);
-
-    // 觸發 change 事件（某些 React 組件會監聽）
-    chatInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-    // 不自動發送，讓用戶手動按 Enter
-    return true;
-  } finally {
-    // 【關鍵保護】延遲清除標誌
-    setTimeout(() => {
-      isSendingMessage = false;
-    }, 500);
-  }
+  const adapter = getPlatformAdapter();
+  const result = await adapter.sendMessage(message);
+  return result.id || true;
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // 處理來自 popup 的 GSS 控制命令（禁用右鍵面板）
+  if (request.type === 'GSS_CONTROL') {
+    handleGssControlCommand(request.command, sendResponse);
+    return true; // 讓 sendResponse 可以 async
+  }
+
   // 處理來自 popup 的 DLive 控制命令
   if (request.type === 'DLIVE_CONTROL') {
     handleDliveControlCommand(request.command, sendResponse);
@@ -3036,16 +3819,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function getCurrentPlatform() {
   const hostname = window.location.hostname;
   if (hostname.includes('twitch.tv')) return 'twitch';
-  if (hostname.includes('dlive.tv')) return 'dlive';
+  if (hostname.includes('vaughn.live')) return 'vaughn';
+  if (hostname.includes('kick.com')) return 'kick';
+  if (hostname.includes('youtube.com')) return 'youtube';
+  if (hostname.includes('beamstream.gg')) return 'beamstream';
+  if (hostname.includes('w.tv')) return 'wtv';
   return 'unknown';
 }
 
-function isDLive() {
-  return getCurrentPlatform() === 'dlive';
-}
 
 function isTwitch() {
   return getCurrentPlatform() === 'twitch';
+}
+
+function isVaughn() {
+  return getCurrentPlatform() === 'vaughn';
+}
+
+function isKick() {
+  return getCurrentPlatform() === 'kick';
+}
+
+function isBeamstream() {
+  return window.location.hostname.includes('beamstream.gg');
+}
+
+function isYouTube() {
+  return getCurrentPlatform() === 'youtube';
+}
+
+function isWTV() {
+  return getCurrentPlatform() === 'wtv';
 }
 
 // ==================== DLive 控制命令處理器 ====================
@@ -3058,7 +3862,6 @@ function handleDliveControlCommand(command, sendResponse) {
 
   try {
     switch (command) {
-      // 元素控制
       case 'toggleDonation': {
         const donationArea = findDonationArea();
         if (!donationArea) {
@@ -4122,6 +4925,54 @@ function handleDliveControlCommand(command, sendResponse) {
         break;
       }
 
+      // ==================== 自動關閉 Mature 警告 ====================
+      case 'enableAutoMature': {
+        // 透過 platform adapter 啟用功能
+        const adapter = window.GSS?.Platform?.getPlatformAdapter?.();
+        if (adapter && typeof adapter.enableAutoMature === 'function') {
+          adapter.enableAutoMature();
+          sendResponse({ success: true, message: '✅ 自動關閉 Mature 警告已啟用', active: true });
+        } else {
+          // 如果 adapter 不可用，直接啟用定時器
+          if (!window.dlsqMatureWarningTimer) {
+            window.dlsqMatureWarningTimer = setInterval(() => {
+              const agreeBtn = document.getElementsByClassName('agree')[0];
+              if (!agreeBtn) return;
+              const rect = agreeBtn.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                try {
+                  const checkboxes = document.getElementsByClassName('v-input--selection-controls__ripple');
+                  if (checkboxes.length > 0) {
+                    checkboxes[0]?.click();
+                    checkboxes[1]?.click();
+                  }
+                  agreeBtn.click();
+                } catch (e) { }
+              }
+            }, 600);
+          }
+          sendResponse({ success: true, message: '✅ 自動關閉 Mature 警告已啟用', active: true });
+        }
+        break;
+      }
+
+      case 'disableAutoMature': {
+        // 透過 platform adapter 停用功能
+        const adapter = window.GSS?.Platform?.getPlatformAdapter?.();
+        if (adapter && typeof adapter.disableAutoMature === 'function') {
+          adapter.disableAutoMature();
+          sendResponse({ success: true, message: '✅ 自動關閉 Mature 警告已停用', active: false });
+        } else {
+          // 如果 adapter 不可用，直接清除定時器
+          if (window.dlsqMatureWarningTimer) {
+            clearInterval(window.dlsqMatureWarningTimer);
+            window.dlsqMatureWarningTimer = null;
+          }
+          sendResponse({ success: true, message: '✅ 自動關閉 Mature 警告已停用', active: false });
+        }
+        break;
+      }
+
       default:
         sendResponse({ success: false, message: '❌ 未知命令' });
         break;
@@ -4129,6 +4980,164 @@ function handleDliveControlCommand(command, sendResponse) {
   } catch (e) {
     sendResponse({ success: false, message: '❌ 執行錯誤: ' + e.message });
   }
+}
+
+// ==================== GSS 控制命令處理器 ====================
+function handleGssControlCommand(command, sendResponse) {
+  try {
+    switch (command) {
+      case 'disableNativeContextMenu': {
+        window.gssDisableNativeContextMenu = true;
+        sendResponse({ success: true, message: '✅ 原生右鍵已啟用（GSS 右鍵面板已關閉）', active: true });
+        break;
+      }
+
+      case 'enableNativeContextMenu': {
+        window.gssDisableNativeContextMenu = false;
+        sendResponse({ success: true, message: '✅ GSS 右鍵面板已啟用', active: false });
+        break;
+      }
+
+      // TSC 系統開關
+      case 'enableTsc': {
+        window.tscEnabled = true;
+        sendResponse({ success: true, message: '✅ TSC 系統已啟用', active: true });
+        break;
+      }
+
+      case 'disableTsc': {
+        window.tscEnabled = false;
+        sendResponse({ success: true, message: '✅ TSC 系統已禁用', active: false });
+        break;
+      }
+
+      // TSC 自動抓取開關
+      case 'enableTscAutoCollect': {
+        window.tscAutoCollect = true;
+        sendResponse({ success: true, message: '✅ TSC 自動抓取已啟用', active: true });
+        break;
+      }
+
+      case 'disableTscAutoCollect': {
+        window.tscAutoCollect = false;
+        sendResponse({ success: true, message: '✅ TSC 自動抓取已禁用', active: false });
+        break;
+      }
+
+      default:
+        sendResponse({ success: false, message: '❌ 未知 GSS 命令' });
+        break;
+    }
+  } catch (e) {
+    sendResponse({ success: false, message: '❌ 執行錯誤: ' + e.message });
+  }
+}
+
+/**
+ * 載入禁用原生右鍵面板的設置
+ */
+function loadDisableNativeContextMenuSetting() {
+  try {
+    chrome.storage.local.get(['disableNativeContextMenu'], (result) => {
+      window.gssDisableNativeContextMenu = result.disableNativeContextMenu === true;
+    });
+  } catch (e) {
+    // 如果無法存取 storage，預設不禁用
+    window.gssDisableNativeContextMenu = false;
+  }
+}
+
+/**
+ * 載入 TSC 系統設置
+ */
+function loadTscSettings() {
+  try {
+    chrome.storage.local.get(['tscEnabled', 'tscAutoCollect'], (result) => {
+      // 預設開啟（undefined 或 true 都是開啟）
+      window.tscEnabled = result.tscEnabled !== false;
+      window.tscAutoCollect = result.tscAutoCollect !== false;
+    });
+  } catch (e) {
+    // 如果無法存取 storage，預設開啟
+    window.tscEnabled = true;
+    window.tscAutoCollect = true;
+  }
+}
+
+// ==================== 圖庫新架構兼容層 ====================
+function isNewLibraryAvailable() {
+  return typeof Library !== 'undefined' && Library.get;
+}
+
+/**
+ * 解碼貼圖 ID 為 URL（使用新架構或舊架構）
+ * @param {string} id - 貼圖 ID
+ * @returns {string|null}
+ */
+function decodeStickerId(id) {
+  // YT- 格式總是使用舊架構邏輯，確保正確處理
+  if (id?.startsWith('YT-')) {
+    // YouTube 视频贴纸：返回缩略图 URL
+    const videoId = id.slice(3).replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!videoId) return null;
+    return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+  }
+
+  if (isNewLibraryAvailable()) {
+    return Library.decode(id);
+  }
+  // 舊架構後備
+  if (id?.startsWith('IM-')) return DKIP.decode(id);
+  if (id?.startsWith('ME-')) return MEKP.decode(id);
+  if (id?.startsWith('CB-')) {
+    // Catbox 格式：CB-xxxxxx.gif → https://files.catbox.moe/xxxxxx.gif
+    const cbIdPart = id.slice(3); // 去掉 "CB-"
+    if (!cbIdPart) return null;
+    // 解析副檔名（支援 .ext 或 -ext 格式）
+    const extMatch = cbIdPart.match(/[.-](gif|png|jpg|jpeg|mp4|webp)$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase() : 'gif';
+    const idPart = cbIdPart.replace(/[.-](gif|png|jpg|jpeg|mp4|webp)$/i, '');
+    return `https://files.catbox.moe/${idPart}.${ext}`;
+  }
+  if (id?.startsWith('GSS-')) {
+    // GSS 格式：檢查是否有協議，如果沒有則添加 https://
+    let url = id.slice(4); // 去掉 "GSS-" 前綴
+    if (!url.match(/^https?:\/\//i)) {
+      url = 'https://' + url;
+    }
+    return url;
+  }
+  if (id?.startsWith('DL-')) {
+    const dlId = id.slice(3);
+    return `https://images.prd.dlivecdn.com/emote/${dlId}`;
+  }
+  return null;
+}
+
+/**
+ * 編碼 URL 為貼圖 ID（使用新架構或舊架構）
+ * @param {string} url - 圖片 URL
+ * @param {boolean} useTwitchFormat - 是否使用 Twitch 格式
+ * @returns {string|null}
+ */
+function encodeStickerUrl(url, useTwitchFormat = false) {
+  if (isNewLibraryAvailable()) {
+    return Library.encode(url, useTwitchFormat);
+  }
+  // 舊架構後備
+  if (url?.includes('imgur.com')) return 'IM-' + extractImgurId(url, useTwitchFormat);
+  if (url?.includes('meee.com.tw')) return 'ME-' + extractMeeeId(url, useTwitchFormat);
+  if (url?.includes('catbox.moe')) {
+    const match = url.match(/files\.catbox\.moe\/([a-zA-Z0-9]+)(?:\.(gif|png|jpg|jpeg|mp4|webp))?/i);
+    if (!match || match[1].length < 6) return null;
+    const id = match[1];
+    const ext = match[2] || 'gif';
+    if (useTwitchFormat) {
+      return `CB-${id}-${ext}`;
+    }
+    return ext === 'gif' ? `CB-${id}` : `CB-${id}.${ext}`;
+  }
+  return null;
 }
 
 const DKIP = {
@@ -4254,31 +5263,78 @@ function scanAndReplaceIMImages() {
 
   const textNodes = [];
   let node;
+  let checkedCount = 0;
   while (node = walker.nextNode()) {
+    checkedCount++;
     // 跳過已處理過的節點 和 聊天輸入框
-    if (node.parentElement?.closest('.dlsq-im-replaced, img, video, script, style, textarea')) continue;
+    // 【標記】檢查消息容器級標記和圖片標記，防止 React/KICK 重置 DOM 後重複處理
+    // 【修復】YouTube 翻譯重置檢測：如果 .dlsq-im-replaced 內有 ID 但沒有圖片，需要重新處理
+    const inReplacedWrapper = node.parentElement?.closest('.dlsq-im-replaced');
+    if (inReplacedWrapper) {
+      const text = node.textContent || '';
+      const hasID = /\b(IM|ME|DL|CB)-[a-zA-Z0-9_-]{3,}/i.test(text);
+      const hasImage = inReplacedWrapper.querySelector('img.dlsq-chat-img, video.dlsq-chat-video');
+      if (hasID && !hasImage) {
+        // 有 ID 但沒有圖片，說明被翻譯重置了，清除標記重新處理
+        inReplacedWrapper.classList.remove('dlsq-im-replaced');
+        console.log('[GSS] 【翻譯重置檢測】wrapper 內有 ID 但無圖片，清除標記:', text.substring(0, 30));
+      } else {
+        continue; // 正常情況，跳過已處理的
+      }
+    }
+    if (node.parentElement?.closest('.dlsq-message-processed, .dlsq-converted-image, img, video, script, style, textarea')) continue;
     // 跳過 Twitch/DLive 聊天輸入框（避免在輸入框中轉換圖片）
     // 【加強】添加更多 Twitch 輸入框相關選擇器
     if (node.parentElement?.closest('[data-a-target="chat-input"], [data-a-target="chat-input-container"], .chat-wysiwyg-input__editor, [contenteditable="true"], .chatroom-input, .chat-input, [class*="chat-input"]')) continue;
     const text = node.textContent;
-    // 檢查常規 IM-/ME- 或零寬字符或 DL- 或 Twitch emote 格式
-    if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || text.includes(':emote/mine/dlive/') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+    // 檢查常規 IM-/ME-/YT-/CB- 或零寬字符或 DL- 或 Twitch emote 格式或 YouTube URL 或 GSS- 圖片連結
+    const hasIM = text.includes('IM-');
+    const hasME = text.includes('ME-');
+    const hasDL = text.includes('DL-');
+    const hasYT = text.includes('YT-');
+    const hasCB = text.includes('CB-');
+    const hasGSS = text.includes('GSS-');
+    if (hasIM || hasME || hasYT || hasDL || hasCB || hasGSS ||
+      text.includes(':emote/mine/dlive/') ||
+      text.includes('youtube.com/watch') || text.includes('youtube.com/shorts') || text.includes('youtu.be/') ||
+      /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
       textNodes.push(node);
     }
   }
+  // Kick 掃描完成日誌（已關閉）
+  // if (isKick()) {
+  //   console.log('[GSS] Kick scan complete, checked', checkedCount, 'nodes, found', textNodes.length, 'sticker texts');
+  // }
 
-  textNodes.forEach(textNode => {
+  // 處理每個文本節點（日誌已關閉以避免刷屏）
+  // console.log('[GSS] Processing', textNodes.length, 'text nodes');
+  textNodes.forEach((textNode, index) => {
     const text = textNode.textContent;
+    // console.log('[GSS] Processing text node', index, ':', text.substring(0, 30));
 
     // 先嘗試解碼零寬字符
     let hiddenStickerId = null;
     let isDLSticker = false;
+    let isIMSticker = false;
+    let isMESticker = false;
+    let isCBSticker = false;
+    let isGSSSticker = false;
     const zwChars = text.match(/[\u200B\u200C\u200D\uFEFF]/g);
     if (zwChars && zwChars.length >= 8) {
       try {
         const decoded = decodeFromZeroWidth(zwChars.join(''));
-        if (decoded && (decoded.startsWith('IM-') || decoded.startsWith('ME-'))) {
+        if (decoded && decoded.startsWith('IM-')) {
           hiddenStickerId = decoded;
+          isIMSticker = true;
+        } else if (decoded && decoded.startsWith('ME-')) {
+          hiddenStickerId = decoded;
+          isMESticker = true;
+        } else if (decoded && decoded.startsWith('CB-')) {
+          hiddenStickerId = decoded;
+          isCBSticker = true;
+        } else if (decoded && decoded.startsWith('GSS-')) {
+          hiddenStickerId = decoded;
+          isGSSSticker = true;
         } else if (decoded && decoded.startsWith('DL-')) {
           hiddenStickerId = decoded;
           isDLSticker = true;
@@ -4288,8 +5344,65 @@ function scanAndReplaceIMImages() {
       }
     }
 
+    // 【修復】如果沒有零寬字元編碼的貼圖ID，檢查是否是直接的 IM-/ME-/CB-/GSS- 貼圖文本（Kick發送的格式）
+    if (!hiddenStickerId) {
+      const directMatch = text.match(/(IM|ME|CB|GSS)-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)/i);
+      if (directMatch) {
+        hiddenStickerId = directMatch[0];
+        if (hiddenStickerId.startsWith('IM-')) isIMSticker = true;
+        else if (hiddenStickerId.startsWith('ME-')) isMESticker = true;
+        else if (hiddenStickerId.startsWith('CB-')) isCBSticker = true;
+        else if (hiddenStickerId.startsWith('GSS-')) isGSSSticker = true;
+      }
+    }
+
+    // 【新功能】檢查 GSS- 圖片/影片連結格式
+    if (!hiddenStickerId) {
+      const gssMatch = text.match(/\bGSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?\b/gi);
+      if (gssMatch) {
+        hiddenStickerId = gssMatch[0]; // 使用第一個匹配的 GSS- 連結
+      }
+    }
+
     // 如果找到隱藏的貼圖ID，直接替換整個文本節點
     if (hiddenStickerId && !textNode.parentElement?.closest('.dlsq-hidden-decoded')) {
+      const parentEl = textNode.parentElement;
+
+      // 【防重複處理 1】檢查父元素是否已經標記處理過此ID
+      // 【修復】同時檢查是否真的存在對應的圖片，防止 YouTube 翻譯重置後無法重新處理
+      if (parentEl) {
+        const processedIds = parentEl.getAttribute('data-dlsq-processed') || '';
+        if (processedIds.includes(hiddenStickerId)) {
+          // 檢查是否真的有對應的圖片存在
+          const existingImg = parentEl.querySelector(`img[alt="${hiddenStickerId}"], img.dlsq-chat-img`);
+          if (existingImg) {
+            console.log('[GSS] 父元素已標記且圖片存在，跳過:', hiddenStickerId);
+            return;
+          } else {
+            // 標記存在但圖片不存在（被翻譯重置），清除標記重新處理
+            console.log('[GSS] 【翻譯重置】標記存在但圖片不存在，清除標記重新處理:', hiddenStickerId);
+            const newProcessedIds = processedIds.split(',').filter(id => id !== hiddenStickerId).join(',');
+            parentEl.setAttribute('data-dlsq-processed', newProcessedIds);
+          }
+        }
+      }
+
+      // 【防重複處理 2】檢查父元素是否已經有相同ID的貼圖圖片
+      if (parentEl) {
+        const existingImgs = parentEl.querySelectorAll('img.dlsq-chat-img');
+        for (const img of existingImgs) {
+          // 檢查是否已經有相同ID的圖片
+          const imgSrc = img.src || '';
+          const imgAlt = img.alt || '';
+          if (imgAlt === hiddenStickerId ||
+            (isDLSticker && imgSrc.includes(hiddenStickerId.slice(3))) ||
+            (!isDLSticker && imgSrc.includes(hiddenStickerId.replace(/IM-|ME-|CB-/, '').split('.')[0]))) {
+            console.log('[GSS] 已存在相同ID的貼圖圖片，跳過重複處理:', hiddenStickerId);
+            return;
+          }
+        }
+      }
+
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced dlsq-hidden-decoded';
 
@@ -4299,30 +5412,150 @@ function scanAndReplaceIMImages() {
         const img = document.createElement('img');
         img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
         img.alt = hiddenStickerId;
-        img.className = 'dlsq-im-replaced';
-        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent; object-fit: contain;';
+        img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
         wrapper.appendChild(img);
+      } else if (hiddenStickerId.startsWith('GSS-')) {
+        // 【新功能】GSS- 圖片/影片連結處理
+        let imageUrl = hiddenStickerId.replace(/^GSS-/i, '');
+
+        // 【關鍵】自動補完 HTTP 協議（如果沒有的話）
+        if (!imageUrl.match(/^https?:\/\//i)) {
+          imageUrl = 'https://' + imageUrl;
+        }
+
+        // 安全檢查：只允許特定圖片/影片格式和受信任的域名
+        if (isSafeImageUrl(imageUrl)) {
+          const isVideo = /\.mp4$/i.test(imageUrl);
+          let mediaElement;
+
+          if (isVideo) {
+            // 創建 video 元素
+            mediaElement = document.createElement('video');
+            mediaElement.src = imageUrl;
+            mediaElement.alt = hiddenStickerId;
+            mediaElement.dataset.gssUrl = imageUrl;
+            mediaElement.className = 'dlsq-im-replaced dlsq-converted-video dlsq-chat-video dlsq-gss-video';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #FF9800;'; // 橙色邊框區分影片
+            mediaElement.muted = true;
+            mediaElement.autoplay = true;
+            mediaElement.loop = true;
+            mediaElement.playsInline = true;
+          } else {
+            // 創建 img 元素
+            mediaElement = document.createElement('img');
+            mediaElement.src = imageUrl;
+            mediaElement.alt = hiddenStickerId;
+            mediaElement.dataset.gssUrl = imageUrl;
+            mediaElement.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img dlsq-gss-image';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #4CAF50;'; // 綠色邊框區分圖片
+          }
+
+          // 添加錯誤處理
+          mediaElement.onerror = () => {
+            console.warn('[GSS] 無法載入媒體:', imageUrl);
+            mediaElement.style.border = '2px solid #f44336'; // 紅色邊框表示失敗
+            // 顯示錯誤文字
+            const errorText = document.createElement('span');
+            errorText.textContent = '❌ 載入失敗';
+            errorText.style.cssText = 'font-size: 10px; color: #f44336; display: block; text-align: center;';
+            wrapper.appendChild(errorText);
+          };
+
+          // 添加點擊事件：點擊放大媒體
+          mediaElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // 創建放大圖片覆蓋層
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              background: rgba(0,0,0,0.9);
+              z-index: 999999;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            `;
+
+            let largeMedia;
+            if (isVideo) {
+              // 創建放大影片
+              largeMedia = document.createElement('video');
+              largeMedia.src = imageUrl;
+              largeMedia.controls = true;
+              largeMedia.autoplay = true;
+              largeMedia.loop = true;
+              largeMedia.muted = true;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            } else {
+              // 創建放大圖片
+              largeMedia = document.createElement('img');
+              largeMedia.src = imageUrl;
+              largeMedia.style.cssText = `
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                border-radius: 8px;
+              `;
+            }
+
+            overlay.appendChild(largeMedia);
+            document.body.appendChild(overlay);
+
+            // 點擊關閉
+            overlay.addEventListener('click', () => {
+              document.body.removeChild(overlay);
+            });
+          });
+
+          // 添加右鍵菜單
+          mediaElement.addEventListener('contextmenu', (e) => {
+            if (window.gssDisableNativeContextMenu) return;
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenuAt(e.clientX, e.clientY, 'GSS-' + imageUrl, mediaElement);
+          });
+
+          wrapper.appendChild(mediaElement);
+        } else {
+          console.warn('[GSS] 不安全的圖片連結被阻止:', imageUrl);
+          // 顯示錯誤提示
+          const errorText = document.createElement('span');
+          errorText.textContent = '⚠️ 不安全連結';
+          errorText.style.cssText = 'font-size: 10px; color: #ff9800; display: block; text-align: center;';
+          wrapper.appendChild(errorText);
+        }
       } else {
         // IM 或 ME 貼圖：顯示圖片
-        const isME = hiddenStickerId.startsWith('ME-');
-        const url = isME ? MEKP.decode(hiddenStickerId) : DKIP.decode(hiddenStickerId);
+        const url = decodeStickerId(hiddenStickerId);
         if (url) {
           const isVideo = /\.mp4$/i.test(url);
           if (isVideo) {
+            // 創建 video 元素
             const video = document.createElement('video');
             video.src = url;
-            video.className = 'dlsq-im-replaced';
+            video.alt = hiddenStickerId;
             video.muted = true;
             video.autoplay = true;
             video.loop = true;
             video.playsInline = true;
-            video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
+            video.className = 'dlsq-im-replaced dlsq-chat-video';
             wrapper.appendChild(video);
           } else {
+            // 創建 img 元素
             const img = document.createElement('img');
             img.src = url;
-            img.className = 'dlsq-im-replaced';
-            img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: block; margin: 4px 0; border: 2px solid transparent;';
+            img.alt = hiddenStickerId; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
+            img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
             wrapper.appendChild(img);
           }
         }
@@ -4332,78 +5565,128 @@ function scanAndReplaceIMImages() {
       try {
         // 額外檢查：確保節點還在 DOM 中且沒有被 React 移除
         if (!textNode.parentNode || !document.contains(textNode)) {
+          console.log('[GSS] Text node removed from DOM, skipping');
           return; // 節點已被移除，跳過
         }
         textNode.replaceWith(wrapper);
+
+        // 【防重複處理】給父元素添加處理標記
+        if (parentEl && hiddenStickerId) {
+          const processedIds = parentEl.getAttribute('data-dlsq-processed') || '';
+          if (!processedIds.includes(hiddenStickerId)) {
+            parentEl.setAttribute('data-dlsq-processed', processedIds + ',' + hiddenStickerId);
+          }
+        }
       } catch (e) {
+        console.log('[GSS] replaceWith failed:', e.message);
         // 如果 replaceWith 失敗，嘗試 insertBefore + remove
         try {
           const parent = textNode.parentNode;
           if (parent && document.contains(textNode)) {
             parent.insertBefore(wrapper, textNode);
             parent.removeChild(textNode);
+            console.log('[GSS] Fallback insertBefore/remove succeeded');
+
+            // 【防重複處理】給父元素添加處理標記
+            if (hiddenStickerId) {
+              const processedIds = parent.getAttribute('data-dlsq-processed') || '';
+              if (!processedIds.includes(hiddenStickerId)) {
+                parent.setAttribute('data-dlsq-processed', processedIds + ',' + hiddenStickerId);
+              }
+            }
           }
         } catch (e2) {
+          console.log('[GSS] Fallback also failed:', e2.message);
           // 節點可能已被 React 移除，忽略錯誤
         }
       }
 
-      // 等待圖片加載完成後再滾動（僅 IM 貼圖需要）
-      if (!isDLSticker) {
-        const mediaEl = wrapper.querySelector('img, video');
-        if (mediaEl) {
-          const doScroll = () => {
-            // 檢查消息時間，只滾動10秒內的新消息
-            const msgContainer = wrapper.closest('[class*="message"], [data-testid*="message"]');
-            if (msgContainer) {
-              const timeEl = msgContainer.querySelector('time, [class*="time"], [class*="timestamp"]');
-              if (timeEl) {
-                const timeText = timeEl.textContent || timeEl.getAttribute('datetime') || '';
-                const msgTime = new Date(timeText).getTime();
-                if (!isNaN(msgTime) && (Date.now() - msgTime) >= 10000) {
-                  return; // 超過10秒不滾動
-                }
-              }
-            }
+      // 等待圖片加載完成後再滾動（所有貼圖類型都需要）
+      // 【修復】為所有貼圖類型（IM/ME/DL/YT）觸發滾動
+      const mediaEl = wrapper.querySelector('img, video');
+      if (mediaEl && !mediaEl.dataset.dlsqScrollBound) {
+        mediaEl.dataset.dlsqScrollBound = 'true'; // 標記已綁定，防止重複
 
-            // 檢查用戶是否在底部附近（距離底部200px內才滾動）
-            const chatContainers = document.querySelectorAll('.overflow-y-auto.height-100');
-            let chatContainer = null;
-            for (const el of chatContainers) {
-              if (el.scrollHeight > 3000) {
-                chatContainer = el;
-                break;
-              }
-            }
-            if (chatContainer) {
-              const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
-              if (distanceToBottom > 200) {
-                return; // 用戶在看歷史消息，不打擾
-              }
-            }
+        const doScroll = () => {
+          // 多平台聊天容器選擇器
+          const chatSelectors = [
+            '.overflow-y-auto.height-100',           // DLive
+            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
+            '[data-a-target="chat-list"]',           // Twitch 備援
+            '.chat-scroll-area',                      // Twitch 備援
+            '.chat-room__content',                    // Twitch 舊版
+            '.chat-list',                             // 通用
+            '[data-chat="true"] [class*="overflow-y"]', // Kick 新版
+            '[class*="ChatContainer"] [class*="overflow"]', // Kick 容器
+            '#chat-input-wrapper ~ div [class*="overflow-y"]', // Kick 舊版
+            '.chat-container [class*="overflow"]',    // Kick 備援
+            '.vs_chatv9_messages',                    // Vaughn
+            '[class*="message-list"]',              // 通用
+          ];
 
-            // 直接滾動
-            wrapper.parentElement?.scrollIntoView(false);
-          };
-
-          if (mediaEl.complete || mediaEl.readyState >= 3) {
-            // 圖片已加載，延遲0.5秒後滾動
-            setTimeout(doScroll, 500);
-          } else if (mediaEl.tagName === 'VIDEO') {
-            // 視頻使用 loadeddata 事件
-            mediaEl.addEventListener('loadeddata', () => setTimeout(doScroll, 500), { once: true });
-          } else {
-            // 圖片等待加載
-            mediaEl.onload = () => setTimeout(doScroll, 500);
+          let chatContainer = null;
+          for (const selector of chatSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              chatContainer = el;
+              console.log('[GSS] Found chat container:', selector);
+              break;
+            }
           }
+
+          if (chatContainer) {
+            const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+            console.log('[GSS] Distance to bottom:', distanceToBottom);
+            if (distanceToBottom > 200) {
+              console.log('[GSS] Skip scroll: user not near bottom');
+              return; // 用戶在看歷史消息，不打擾
+            }
+          }
+
+          // Kick/Twitch 特殊處理：使用 scrollTo 而不是 scrollIntoView
+          if ((isKick() || isTwitch()) && chatContainer) {
+            console.log('[GSS] Using Kick/Twitch scroll method, container:', chatContainer);
+            // 【關鍵】Kick/Twitch 需要觸發滾動事件才能更新 React 狀態
+            // 使用 scrollTo 方法更可靠
+            const targetScroll = chatContainer.scrollHeight;
+            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            console.log('[GSS] scrollTo called, target:', targetScroll, 'current:', chatContainer.scrollTop);
+            // 觸發多種滾動事件讓 Kick/Twitch 知道已滾動到底部
+            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+            // 嘗試找到並點擊「恢復滾動」按鈕
+            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+              console.log('[GSS] Clicking resume button');
+              resumeBtn.click();
+            }
+            // 再延遲一點確保渲染完成
+            setTimeout(() => {
+              console.log('[GSS] Delayed scroll check, current:', chatContainer.scrollTop, 'target:', chatContainer.scrollHeight);
+              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+            }, 100);
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        };
+
+        mediaEl.addEventListener('load', doScroll);
+        mediaEl.addEventListener('error', doScroll);
+        // 如果圖片已經載入完成，立即執行滾動
+        if (mediaEl.complete) {
+          doScroll();
         }
+      } else if (!mediaEl) {
+        // 沒有圖片/視頻元素，直接滾動
+        console.log('[GSS] No media element, scrolling immediately');
+        wrapper.parentElement?.scrollIntoView(false);
       }
 
       return; // 已處理，跳過常規 IM- 檢查
     }
 
-    // 檢查明文 DL- ID 或 Twitch emote 格式 :emote/mine/dlive/xxx:
-    const dlRegex = /DL-[a-zA-Z0-9_]+|:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/gi;
+    // 檢查明文 DL- ID 或 Twitch emote 格式 :emote/mine/dlive/xxx:（從頭匹配，最少6字符）
+    const dlRegex = /\bDL-[a-zA-Z0-9_]{3,}\b|:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/gi;
     let dlMatch;
     let dlLastIndex = 0;
     const dlFragments = [];
@@ -4421,8 +5704,7 @@ function scanAndReplaceIMImages() {
         const img = document.createElement('img');
         img.src = `https://images.prd.dlivecdn.com/emote/${emoteId}`;
         img.alt = `DL-${emoteId}`;
-        img.className = 'dlsq-im-replaced';
-        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+        img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
         dlFragments.push(img);
       } else {
         // 純文字 DL-xxx 格式 - 也顯示為實際圖片
@@ -4430,8 +5712,7 @@ function scanAndReplaceIMImages() {
         const img = document.createElement('img');
         img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
         img.alt = fullMatch;
-        img.className = 'dlsq-im-replaced';
-        img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+        img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
         dlFragments.push(img);
       }
 
@@ -4442,7 +5723,9 @@ function scanAndReplaceIMImages() {
       dlFragments.push(document.createTextNode(text.slice(dlLastIndex)));
     }
 
-    if (dlFragments.length > 1 || (dlFragments.length === 1 && dlFragments[0].tagName === 'IMG')) {
+    // 檢查是否成功替換了至少一個圖片（而不是只有文本節點）
+    const hasDLMedia = dlFragments.some(f => f.tagName === 'IMG');
+    if (hasDLMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
       dlFragments.forEach(f => wrapper.appendChild(f));
@@ -4463,12 +5746,76 @@ function scanAndReplaceIMImages() {
           // 忽略錯誤
         }
       }
+      // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+      const msgContainer = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+      if (msgContainer) msgContainer.classList.add('dlsq-message-processed');
+
+      // 【修復】DL 貼圖也需要觸發滾動
+      const dlMediaEl = wrapper.querySelector('img');
+      if (dlMediaEl && !dlMediaEl.dataset.dlsqScrollBound) {
+        dlMediaEl.dataset.dlsqScrollBound = 'true';
+        const doDLScroll = () => {
+          // 多平台聊天容器選擇器
+          const chatSelectors = [
+            '.overflow-y-auto.height-100',
+            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
+            '[data-a-target="chat-list"]',
+            '.chat-scroll-area',
+            '.chat-room__content',
+            '.chat-list',
+            '[data-chat="true"] [class*="overflow-y"]',
+            '[class*="ChatContainer"] [class*="overflow"]',
+            '#chat-input-wrapper ~ div [class*="overflow-y"]',
+            '.chat-container [class*="overflow"]',
+            '.vs_chatv9_messages',
+            '[class*="message-list"]',
+          ];
+          let chatContainer = null;
+          for (const selector of chatSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              chatContainer = el;
+              break;
+            }
+          }
+          if ((isKick() || isTwitch()) && chatContainer) {
+            const targetScroll = chatContainer.scrollHeight;
+            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+              resumeBtn.click();
+            }
+            setTimeout(() => {
+              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+            }, 100);
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        };
+        dlMediaEl.addEventListener('load', doDLScroll);
+        dlMediaEl.addEventListener('error', doDLScroll);
+        if (dlMediaEl.complete) {
+          doDLScroll();
+        }
+      }
+
       return; // 已處理 DL，跳過 IM- 檢查
     }
 
-    // 常規 IM-/ME- 檢查（DLive 用舊格式：IM-id.gif 或 IM-id）
-    const imRegex = /IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?/gi;
-    const meRegex = /ME-[a-zA-Z0-9]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?/gi;
+    // 【優先】常規 IM-/ME- 檢查（從頭匹配，最少6字符）
+    const imRegex = /\bIM-[a-zA-Z0-9]{3,}(?:\.(?:gif|png|jpg|jpeg|mp4))?\b/gi;
+    const meRegex = /\bME-[a-zA-Z0-9]{3,}(?:[.-](?:gif|png|jpg|jpeg|mp4))?\b/gi;
+
+    // 【調試】檢查文本內容
+    const imTest = imRegex.test(text);
+    const meTest = meRegex.test(text);
+    imRegex.lastIndex = 0; // 重置
+    meRegex.lastIndex = 0; // 重置
+    if (imTest || meTest) {
+      console.log(`[GSS] 【IM/ME 檢測】文本:`, text.substring(0, 60), 'IM匹配:', imTest, 'ME匹配:', meTest);
+    }
 
     // 處理 IM- 格式
     let imMatch;
@@ -4482,7 +5829,7 @@ function scanAndReplaceIMImages() {
         imFragments.push(document.createTextNode(text.slice(imLastIndex, imMatch.index)));
       }
 
-      const url = DKIP.decode(fullMatch);
+      const url = decodeStickerId(fullMatch);
       if (url) {
         const isVideo = /\.mp4$/i.test(url);
         if (isVideo) {
@@ -4493,13 +5840,13 @@ function scanAndReplaceIMImages() {
           video.autoplay = true;
           video.loop = true;
           video.playsInline = true;
-          video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          video.className = 'dlsq-im-replaced dlsq-chat-video';
           imFragments.push(video);
         } else {
           const img = document.createElement('img');
           img.src = url;
-          img.className = 'dlsq-im-replaced';
-          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          img.alt = fullMatch; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
+          img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
           imFragments.push(img);
         }
       } else {
@@ -4513,7 +5860,9 @@ function scanAndReplaceIMImages() {
       imFragments.push(document.createTextNode(text.slice(imLastIndex)));
     }
 
-    if (imFragments.length > 1 || (imFragments.length === 1 && (imFragments[0].tagName === 'IMG' || imFragments[0].tagName === 'VIDEO'))) {
+    // 檢查是否成功替換了至少一個圖片/視頻（而不是只有文本節點）
+    const hasIMMedia = imFragments.some(f => f.tagName === 'IMG' || f.tagName === 'VIDEO');
+    if (hasIMMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
       imFragments.forEach(f => wrapper.appendChild(f));
@@ -4533,6 +5882,56 @@ function scanAndReplaceIMImages() {
           // 忽略錯誤
         }
       }
+      // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+      const msgContainer2 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+      if (msgContainer2) msgContainer2.classList.add('dlsq-message-processed');
+
+      // 【修復】明文 IM 貼圖也需要觸發滾動
+      const imMediaEl = wrapper.querySelector('img, video');
+      if (imMediaEl && !imMediaEl.dataset.dlsqScrollBound) {
+        imMediaEl.dataset.dlsqScrollBound = 'true';
+        const doIMScroll = () => {
+          const chatSelectors = [
+            '.overflow-y-auto.height-100', '.scrollable-area',
+            '[data-a-target="chat-list"]', '.chat-scroll-area',
+            '.chat-room__content', '.chat-list',
+            '[data-chat="true"] [class*="overflow-y"]',
+            '[class*="ChatContainer"] [class*="overflow"]',
+            '#chat-input-wrapper ~ div [class*="overflow-y"]',
+            '.chat-container [class*="overflow"]',
+            '.vs_chatv9_messages', '[class*="message-list"]',
+          ];
+          let chatContainer = null;
+          for (const selector of chatSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              chatContainer = el;
+              break;
+            }
+          }
+          if ((isKick() || isTwitch()) && chatContainer) {
+            const targetScroll = chatContainer.scrollHeight;
+            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+              resumeBtn.click();
+            }
+            setTimeout(() => {
+              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+            }, 100);
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        };
+        imMediaEl.addEventListener('load', doIMScroll);
+        imMediaEl.addEventListener('error', doIMScroll);
+        if (imMediaEl.complete) {
+          doIMScroll();
+        }
+      }
+
       return; // 已處理 IM，跳過 ME 檢查
     }
 
@@ -4559,13 +5958,13 @@ function scanAndReplaceIMImages() {
           video.autoplay = true;
           video.loop = true;
           video.playsInline = true;
-          video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          video.className = 'dlsq-im-replaced dlsq-chat-video';
           meFragments.push(video);
         } else {
           const img = document.createElement('img');
           img.src = url;
-          img.className = 'dlsq-im-replaced';
-          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent;';
+          img.alt = fullMatch; // 【修復】設置 alt 與 DL 圖保持一致，防止翻譯清除
+          img.className = 'dlsq-im-replaced dlsq-converted-image dlsq-chat-img'; // 【標記】標記為已轉換圖片
           meFragments.push(img);
         }
       } else {
@@ -4579,7 +5978,9 @@ function scanAndReplaceIMImages() {
       meFragments.push(document.createTextNode(text.slice(meLastIndex)));
     }
 
-    if (meFragments.length > 1 || (meFragments.length === 1 && (meFragments[0].tagName === 'IMG' || meFragments[0].tagName === 'VIDEO'))) {
+    // 檢查是否成功替換了至少一個圖片/視頻（而不是只有文本節點）
+    const hasMEMedia = meFragments.some(f => f.tagName === 'IMG' || f.tagName === 'VIDEO');
+    if (hasMEMedia) {
       const wrapper = document.createElement('span');
       wrapper.className = 'dlsq-im-replaced';
       meFragments.forEach(f => wrapper.appendChild(f));
@@ -4599,8 +6000,882 @@ function scanAndReplaceIMImages() {
           // 忽略錯誤
         }
       }
+      // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+      const msgContainer3 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+      if (msgContainer3) msgContainer3.classList.add('dlsq-message-processed');
+
+      // 【修復】明文 ME 貼圖也需要觸發滾動
+      const meMediaEl = wrapper.querySelector('img, video');
+      if (meMediaEl && !meMediaEl.dataset.dlsqScrollBound) {
+        meMediaEl.dataset.dlsqScrollBound = 'true';
+        const doMEScroll = () => {
+          const chatSelectors = [
+            '.overflow-y-auto.height-100', '.scrollable-area',
+            '[data-a-target="chat-list"]', '.chat-scroll-area',
+            '.chat-room__content', '.chat-list',
+            '[data-chat="true"] [class*="overflow-y"]',
+            '[class*="ChatContainer"] [class*="overflow"]',
+            '#chat-input-wrapper ~ div [class*="overflow-y"]',
+            '.chat-container [class*="overflow"]',
+            '.vs_chatv9_messages', '[class*="message-list"]',
+          ];
+          let chatContainer = null;
+          for (const selector of chatSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              chatContainer = el;
+              break;
+            }
+          }
+          if ((isKick() || isTwitch()) && chatContainer) {
+            const targetScroll = chatContainer.scrollHeight;
+            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+              resumeBtn.click();
+            }
+            setTimeout(() => {
+              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+            }, 100);
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        };
+        meMediaEl.addEventListener('load', doMEScroll);
+        meMediaEl.addEventListener('error', doMEScroll);
+        if (meMediaEl.complete) {
+          doMEScroll();
+        }
+      }
+
+      return; // 已處理 ME，跳過 YT 檢查
+    }
+
+    // 【統一格式】YT- 智能模式：自動檢測 Shorts 並給予適當顯示 (從頭匹配，最少6字符)
+    // 【統一格式】YT- 智能模式：自動檢測 Shorts 並給予適當顯示
+    const ytRegex = /\bYT-[a-zA-Z0-9_-]{3,}\b/gi;
+    let ytMatch;
+    let ytLastIndex = 0;
+    const ytFragments = [];
+
+    while ((ytMatch = ytRegex.exec(text)) !== null) {
+      const fullMatch = ytMatch[0];
+
+      if (ytMatch.index > ytLastIndex) {
+        ytFragments.push(document.createTextNode(text.slice(ytLastIndex, ytMatch.index)));
+      }
+
+      const videoId = fullMatch.slice(3); // 移除 "YT-" 前綴
+
+      // 【智能模式】先創建縮略圖容器
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      // 創建縮略圖圖片
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = fullMatch;
+      img.className = 'dlsq-converted-image dlsq-chat-yt';
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + fullMatch;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      // 創建播放按鈕圖標
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255,0,0,0.85);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 16px;
+        padding-left: 3px;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+
+      // 點擊打開 YouTube 播放器
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openYouTubePlayer(videoId);
+      });
+
+      // 【智能檢測】若為 Shorts，自動轉換為直式自動播放
+      checkYouTubeVideoType(videoId).then(videoInfo => {
+        if (videoInfo.isShorts && thumbContainer.parentNode) {
+          // 是 Shorts，創建直式自動播放容器替換縮略圖
+          const shortsContainer = document.createElement('span');
+          shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
+          shortsContainer.style.cssText = 'display: inline-block; position: relative; width: 120px; height: 213px; vertical-align: middle; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+
+          // 創建 iframe 自動播放 Shorts
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
+          iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          iframe.setAttribute('allowfullscreen', '');
+
+          shortsContainer.appendChild(iframe);
+
+          // 創建透明遮罩層
+          const overlay = document.createElement('span');
+          overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
+          overlay.setAttribute('data-yt-id', `YT-${videoId}`);
+          shortsContainer.appendChild(overlay);
+
+          // 點擊遮罩開啟小播放器
+          overlay.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openYouTubePlayer(videoId);
+          });
+
+          // 右鍵選單
+          overlay.addEventListener('contextmenu', (e) => {
+            if (window.gssDisableNativeContextMenu) return;
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenuAt(e.clientX, e.clientY, `YT-${videoId}`, overlay);
+          });
+
+          // 替換縮略圖為 Shorts 容器
+          thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+        }
+      }).catch(() => {
+        // API 失敗時保持縮略圖不變
+      });
+
+      ytFragments.push(thumbContainer);
+
+      ytLastIndex = ytRegex.lastIndex;
+    }
+
+    if (ytLastIndex < text.length) {
+      ytFragments.push(document.createTextNode(text.slice(ytLastIndex)));
+    }
+
+    if (ytFragments.length > 1 || (ytFragments.length === 1 && ytFragments[0].className?.includes('dlsq-yt-thumbnail'))) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'dlsq-im-replaced';
+      ytFragments.forEach(f => wrapper.appendChild(f));
+
+      try {
+        if (textNode.parentNode) {
+          textNode.replaceWith(wrapper);
+        }
+      } catch (e) {
+        try {
+          const parent = textNode.parentNode;
+          if (parent) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 忽略錯誤
+        }
+      }
+      // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+      const msgContainer4 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+      if (msgContainer4) msgContainer4.classList.add('dlsq-message-processed');
+
+      // YT- 也觸發滾動（統一行為，支援 Kick）
+      setTimeout(() => {
+        if (isKick()) {
+          // Kick 特殊處理：使用更精確的選擇器找到聊天容器
+          const kickSelectors = [
+            '[data-chat="true"] [class*="overflow-y"]',
+            '[class*="ChatContainer"] [class*="overflow"]',
+            '#chat-input-wrapper ~ div [class*="overflow-y"]',
+            '.chat-container [class*="overflow"]'
+          ];
+          let kickChatContainer = null;
+          for (const selector of kickSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              kickChatContainer = el;
+              console.log('[GSS] YT- Kick chat container found:', selector);
+              break;
+            }
+          }
+          if (kickChatContainer) {
+            const targetScroll = kickChatContainer.scrollHeight;
+            kickChatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            console.log('[GSS] YT- Kick scrolled to:', targetScroll);
+            // 觸發滾動事件讓 React 知道
+            kickChatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        } else {
+          wrapper.parentElement?.scrollIntoView(false);
+        }
+      }, 500);
+
+      return; // 已處理 YT-xxx，跳過完整 URL 檢查
+    }
+
+    // 處理完整的 YouTube URL (youtube.com/watch?v=... 或 youtube.com/shorts/... 或 youtu.be/...)
+    // 【Vaughn 平台】不轉換完整 YouTube URL 為縮略圖，只處理 YT-xxx 格式
+    if (isVaughn()) {
+      return; // Vaughn 上跳過完整 URL 處理，只保留 YT-xxx 的縮略圖
+    }
+
+    const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
+    let ytUrlMatch;
+    let ytUrlLastIndex = 0;
+    const ytUrlFragments = [];
+
+    while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
+      const fullMatch = ytUrlMatch[0];
+      const videoId = ytUrlMatch[1];
+
+      if (ytUrlMatch.index > ytUrlLastIndex) {
+        ytUrlFragments.push(document.createTextNode(text.slice(ytUrlLastIndex, ytUrlMatch.index)));
+      }
+
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
+      // 創建縮略圖容器
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      // 創建縮略圖圖片
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = fullMatch;
+      img.className = 'dlsq-converted-image dlsq-chat-yt'; // 【標記】標記為已轉換圖片
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + fullMatch;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      // 創建播放按鈕圖標
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255,0,0,0.85);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 14px;
+        padding-left: 3px;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+
+      // 點擊打開 YouTube 播放器
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openYouTubePlayer(videoId);
+      });
+
+      ytUrlFragments.push(thumbContainer);
+
+      ytUrlLastIndex = ytUrlRegex.lastIndex;
+    }
+
+    if (ytUrlLastIndex < text.length) {
+      ytUrlFragments.push(document.createTextNode(text.slice(ytUrlLastIndex)));
+    }
+
+    if (ytUrlFragments.length > 1 || (ytUrlFragments.length === 1 && ytUrlFragments[0].className?.includes('dlsq-yt-thumbnail'))) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'dlsq-im-replaced';
+      ytUrlFragments.forEach(f => wrapper.appendChild(f));
+
+      try {
+        if (textNode.parentNode) {
+          textNode.replaceWith(wrapper);
+        }
+      } catch (e) {
+        try {
+          const parent = textNode.parentNode;
+          if (parent) {
+            parent.insertBefore(wrapper, textNode);
+            parent.removeChild(textNode);
+          }
+        } catch (e2) {
+          // 忽略錯誤
+        }
+      }
+
+      // 【修復】完整 YouTube URL 也需要觸發滾動
+      console.log('[GSS] YouTube URL thumbnail processed, triggering scroll');
+      const ytMediaEl = wrapper.querySelector('img');
+      if (ytMediaEl && !ytMediaEl.dataset.dlsqScrollBound) {
+        ytMediaEl.dataset.dlsqScrollBound = 'true';
+        const doYTScroll = () => {
+          // 多平台聊天容器選擇器
+          const chatSelectors = [
+            '.overflow-y-auto.height-100',
+            '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
+            '[data-a-target="chat-list"]',
+            '.chat-scroll-area',
+            '.chat-room__content',
+            '.chat-list',
+            '[data-chat="true"] [class*="overflow-y"]',
+            '[class*="ChatContainer"] [class*="overflow"]',
+            '#chat-input-wrapper ~ div [class*="overflow-y"]',
+            '.chat-container [class*="overflow"]',
+            '.vs_chatv9_messages',
+            '[class*="message-list"]',
+          ];
+          let chatContainer = null;
+          for (const selector of chatSelectors) {
+            const el = document.querySelector(selector);
+            if (el && el.scrollHeight > el.clientHeight) {
+              chatContainer = el;
+              break;
+            }
+          }
+          if ((isKick() || isTwitch()) && chatContainer) {
+            const targetScroll = chatContainer.scrollHeight;
+            chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+            chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+            const resumeBtn = document.querySelector('button[class*="scroll"], button[dir="ltr"]');
+            if (resumeBtn && resumeBtn.textContent.includes('暂停')) {
+              resumeBtn.click();
+            }
+            setTimeout(() => {
+              chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+            }, 100);
+          } else {
+            wrapper.parentElement?.scrollIntoView(false);
+          }
+        };
+        ytMediaEl.addEventListener('load', doYTScroll);
+        ytMediaEl.addEventListener('error', doYTScroll);
+        if (ytMediaEl.complete) {
+          doYTScroll();
+        }
+      }
     }
   });
+}
+
+// WTV 專用：掃描並替換圖片（使用特殊策略避免 React 重新渲染）
+function scanAndReplaceWTVImages() {
+  // WTV 聊天容器
+  const chatContainer = document.querySelector('[data-chat-scroll-container]');
+  if (!chatContainer) return;
+
+  // 只處理可見的訊息容器（優化效能）
+  const messageContainers = chatContainer.querySelectorAll('[data-testid="chat-message-container"]');
+  let processedCount = 0;
+
+  messageContainers.forEach(container => {
+    // 檢查是否已處理過
+    if (container.classList.contains('dlsq-wtv-processed')) return;
+
+    // 檢查是否已經有轉換過的圖片
+    if (container.querySelector('.dlsq-wtv-converted')) return;
+
+    // 使用 TreeWalker 精確查找文本節點，避免影響 HTML 結構
+    const walker = document.createTreeWalker(
+      container,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+
+    let textNode = null;
+    let imMatch = null;
+    let meMatch = null;
+    let dlMatch = null;
+    let ytMatch = null;
+    let cbMatch = null;
+    let gssMatch = null;
+
+    // 找到包含貼圖 ID 的文本節點
+    while (textNode = walker.nextNode()) {
+      const text = textNode.textContent || '';
+
+      // 檢查是否包含貼圖 ID
+      imMatch = text.match(/\bIM-[a-zA-Z0-9_-]+\.(?:gif|png|jpg|jpeg|mp4)\b/gi);
+      meMatch = text.match(/\bME-[a-zA-Z0-9_-]+[\.-](?:gif|png|jpg|jpeg|mp4)\b/gi);
+      dlMatch = text.match(/:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/gi);
+      ytMatch = text.match(/\bYT-[a-zA-Z0-9_-]+\b/gi); // YouTube ID
+      cbMatch = text.match(/\bCB-[a-zA-Z0-9_-]+[\.-](?:gif|png|jpg|jpeg|mp4|webp)\b/gi); // Catbox ID
+
+      // 【新功能】GSS-分類：檢測圖片/影片連結（支援無協議格式）
+      gssMatch = text.match(/\bGSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*(?:&amp;[^\s]*)*)?\b/gi);
+
+      if (imMatch || meMatch || dlMatch || ytMatch || cbMatch || gssMatch) {
+        break; // 找到後停止，textNode 已經保存
+      }
+    }
+
+    if (!textNode || (!imMatch && !meMatch && !dlMatch && !ytMatch && !cbMatch && !gssMatch)) return;
+
+    // 標記容器為已處理
+    container.classList.add('dlsq-wtv-processed');
+    processedCount++;
+
+    // 【關鍵策略】使用 CSS 隱藏原始文字 + 絕對定位圖片覆蓋，而不是替換 DOM 節點
+    // 這樣可以避免 React 重新渲染時重置我們的修改
+
+    // 1. 找到或創建圖片容器
+    let imgContainer = container.querySelector('.dlsq-wtv-img-container');
+    if (!imgContainer) {
+      imgContainer = document.createElement('span');
+      imgContainer.className = 'dlsq-wtv-img-container dlsq-wtv-converted';
+      imgContainer.style.cssText = 'display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle;';
+
+      // 2. 將圖片容器插入到訊息容器的末尾
+      container.appendChild(imgContainer);
+    }
+
+    // 3. 處理 IM- 貼圖/影片
+    if (imMatch) {
+      imMatch.forEach(stickerId => {
+        const url = decodeStickerId(stickerId);
+        if (url && !imgContainer.querySelector(`img[data-sticker-id="${stickerId}"], video[data-sticker-id="${stickerId}"]`)) {
+          const isVideo = /\.mp4$/i.test(url);
+          let mediaElement;
+
+          if (isVideo) {
+            // 創建 video 元素
+            mediaElement = document.createElement('video');
+            mediaElement.src = url;
+            mediaElement.alt = stickerId;
+            mediaElement.dataset.stickerId = stickerId;
+            mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            mediaElement.muted = true;
+            mediaElement.autoplay = true;
+            mediaElement.loop = true;
+            mediaElement.playsInline = true;
+          } else {
+            // 創建 img 元素
+            mediaElement = document.createElement('img');
+            mediaElement.src = url;
+            mediaElement.alt = stickerId;
+            mediaElement.dataset.stickerId = stickerId;
+            mediaElement.className = 'dlsq-wtv-sticker';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+          }
+
+          // 添加右鍵菜單（使用 capture 模式）
+          mediaElement.addEventListener('contextmenu', (e) => {
+            console.log('[GSS Debug] WTV IM media contextmenu:', stickerId, e.target);
+            if (window.gssDisableNativeContextMenu) {
+              console.log('[GSS Debug] WTV native contextmenu disabled');
+              return;
+            }
+            console.log('[GSS Debug] WTV IM preventing default and showing menu');
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenuAt(e.clientX, e.clientY, stickerId, mediaElement);
+          }, true); // 使用 capture 模式
+
+          imgContainer.appendChild(mediaElement);
+        }
+      });
+    }
+
+    // 4. 處理 ME- 貼圖/影片
+    if (meMatch) {
+      meMatch.forEach(stickerId => {
+        const normalizedId = stickerId.replace(/\./g, '-');
+        const url = MEKP.decode(normalizedId);
+        if (url && !imgContainer.querySelector(`img[data-sticker-id="${stickerId}"], video[data-sticker-id="${stickerId}"]`)) {
+          const isVideo = /\.mp4$/i.test(url);
+          let mediaElement;
+
+          if (isVideo) {
+            // 創建 video 元素
+            mediaElement = document.createElement('video');
+            mediaElement.src = url;
+            mediaElement.alt = stickerId;
+            mediaElement.dataset.stickerId = stickerId;
+            mediaElement.className = 'dlsq-wtv-sticker dlsq-wtv-video';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+            mediaElement.muted = true;
+            mediaElement.autoplay = true;
+            mediaElement.loop = true;
+            mediaElement.playsInline = true;
+          } else {
+            // 創建 img 元素
+            mediaElement = document.createElement('img');
+            mediaElement.src = url;
+            mediaElement.alt = stickerId;
+            mediaElement.dataset.stickerId = stickerId;
+            mediaElement.className = 'dlsq-wtv-sticker';
+            mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+          }
+
+          // 添加右鍵菜單
+          mediaElement.addEventListener('contextmenu', (e) => {
+            if (window.gssDisableNativeContextMenu) return;
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenuAt(e.clientX, e.clientY, stickerId, mediaElement);
+          });
+
+          imgContainer.appendChild(mediaElement);
+        }
+      });
+    }
+
+    // 5. 處理 CB- 貼圖
+    if (cbMatch) {
+      cbMatch.forEach(stickerId => {
+        const url = decodeStickerId(stickerId);
+        if (url && !imgContainer.querySelector(`img[data-sticker-id="${stickerId}"]`)) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = stickerId;
+          img.dataset.stickerId = stickerId;
+          img.className = 'dlsq-wtv-sticker';
+          img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+
+          // 添加右鍵菜單
+          img.addEventListener('contextmenu', (e) => {
+            if (window.gssDisableNativeContextMenu) return;
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenuAt(e.clientX, e.clientY, stickerId, img);
+          });
+
+          imgContainer.appendChild(img);
+        }
+      });
+    }
+
+    // 6. 處理 DLive emote 格式 :emote/mine/dlive/xxx:
+    if (dlMatch) {
+      dlMatch.forEach(fullMatch => {
+        const emoteIdMatch = fullMatch.match(/:emote\/mine\/dlive\/([a-zA-Z0-9_]+):/i);
+        if (emoteIdMatch) {
+          const emoteId = emoteIdMatch[1];
+          const stickerId = `DL-${emoteId}`;
+          if (!imgContainer.querySelector(`img[data-sticker-id="${stickerId}"]`)) {
+            const img = document.createElement('img');
+            img.src = `https://images.prd.dlivecdn.com/emote/${emoteId}`;
+            img.alt = stickerId;
+            img.dataset.stickerId = stickerId;
+            img.className = 'dlsq-wtv-sticker';
+            img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px; display: inline-block;';
+
+            // 添加右鍵菜單
+            img.addEventListener('contextmenu', (e) => {
+              if (window.gssDisableNativeContextMenu) return;
+              e.preventDefault();
+              e.stopPropagation();
+              showContextMenuAt(e.clientX, e.clientY, stickerId, img);
+            });
+
+            imgContainer.appendChild(img);
+          }
+        }
+      });
+    }
+
+    // 6. 處理 YT- 影片格式（抄襲其他平台的完整實現）
+    if (ytMatch) {
+      ytMatch.forEach(ytId => {
+        const videoId = ytId.slice(3); // 移除 "YT-" 前綴
+
+        // 【智能模式】先創建縮略圖容器
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        const thumbContainer = document.createElement('span');
+        thumbContainer.className = 'dlsq-im-replaced dlsq-yt-thumbnail';
+        thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+
+        thumbContainer.title = '點擊播放 YouTube 視頻';
+        thumbContainer.setAttribute('data-sticker-id', ytId);
+
+        // 創建縮略圖圖片
+        const img = document.createElement('img');
+        img.src = thumbnailUrl;
+        img.alt = ytId;
+        img.className = 'dlsq-converted-image dlsq-chat-yt';
+        img.onerror = () => {
+          img.style.display = 'none';
+          const fallback = document.createElement('span');
+          fallback.textContent = '🎬 ' + ytId;
+          fallback.style.cssText = 'color: #666; font-size: 12px;';
+          thumbContainer.appendChild(fallback);
+        };
+
+        // 創建播放按鈕圖標
+        const playBtn = document.createElement('span');
+        playBtn.innerHTML = '▶';
+        playBtn.style.cssText = `
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 40px;
+          height: 40px;
+          background: rgba(255,0,0,0.85);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          font-size: 16px;
+          padding-left: 3px;
+          pointer-events: none;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        `;
+
+        thumbContainer.appendChild(img);
+        thumbContainer.appendChild(playBtn);
+
+        // 點擊打開 YouTube 播放器
+        thumbContainer.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openYouTubePlayer(videoId);
+        });
+
+        // 右鍵菜單
+        thumbContainer.addEventListener('contextmenu', (e) => {
+          if (window.gssDisableNativeContextMenu) return;
+          e.preventDefault();
+          e.stopPropagation();
+          showContextMenuAt(e.clientX, e.clientY, ytId, thumbContainer);
+        });
+
+        // 【智能檢測】若為 Shorts，自動轉換為直式自動播放
+        checkYouTubeVideoType(videoId).then(videoInfo => {
+          if (videoInfo.isShorts && thumbContainer.parentNode) {
+            // 是 Shorts，創建直式自動播放容器替換縮略圖
+            const shortsContainer = document.createElement('span');
+            shortsContainer.className = 'dlsq-im-replaced dlsq-yt-shorts tsc-exclude';
+            shortsContainer.style.cssText = 'display: inline-block; position: relative; width: 120px; height: 213px; vertical-align: middle; margin: 4px 0; border-radius: 8px; overflow: hidden;';
+
+            // 創建 iframe 自動播放 Shorts
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`;
+            iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.setAttribute('allowfullscreen', '');
+
+            shortsContainer.appendChild(iframe);
+
+            // 創建透明遮罩層
+            const overlay = document.createElement('span');
+            overlay.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;';
+            overlay.setAttribute('data-yt-id', ytId);
+            shortsContainer.appendChild(overlay);
+
+            // 點擊遮罩開啟小播放器
+            overlay.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openYouTubePlayer(videoId);
+            });
+
+            // 右鍵菜單
+            overlay.addEventListener('contextmenu', (e) => {
+              if (window.gssDisableNativeContextMenu) return;
+              e.preventDefault();
+              e.stopPropagation();
+              showContextMenuAt(e.clientX, e.clientY, ytId, overlay);
+            });
+
+            // 替換縮略圖為 Shorts 容器
+            thumbContainer.parentNode.replaceChild(shortsContainer, thumbContainer);
+          }
+        }).catch(() => {
+          // API 失敗時保持縮略圖不變
+        });
+
+        imgContainer.appendChild(thumbContainer);
+      });
+    }
+
+    // 7. 【新功能】處理 GSS- 分類：圖片/影片連結轉換
+    if (gssMatch) {
+      gssMatch.forEach(gssUrl => {
+        // 提取純連結（去掉 GSS- 前綴）
+        let imageUrl = gssUrl.replace(/^GSS-/i, '');
+
+        // 【修復】解碼 HTML 實體（修復 WTV 平台的 &amp; 問題）
+        imageUrl = imageUrl.replace(/&amp;/g, '&');
+
+        // 【關鍵】自動補完 HTTP 協議（如果沒有的話）
+        if (!imageUrl.match(/^https?:\/\//i)) {
+          imageUrl = 'https://' + imageUrl;
+        }
+
+        // 安全檢查：只允許特定圖片/影片格式和受信任的域名
+        if (isSafeImageUrl(imageUrl)) {
+          // 檢查是否已經存在相同媒體
+          if (!imgContainer.querySelector(`img[data-gss-url="${imageUrl}"], video[data-gss-url="${imageUrl}"]`)) {
+            const isVideo = /\.mp4$/i.test(imageUrl);
+            let mediaElement;
+
+            if (isVideo) {
+              // 創建 video 元素
+              mediaElement = document.createElement('video');
+              mediaElement.src = imageUrl;
+              mediaElement.alt = 'GSS-' + imageUrl;
+              mediaElement.dataset.gssUrl = imageUrl;
+              mediaElement.dataset.stickerId = 'GSS-' + imageUrl;
+              mediaElement.className = 'dlsq-wtv-sticker dlsq-gss-video';
+              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #FF9800;'; // 橙色邊框區分影片
+              mediaElement.muted = true;
+              mediaElement.autoplay = true;
+              mediaElement.loop = true;
+              mediaElement.playsInline = true;
+            } else {
+              // 創建 img 元素
+              mediaElement = document.createElement('img');
+              mediaElement.src = imageUrl;
+              mediaElement.alt = 'GSS-' + imageUrl;
+              mediaElement.dataset.gssUrl = imageUrl;
+              mediaElement.dataset.stickerId = 'GSS-' + imageUrl;
+              mediaElement.className = 'dlsq-wtv-sticker dlsq-gss-image';
+              mediaElement.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 4px;  border: 2px solid #4CAF50;'; // 綠色邊框區分圖片
+            }
+
+            // 添加錯誤處理
+            mediaElement.onerror = () => {
+              console.warn('[GSS] 無法載入媒體:', imageUrl);
+              mediaElement.style.border = '2px solid #f44336'; // 紅色邊框表示失敗
+              // 顯示錯誤文字
+              const errorText = document.createElement('span');
+              errorText.textContent = '❌ 載入失敗';
+              errorText.style.cssText = 'font-size: 10px; color: #f44336; display: block; text-align: center;';
+              imgContainer.appendChild(errorText);
+            };
+
+            // 添加右鍵菜單（使用 capture 模式）
+            mediaElement.addEventListener('contextmenu', (e) => {
+              console.log('[GSS Debug] WTV GSS media contextmenu:', 'GSS-' + imageUrl, e.target);
+              if (window.gssDisableNativeContextMenu) {
+                console.log('[GSS Debug] WTV native contextmenu disabled');
+                return;
+              }
+              console.log('[GSS Debug] WTV GSS preventing default and showing menu');
+              e.preventDefault();
+              e.stopPropagation();
+              showContextMenuAt(e.clientX, e.clientY, 'GSS-' + imageUrl, mediaElement);
+            }, true); // 使用 capture 模式
+
+            // 添加點擊事件：點擊放大媒體
+            mediaElement.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // 創建放大圖片覆蓋層
+              const overlay = document.createElement('div');
+              overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.9);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              `;
+
+              let largeMedia;
+              if (isVideo) {
+                // 創建放大影片
+                largeMedia = document.createElement('video');
+                largeMedia.src = imageUrl;
+                largeMedia.controls = true;
+                largeMedia.autoplay = true;
+                largeMedia.loop = true;
+                largeMedia.muted = true;
+                largeMedia.style.cssText = `
+                  max-width: 90vw;
+                  max-height: 90vh;
+                  object-fit: contain;
+                  border-radius: 8px;
+                `;
+              } else {
+                // 創建放大圖片
+                largeMedia = document.createElement('img');
+                largeMedia.src = imageUrl;
+                largeMedia.style.cssText = `
+                  max-width: 90vw;
+                  max-height: 90vh;
+                  object-fit: contain;
+                  border-radius: 8px;
+                `;
+              }
+
+              overlay.appendChild(largeMedia);
+              document.body.appendChild(overlay);
+
+              // 點擊關閉
+              overlay.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+              });
+            });
+
+            imgContainer.appendChild(mediaElement);
+          }
+        } else {
+          console.warn('[GSS] 不安全的圖片連結被阻止:', imageUrl);
+        }
+      });
+    }
+
+    // 8. 【重要】只隱藏貼圖 ID 部分，保留其他文字（如用戶名字）
+    // 使用包裝器隱藏文本節點，避免影響其他元素
+    if (textNode && (imMatch || meMatch || dlMatch || ytMatch || cbMatch || gssMatch)) {
+      // 創建一個包裝器來隱藏文本節點
+      const wrapper = document.createElement('span');
+      wrapper.style.cssText = 'font-size: 0; line-height: 0; opacity: 0; display: inline-block; width: 0; height: 0; overflow: hidden; visibility: hidden;';
+      wrapper.className = 'dlsq-wtv-text-wrapper';
+
+      // 將文本節點移到包裝器中
+      textNode.parentNode.insertBefore(wrapper, textNode);
+      wrapper.appendChild(textNode);
+    }
+  });
+
+  if (processedCount > 0) {
+    console.log('[GSS] WTV processed', processedCount, 'messages');
+  }
 }
 
 // 右鍵 imgur 圖片發送功能
@@ -4648,10 +6923,160 @@ function extractMeeeId(url, useTwitchFormat = false) {
 let isSendingMessage = false;
 
 function initIMFeature() {
-  // 【修復】DLive 和 Twitch 分開處理
+  // 【修復】Twitch、Vaughn、Kick、WTV 分開處理
   const isTwitchPage = window.location.hostname.includes('twitch.tv');
+  const isVaughnPage = window.location.hostname.includes('vaughn.live');
+  const isKickPage = window.location.hostname.includes('kick.com');
+  const isWTVPage = window.location.hostname.includes('w.tv');
 
-  if (!isTwitchPage) {
+  if (isVaughnPage) {
+    // ===== Vaughn 頁面：使用 IM 轉圖邏輯 =====
+    setInterval(() => {
+      if (!isSendingMessage) scanAndReplaceIMImages();
+    }, 1500);
+
+    const chatContainer = document.querySelector('.vs_chatv9, .vs_chat_container, [class*="chat"]');
+    if (chatContainer) {
+      let mutationTimeout = null;
+      const observer = new MutationObserver((mutations) => {
+        if (isSendingMessage) return;
+        if (mutationTimeout) clearTimeout(mutationTimeout);
+        mutationTimeout = setTimeout(() => {
+          mutationTimeout = null;
+          const hasNewMessages = mutations.some(m => {
+            return Array.from(m.addedNodes).some(n => {
+              return n.nodeType === Node.ELEMENT_NODE && (
+                n.matches?.('[class*="message"]') ||
+                n.querySelector?.('[class*="message"]') ||
+                n.matches?.('[class*="chat"]') ||
+                n.querySelector?.('[class*="chat"]')
+              );
+            });
+          });
+          if (hasNewMessages) scanAndReplaceIMImages();
+        }, 100);
+      });
+      observer.observe(chatContainer, { childList: true, subtree: true });
+    }
+  } else if (isKickPage) {
+    // ===== Kick 頁面：專門的 IM 轉圖邏輯 =====
+    console.log('[GSS] Kick IM feature initializing');
+    setInterval(() => {
+      if (!isSendingMessage) {
+        console.log('[GSS] Kick scanning for IM images...');
+        scanAndReplaceIMImages();
+      }
+    }, 1500);
+
+    // Kick 的聊天容器選擇器
+    const chatContainer = document.querySelector('[class*="chat-container"], [class*="ChatContainer"], #chat-input-wrapper ~ div, [class*="overflow-y-auto"]');
+    console.log('[GSS] Kick chat container found:', !!chatContainer);
+    if (chatContainer) {
+      let mutationTimeout = null;
+      const observer = new MutationObserver((mutations) => {
+        if (isSendingMessage) return;
+        if (mutationTimeout) clearTimeout(mutationTimeout);
+        mutationTimeout = setTimeout(() => {
+          mutationTimeout = null;
+          const hasNewMessages = mutations.some(m => {
+            return Array.from(m.addedNodes).some(n => {
+              return n.nodeType === Node.ELEMENT_NODE && (
+                n.matches?.('[class*="message"]') ||
+                n.querySelector?.('[class*="message"]') ||
+                n.textContent?.match?.(/(IM-|ME-|YT-|DL-)/)
+              );
+            });
+          });
+          if (hasNewMessages) {
+            console.log('[GSS] Kick new messages detected, scanning...');
+            scanAndReplaceIMImages();
+            // 【修復】KICK 平台額外檢查其他格式貼圖
+            setTimeout(() => {
+              scanAndReplaceMEImages();
+              scanAndReplaceYTImages();
+              scanAndReplaceCBImages();
+              scanAndReplaceGSSImages();
+            }, 200);
+          }
+        }, 100);
+      });
+      observer.observe(chatContainer, { childList: true, subtree: true });
+    }
+  } else if (isWTVPage) {
+    // ===== WTV 頁面：專門的 IM 轉圖邏輯（避免 React 重新渲染問題）=====
+    console.log('[GSS] WTV IM feature initializing with anti-React-reset protection');
+
+    // WTV 專用：使用 requestAnimationFrame 批次處理，減少 React 干擾
+    let wtvProcessingQueue = [];
+    let isWTVProcessing = false;
+    let wtvScrollTimeout = null;
+    let isWTVScrolling = false;
+
+    // 監聽卷軸事件，暫停處理
+    const wtvChatContainer = document.querySelector('[data-chat-scroll-container]');
+    if (wtvChatContainer) {
+      wtvChatContainer.addEventListener('scroll', () => {
+        isWTVScrolling = true;
+        clearTimeout(wtvScrollTimeout);
+        wtvScrollTimeout = setTimeout(() => {
+          isWTVScrolling = false;
+        }, 200); // 卷軸停止 200ms 後恢復處理
+      }, { passive: true });
+    }
+
+    // WTV 專用轉圖函數
+    function processWTVQueue() {
+      if (isWTVProcessing || isWTVScrolling || isSendingMessage) return;
+      isWTVProcessing = true;
+
+      // 使用 requestAnimationFrame 批次處理
+      requestAnimationFrame(() => {
+        try {
+          scanAndReplaceWTVImages();
+        } finally {
+          isWTVProcessing = false;
+        }
+      });
+    }
+
+    // 定期掃描（使用較長間隔，減少 React 壓力）
+    setInterval(() => {
+      if (!isSendingMessage && !isWTVScrolling) {
+        processWTVQueue();
+      }
+    }, 2000); // WTV 使用 2 秒間隔，比 DLive 更長
+
+    // MutationObserver 監聽新訊息
+    if (wtvChatContainer) {
+      let wtvMutationTimeout = null;
+      const wtvObserver = new MutationObserver((mutations) => {
+        if (isSendingMessage || isWTVScrolling) return;
+
+        // 檢查是否為新訊息
+        const hasNewMessages = mutations.some(m => {
+          return Array.from(m.addedNodes).some(n => {
+            return n.nodeType === Node.ELEMENT_NODE && (
+              n.matches?.('[data-testid="chat-message-container"]') ||
+              n.querySelector?.('[data-testid="chat-message-container"]')
+            );
+          });
+        });
+
+        if (hasNewMessages) {
+          clearTimeout(wtvMutationTimeout);
+          wtvMutationTimeout = setTimeout(() => {
+            if (!isWTVScrolling) {
+              processWTVQueue();
+            }
+          }, 300); // 延遲 300ms 等待 React 渲染完成
+        }
+      });
+
+      wtvObserver.observe(wtvChatContainer, { childList: true, subtree: true });
+      console.log('[GSS] WTV MutationObserver attached');
+    }
+
+  } else if (!isTwitchPage) {
     // ===== DLive 頁面：完整 IM 轉圖功能 =====
     setInterval(() => {
       if (!isSendingMessage) scanAndReplaceIMImages();
@@ -4683,11 +7108,14 @@ function initIMFeature() {
     // 延遲啟動，等待頁面完全渲染
     setTimeout(() => {
       initTwitchIMFeature();
-    }, 2000);
+    }, 3000); // 增加到 3 秒延遲，確保 Twitch 完全載入
   }
 
   // 右鍵 imgur/meee 圖片選單（所有頁面）
   document.addEventListener('contextmenu', (e) => {
+    // 如果設置為禁用 GSS 右鍵面板，則不攔截
+    if (window.gssDisableNativeContextMenu) return;
+
     const url = getImageUrlFromTarget(e.target);
     if (!url) return;
 
@@ -4700,24 +7128,62 @@ function initIMFeature() {
     e.preventDefault();
 
     // 【Twitch 格式】使用 -gif/-jpg 格式（用 - 代替 .）
+    // 【KICK 格式】使用原始 . 格式
     const isTwitchPage = window.location.hostname.includes('twitch.tv');
+    const isKickPage = window.location.hostname.includes('kick.com');
+    const useDashFormat = isTwitchPage; // 只有 Twitch 使用 - 代替 .
     let id;
     if (imgurId) {
-      id = 'IM-' + extractImgurId(url, isTwitchPage);
+      id = 'IM-' + extractImgurId(url, useDashFormat);
     } else {
-      id = 'ME-' + extractMeeeId(url, isTwitchPage);
+      id = 'ME-' + extractMeeeId(url, useDashFormat);
     }
     showContextMenuAt(e.clientX, e.clientY, id, e.target);
   }, true);
 }
 
 // ===== Twitch 專用的 IM 轉圖功能 =====
+let twitchIMFeatureInitialized = false;
+let twitchIMRetryCount = 0;
+const MAX_TWITCH_RETRY = 10;
+
 function initTwitchIMFeature() {
-  // 只查找 Twitch 聊天消息列表（不是輸入框）
-  const chatList = document.querySelector('.chat-list, [data-a-target="chat-list"], .chat-scroll-area, [class*="chat-list"]');
+  if (twitchIMFeatureInitialized) return;
+
+  // 更完整的選擇器，支援不同 Twitch 頻道佈局
+  const selectors = [
+    '.chat-scrollable-area__message-container',           // 【修正】Twitch 實際容器
+    '[data-test-selector="chat-scrollable-area__message-container"]', // 【修正】data-test-selector
+    '.chat-list',
+    '[data-a-target="chat-list"]',
+    '.chat-scroll-area',
+    '[class*="chat-list"]',
+    '[class*="ChatList"]',
+    '.chat-room__content',
+    '[data-test-selector="chat-room-component"]',
+    '[data-a-target="chat-room"]',
+    '.stream-chat',
+    '[class*="stream-chat"]'
+  ];
+
+  let chatList = null;
+  for (const selector of selectors) {
+    chatList = document.querySelector(selector);
+    if (chatList) break;
+  }
+
   if (!chatList) {
+    // 如果找不到聊天列表，增加重試次數並延遲重試
+    twitchIMRetryCount++;
+    if (twitchIMRetryCount < MAX_TWITCH_RETRY) {
+      setTimeout(() => {
+        initTwitchIMFeature();
+      }, 3000); // 每 3 秒重試一次
+    }
     return;
   }
+
+  twitchIMFeatureInitialized = true;
 
   // 只在聊天列表內掃描，不掃描整個 body
   setInterval(() => {
@@ -4756,18 +7222,43 @@ function initTwitchIMFeature() {
 
 // Twitch 專用的聊天消息掃描
 function scanTwitchChatMessages(chatContainer) {
-  // 只查找聊天消息行，不查找輸入框
-  const messageElements = chatContainer.querySelectorAll('[class*="chat-line"], [data-a-target="chat-line-message"], .chat-message');
+  // 更廣泛的消息選擇器，支援不同 Twitch 頻道佈局
+  const messageSelectors = [
+    '[class*="chat-line"]',
+    '[data-a-target="chat-line-message"]',
+    '.chat-message',
+    '[class*="message-content"]',
+    '[class*="chat-room-content"]',
+    '[class*="stream-chat-message"]',
+    '[data-testid="chat-message"]',
+    '.chat-scroll-content > div > div',
+    '[class*="chat-list"] > div > div',
+    '[class*="chat-log"] > div'
+  ];
+
+  let messageElements = [];
+  for (const selector of messageSelectors) {
+    const elements = chatContainer.querySelectorAll(selector);
+    if (elements.length > 0) {
+      messageElements = elements;
+      break;
+    }
+  }
+
+  // 如果都找不到，嘗試更深層掃描
+  if (messageElements.length === 0) {
+    messageElements = chatContainer.querySelectorAll('div[role="log"] > div, div[class] > div[class]:not([class*="input"]):not([class*="Input"])');
+  }
 
   messageElements.forEach(msgEl => {
     // 【關鍵】跳過任何靠近輸入框的元素
-    if (msgEl.closest('[data-a-target="chat-input"], [class*="chat-input"], [contenteditable="true"]')) {
+    if (msgEl.closest('[data-a-target="chat-input"], [class*="chat-input"], [contenteditable="true"], [class*="input"], textarea')) {
       return;
     }
 
     // 跳過已處理過的（檢查是否已有轉換後的圖片或標記）
     if (msgEl.querySelector('.gss-im-replaced, .gss-im-image, .gss-im-converted')) return;
-    if (msgEl.dataset.gssImProcessed) return;
+    if (msgEl.dataset.gssImProcessed === 'true') return;
 
     // 查找消息中的文本節點
     const walker = document.createTreeWalker(
@@ -4777,29 +7268,265 @@ function scanTwitchChatMessages(chatContainer) {
       false
     );
 
-    const textNodes = [];
+    // 按父元素分組收集文本節點（用於合併被分割的 URL）
+    const parentGroups = new Map();
     let node;
     while (node = walker.nextNode()) {
+      // 確保不是輸入框內的節點
+      if (node.parentElement?.closest('[contenteditable="true"], [data-a-target="chat-input"], [class*="chat-input"], textarea')) {
+        continue;
+      }
+
       const text = node.textContent;
-      // 檢查 IM-、ME- 或 DL- 格式
-      if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
-        // 確保不是輸入框內的節點
-        if (!node.parentElement?.closest('[contenteditable="true"], [data-a-target="chat-input"]')) {
-          textNodes.push(node);
+      // 檢查可能包含貼圖或 YouTube 鏈接的文本
+      if (text.includes('IM-') || text.includes('ME-') || text.includes('DL-') || text.includes('YT-') ||
+        text.includes('youtube.com/watch') || text.includes('youtube.com/shorts') || text.includes('youtu.be/') ||
+        text.includes('http') || // 可能是不完整的 URL 片段
+        /[\u200B\u200C\u200D\uFEFF]/.test(text)) {
+
+        const parent = node.parentNode;
+        if (!parentGroups.has(parent)) {
+          parentGroups.set(parent, []);
         }
+        parentGroups.get(parent).push(node);
       }
     }
 
-    // 處理找到的文本節點
-    textNodes.forEach(textNode => {
-      processTwitchIMTextNode(textNode, msgEl);
+    // 處理每個父元素下的文本節點組
+    let hasProcessed = false;
+    parentGroups.forEach((nodes, parent) => {
+      // 嘗試合併相鄰文本節點來檢查是否包含完整的貼圖/URL
+      if (nodes.length > 1) {
+        // 按文檔順序排序
+        nodes.sort((a, b) => {
+          const pos = a.compareDocumentPosition(b);
+          return pos & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+        });
+
+        // 合併所有文本內容
+        const mergedText = nodes.map(n => n.textContent).join('');
+
+        // 檢查合併後的文本是否包含完整的貼圖或 YouTube 鏈接（從頭匹配，最少6字符）
+        const hasSticker = /\bIM-[a-zA-Z0-9-]{3,}|\bME-[a-zA-Z0-9-]{3,}|\bDL-[a-zA-Z0-9_]{3,}|\bYT-[a-zA-Z0-9_-]{3,}/i.test(mergedText);
+        const hasYouTube = /youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\//i.test(mergedText);
+
+        if (hasSticker || hasYouTube) {
+          // 創建一個臨時的合併文本節點來處理
+          const mergedNode = document.createTextNode(mergedText);
+          // 保存原始節點引用以便替換
+          mergedNode._originalNodes = nodes;
+          const result = processTwitchMergedTextNode(mergedNode, msgEl, nodes);
+          if (result) hasProcessed = true;
+          return;
+        }
+      }
+
+      // 單個節點直接處理
+      nodes.forEach(textNode => {
+        const result = processTwitchIMTextNode(textNode, msgEl);
+        if (result) hasProcessed = true;
+      });
     });
 
     // 標記已處理
-    if (textNodes.length > 0) {
+    if (hasProcessed || parentGroups.size > 0) {
       msgEl.dataset.gssImProcessed = 'true';
     }
+
+    // 【關鍵】Twitch 圖片插入後觸發卷軸滾動
+    if (hasProcessed) {
+      // 【修正】使用 scrollIntoView 而不是操作 scrollable-area
+      // 找到消息容器內的圖片元素
+      const imgEl = msgEl.querySelector('.gss-im-replaced, .dlsq-chat-img, img[src*="imgur"], img[src*="dlivecdn"], img[src*="youtube"]');
+      if (imgEl) {
+        // 檢查用戶是否在底部附近
+        const scrollableArea = document.querySelector('.scrollable-area');
+        if (scrollableArea) {
+          const distanceToBottom = scrollableArea.scrollHeight - scrollableArea.scrollTop - scrollableArea.clientHeight;
+          if (distanceToBottom <= 200) { // 用戶在底部附近才滾動
+            imgEl.scrollIntoView({ behavior: 'auto', block: 'end' });
+            console.log('[GSS] Twitch scrolled to image');
+          }
+        }
+      }
+    }
   });
+}
+
+// 處理合併後的 Twitch 聊天消息文本（用於處理被分割的 URL）
+function processTwitchMergedTextNode(mergedNode, messageEl, originalNodes) {
+  const text = mergedNode.textContent;
+  let processed = false;
+
+  // 【優先】處理 IM/ME/DL 格式（從頭匹配，最少6字符）
+  const combinedRegex = /(\bIM-[a-zA-Z0-9-]{3,}(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(\bME-[a-zA-Z0-9-]{3,}(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(\bDL-[a-zA-Z0-9_]{3,})/gi;
+  const matches = [];
+  let m;
+  while ((m = combinedRegex.exec(text)) !== null) {
+    if (m[1]) matches.push({ type: 'IM', id: m[1], index: m.index, length: m[1].length });
+    else if (m[2]) matches.push({ type: 'ME', id: m[2], index: m.index, length: m[2].length });
+    else if (m[3]) matches.push({ type: 'DL', id: m[3], index: m.index, length: m[3].length });
+  }
+
+  if (matches.length > 0) {
+    const firstNode = originalNodes[0];
+    const parent = firstNode.parentNode;
+    if (parent) {
+      matches.reverse().forEach(match => {
+        const img = createIMImage(match.id);
+        if (img) {
+          const before = text.slice(0, match.index);
+          const after = text.slice(match.index + match.length);
+
+          const fragment = document.createDocumentFragment();
+          if (before) fragment.appendChild(document.createTextNode(before));
+          fragment.appendChild(img);
+          if (after) fragment.appendChild(document.createTextNode(after));
+
+          originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
+          parent.appendChild(fragment);
+          parent.classList.add('gss-im-converted');
+          processed = true;
+        }
+      });
+    }
+    if (processed) return true;
+  }
+
+  // 【統一格式】YT- 智能模式：自動檢測 Shorts 並給予適當顯示
+  const ytRegex = /\bYT-[a-zA-Z0-9_-]{3,}\b/gi;
+  let ytMatch;
+  const ytMatches = [];
+  while ((ytMatch = ytRegex.exec(text)) !== null) {
+    ytMatches.push({ id: ytMatch[0], index: ytMatch.index, length: ytMatch[0].length });
+  }
+
+  if (ytMatches.length > 0) {
+    ytMatches.reverse().forEach(match => {
+      const videoId = match.id.slice(3);
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = match.id;
+      img.className = 'dlsq-converted-image dlsq-chat-yt';
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + match.id;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 40px; height: 40px; background: rgba(255,0,0,0.85); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 16px; padding-left: 3px; pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation(); openYouTubePlayer(videoId);
+      });
+
+      // 替換原始節點
+      const firstNode = originalNodes[0];
+      const parent = firstNode.parentNode;
+      if (parent) {
+        const before = text.slice(0, match.index);
+        const after = text.slice(match.index + match.length);
+
+        const fragment = document.createDocumentFragment();
+        if (before) fragment.appendChild(document.createTextNode(before));
+        fragment.appendChild(thumbContainer);
+        if (after) fragment.appendChild(document.createTextNode(after));
+
+        // 移除所有原始節點
+        originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
+        parent.appendChild(fragment);
+        parent.classList.add('gss-im-converted');
+        processed = true;
+      }
+    });
+    if (processed) return true;
+  }
+
+  // 處理完整 YouTube URL
+  const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
+  let ytUrlMatch;
+  const ytUrlMatches = [];
+  while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
+    ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
+  }
+
+  if (ytUrlMatches.length > 0) {
+    ytUrlMatches.reverse().forEach(match => {
+      const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
+
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = match.fullUrl;
+      img.className = 'dlsq-converted-image dlsq-chat-yt';
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + match.fullUrl;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 40px; height: 40px; background: rgba(255,0,0,0.85); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 14px; padding-left: 3px; pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation(); openYouTubePlayer(match.videoId);
+      });
+
+      const firstNode = originalNodes[0];
+      const parent = firstNode.parentNode;
+      if (parent) {
+        const before = text.slice(0, match.index);
+        const after = text.slice(match.index + match.length);
+
+        const fragment = document.createDocumentFragment();
+        if (before) fragment.appendChild(document.createTextNode(before));
+        fragment.appendChild(thumbContainer);
+        if (after) fragment.appendChild(document.createTextNode(after));
+
+        originalNodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
+        parent.appendChild(fragment);
+        parent.classList.add('gss-im-converted');
+        processed = true;
+      }
+    });
+    if (processed) return true;
+  }
+
+  return false;
 }
 
 // 處理 Twitch 聊天消息中的 IM 文本
@@ -4821,10 +7548,13 @@ function processTwitchIMTextNode(textNode, messageEl) {
           span.appendChild(img);
 
           try {
-            textNode.parentNode.insertBefore(span, textNode);
-            textNode.parentNode.removeChild(textNode);
-            // 【修復】給父元素添加標記，防止 React 重渲染後重複處理
-            textNode.parentNode.classList.add('gss-im-converted');
+            const parent = textNode.parentNode;
+            if (parent && document.contains(textNode)) {
+              parent.insertBefore(span, textNode);
+              parent.removeChild(textNode);
+              parent.classList.add('gss-im-converted');
+              return true;
+            }
           } catch (e) {
             // 忽略錯誤
           }
@@ -4833,58 +7563,263 @@ function processTwitchIMTextNode(textNode, messageEl) {
     } catch (e) {
       // 忽略解碼錯誤
     }
-    return;
+    return false;
   }
 
-  // 【Twitch 專用】合併匹配 IM、ME 和 DL 格式，避免重複替換問題
-  const combinedRegex = /(IM-[a-zA-Z0-9-]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(ME-[a-zA-Z0-9-]+(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(DL-[a-zA-Z0-9_]+)/gi;
+  // 【優先】處理 IM/ME/DL 格式（從頭匹配，最少6字符）
+  const combinedRegex = /(\bIM-[a-zA-Z0-9-]{3,}(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(\bME-[a-zA-Z0-9-]{3,}(?:[.-](?:gif|png|jpg|jpeg|mp4))?)|(\bDL-[a-zA-Z0-9_]{3,})/gi;
   const matches = [];
   let m;
   while ((m = combinedRegex.exec(text)) !== null) {
-    if (m[1]) {
-      matches.push({ type: 'IM', id: m[1], index: m.index, length: m[1].length });
-    } else if (m[2]) {
-      matches.push({ type: 'ME', id: m[2], index: m.index, length: m[2].length });
-    } else if (m[3]) {
-      matches.push({ type: 'DL', id: m[3], index: m.index, length: m[3].length });
-    }
+    if (m[1]) matches.push({ type: 'IM', id: m[1], index: m.index, length: m[1].length });
+    else if (m[2]) matches.push({ type: 'ME', id: m[2], index: m.index, length: m[2].length });
+    else if (m[3]) matches.push({ type: 'DL', id: m[3], index: m.index, length: m[3].length });
   }
 
-  if (matches.length === 0) return;
+  if (matches.length > 0) {
+    let replaced = false;
+    matches.reverse().forEach(match => {
+      const img = createIMImage(match.id);
+      if (img && textNode.parentNode) {
+        try {
+          const parent = textNode.parentNode;
+          const before = text.slice(0, match.index);
+          const after = text.slice(match.index + match.length);
 
-  // 從後向前替換，避免索引偏移
-  matches.reverse().forEach(match => {
-    const img = createIMImage(match.id);
-    if (img && textNode.parentNode) {
-      try {
-        const before = text.slice(0, match.index);
-        const after = text.slice(match.index + match.length);
+          const fragment = document.createDocumentFragment();
+          if (before) fragment.appendChild(document.createTextNode(before));
+          fragment.appendChild(img);
+          if (after) fragment.appendChild(document.createTextNode(after));
 
-        const fragment = document.createDocumentFragment();
-        if (before) fragment.appendChild(document.createTextNode(before));
-        fragment.appendChild(img);
-        if (after) fragment.appendChild(document.createTextNode(after));
-
-        textNode.parentNode.replaceChild(fragment, textNode);
-        // 【修復】給父元素添加標記，防止 React 重渲染後重複處理
-        if (textNode.parentNode) {
-          textNode.parentNode.classList.add('gss-im-converted');
+          parent.replaceChild(fragment, textNode);
+          parent.classList.add('gss-im-converted');
+          replaced = true;
+        } catch (e) {
+          // 忽略錯誤
         }
-        // 更新 textNode 為 after 部分，以便下一個替換
-        if (after && textNode.parentNode) {
-          const newNodes = Array.from(textNode.parentNode.childNodes);
-          const afterNode = newNodes.find(n => n.nodeType === Node.TEXT_NODE && n.textContent === after);
-          if (afterNode) {
-            textNode = afterNode;
-            text = after;
-          }
-        }
-      } catch (e) {
-        // 忽略錯誤
       }
-    }
-  });
+    });
+    if (replaced) return true;
+  }
+
+  // 【其次】處理 YT- 格式（從頭匹配，最少6字符）
+  const ytRegex = /\bYT-[a-zA-Z0-9_-]{3,}\b/gi;
+  const ytMatches = [];
+  let ytMatch;
+  while ((ytMatch = ytRegex.exec(text)) !== null) {
+    ytMatches.push({ type: 'YT', id: ytMatch[0], index: ytMatch.index, length: ytMatch[0].length });
+  }
+
+  // 處理找到的 YT- 匹配
+  if (ytMatches.length > 0) {
+    ytMatches.reverse().forEach(match => {
+      const videoId = match.id.slice(3); // 移除 "YT-" 前綴
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
+      // 創建縮略圖容器
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      // 創建縮略圖圖片
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = match.id;
+      img.className = 'dlsq-converted-image dlsq-chat-yt';
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + match.id;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      // 創建播放按鈕圖標
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255,0,0,0.85);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 16px;
+        padding-left: 3px;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+
+      // 點擊打開 YouTube 播放器
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openYouTubePlayer(videoId);
+      });
+
+      // 替換文本節點
+      if (textNode.parentNode) {
+        try {
+          const parent = textNode.parentNode;
+          const before = text.slice(0, match.index);
+          const after = text.slice(match.index + match.length);
+
+          const fragment = document.createDocumentFragment();
+          if (before) fragment.appendChild(document.createTextNode(before));
+          fragment.appendChild(thumbContainer);
+          if (after) fragment.appendChild(document.createTextNode(after));
+
+          parent.replaceChild(fragment, textNode);
+          parent.classList.add('gss-im-converted');
+        } catch (e) {
+          // 忽略錯誤
+        }
+      }
+    });
+    return true; // 已處理 YT-，不再處理其他格式
+  }
+
+  // 【Twitch 專用】處理完整 YouTube URL
+  const ytUrlRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[&?][^\s]*)?/gi;
+  const ytUrlMatches = [];
+  let ytUrlMatch;
+  while ((ytUrlMatch = ytUrlRegex.exec(text)) !== null) {
+    ytUrlMatches.push({ fullUrl: ytUrlMatch[0], videoId: ytUrlMatch[1], index: ytUrlMatch.index, length: ytUrlMatch[0].length });
+  }
+
+  if (ytUrlMatches.length > 0) {
+    ytUrlMatches.reverse().forEach(match => {
+      const thumbnailUrl = `https://img.youtube.com/vi/${match.videoId}/mqdefault.jpg`;
+
+      const thumbContainer = document.createElement('span');
+      thumbContainer.className = 'gss-im-replaced gss-yt-thumbnail';
+      thumbContainer.style.cssText = 'cursor: pointer; display: block; position: relative;';
+      thumbContainer.title = '點擊播放 YouTube 視頻';
+
+      const img = document.createElement('img');
+      img.src = thumbnailUrl;
+      img.alt = match.fullUrl;
+      img.className = 'dlsq-converted-image dlsq-chat-yt';
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.textContent = '🎬 ' + match.fullUrl;
+        fallback.style.cssText = 'color: #666; font-size: 12px;';
+        thumbContainer.appendChild(fallback);
+      };
+
+      const playBtn = document.createElement('span');
+      playBtn.innerHTML = '▶';
+      playBtn.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255,0,0,0.85);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 14px;
+        padding-left: 3px;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      `;
+
+      thumbContainer.appendChild(img);
+      thumbContainer.appendChild(playBtn);
+
+      thumbContainer.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openYouTubePlayer(match.videoId);
+      });
+
+      if (textNode.parentNode) {
+        try {
+          const parent = textNode.parentNode;
+          const before = text.slice(0, match.index);
+          const after = text.slice(match.index + match.length);
+
+          const fragment = document.createDocumentFragment();
+          if (before) fragment.appendChild(document.createTextNode(before));
+          fragment.appendChild(thumbContainer);
+          if (after) fragment.appendChild(document.createTextNode(after));
+
+          parent.replaceChild(fragment, textNode);
+          parent.classList.add('gss-im-converted');
+        } catch (e) {
+          // 忽略錯誤
+        }
+      }
+    });
+    // 【標記】給消息容器添加標記，防止 React/KICK 重置 DOM 後重複處理
+    const msgContainer5 = textNode.parentElement?.closest('[class*="message"], [class*="chat-line"], [class*="ChatMessage"]');
+    if (msgContainer5) msgContainer5.classList.add('dlsq-message-processed');
+    return true; // 已處理 YouTube URL
+  }
+
+  return false;
 }
+
+// Twitch 專用：卷軸滾動到底部
+function scrollTwitchChatToBottom() {
+  // Twitch 聊天容器選擇器（卷軸滾動用）
+  const selectors = [
+    '.scrollable-area', // 【修正】Twitch 真正可滾動的容器
+    '.chat-list',
+    '[data-a-target="chat-list"]',
+    '.chat-scroll-area',
+    '[class*="chat-list"]',
+    '[class*="ChatList"]',
+    '.chat-room__content',
+    '[data-test-selector="chat-room-component"]',
+    '[data-a-target="chat-room"]',
+    '.stream-chat',
+    '[class*="stream-chat"]'
+  ];
+
+  let chatContainer = null;
+  for (const selector of selectors) {
+    chatContainer = document.querySelector(selector);
+    if (chatContainer) break;
+  }
+
+  if (!chatContainer) return;
+
+  // 檢查用戶是否在底部附近（超過 200px 不滾動，避免打擾用戶看歷史消息）
+  const distanceToBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+  if (distanceToBottom > 200) return;
+
+  // 使用 scrollTo 滾動到底部（Twitch 的 React 需要這種方式）
+  const targetScroll = chatContainer.scrollHeight;
+  chatContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+
+  // 觸發 scroll 事件讓 React 更新狀態
+  chatContainer.dispatchEvent(new Event('scroll', { bubbles: true }));
+  window.dispatchEvent(new Event('scroll', { bubbles: true }));
+
+  // 延遲再次滾動確保渲染完成
+  setTimeout(() => {
+    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+  }, 100);
+}
+
+// 【關鍵】將函數掛載到全局，確保 scanTwitchChatMessages 可以調用
+window.scrollTwitchChatToBottom = scrollTwitchChatToBottom;
 
 // 創建 IM/ME 圖片/視頻元素（根據類型自動選擇 img 或 video）
 function createIMImage(imId) {
@@ -4896,8 +7831,7 @@ function createIMImage(imId) {
     const img = document.createElement('img');
     img.src = `https://images.prd.dlivecdn.com/emote/${dlId}`;
     img.alt = imId;
-    img.className = 'gss-im-replaced';
-    img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    img.className = 'gss-im-replaced dlsq-chat-img';
     return img;
   }
 
@@ -4918,20 +7852,18 @@ function createIMImage(imId) {
     const video = document.createElement('video');
     video.src = url;
     video.alt = imId;
-    video.className = 'gss-im-replaced';
     video.muted = true;
     video.autoplay = true;
     video.loop = true;
     video.playsInline = true;
-    video.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    video.className = 'gss-im-replaced dlsq-chat-video';
     return video;
   } else {
     // 創建 img 元素
     const img = document.createElement('img');
     img.src = url;
     img.alt = imId;
-    img.className = 'gss-im-replaced';
-    img.style.cssText = 'max-width: 100px; max-height: 100px; border-radius: 8px; cursor: default; display: inline-block; vertical-align: middle; margin: 4px; border: 2px solid transparent; object-fit: contain;';
+    img.className = 'gss-im-replaced dlsq-chat-img';
     return img;
   }
 }
@@ -5084,7 +8016,7 @@ function handleFullscreenChange() {
     // 進入全螢幕，準備聊天室
     prepareFullscreenChat();
   } else {
-    // 退出全螢幕，清理
+    // 退出全螢幕，完美恢復所有元素位置
     cleanupFullscreenChat();
   }
 }
@@ -5101,6 +8033,14 @@ function prepareFullscreenChat() {
   const topContributors = document.querySelector('.top-contributors');
   if (topContributors) {
     topContributors.style.setProperty('box-shadow', 'none', 'important');
+  }
+
+  // 【完美恢復】儲存父元素和位置信息
+  if (!originalChat._gssSaved) {
+    originalChat._gssSaved = {
+      parent: originalChat.parentNode,
+      nextSibling: originalChat.nextSibling
+    };
   }
 
   // 儲存原始樣式以便恢復
@@ -5138,21 +8078,30 @@ function prepareFullscreenChat() {
       child.style.setProperty('pointer-events', 'auto', 'important');
     });
 
-    // 【關鍵】將插件面板也移到全螢幕元素中
+    // 【關鍵】將插件面板也移到全螢幕元素中（保存原位置）
     const panel = document.getElementById(UI.panelId);
     if (panel && panel.parentNode !== fullscreenEl) {
+      if (!panel._gssSaved) {
+        panel._gssSaved = { parent: panel.parentNode, nextSibling: panel.nextSibling };
+      }
       fullscreenEl.appendChild(panel);
     }
 
-    // 【關鍵】將右鍵選單也移到全螢幕元素中
+    // 【關鍵】將右鍵選單也移到全螢幕元素中（保存原位置）
     const ctxMenu = document.getElementById(UI.ctxMenuId);
     if (ctxMenu && ctxMenu.parentNode !== fullscreenEl) {
+      if (!ctxMenu._gssSaved) {
+        ctxMenu._gssSaved = { parent: ctxMenu.parentNode, nextSibling: ctxMenu.nextSibling };
+      }
       fullscreenEl.appendChild(ctxMenu);
     }
 
-    // 【關鍵】將面板標籤選單也移到全螢幕元素中
+    // 【關鍵】將面板標籤選單也移到全螢幕元素中（保存原位置）
     const panelTagMenu = document.getElementById(UI.panelTagMenuId);
     if (panelTagMenu && panelTagMenu.parentNode !== fullscreenEl) {
+      if (!panelTagMenu._gssSaved) {
+        panelTagMenu._gssSaved = { parent: panelTagMenu.parentNode, nextSibling: panelTagMenu.nextSibling };
+      }
       fullscreenEl.appendChild(panelTagMenu);
     }
   }
@@ -5215,33 +8164,436 @@ function cleanupFullscreenChat() {
       fullscreenChatClone.style.cssText = '';
     }
 
-    // 將聊天室放回原始 flex 容器
-    const flexBox = document.querySelector('.flex-box.dl-flex-row');
-    if (flexBox && fullscreenChatClone.parentNode !== flexBox) {
-      flexBox.appendChild(fullscreenChatClone);
+    // 【完美恢復】將聊天室精確插回原位置（insertBefore 到原來的兄弟節點前）
+    if (fullscreenChatClone._gssSaved && fullscreenChatClone._gssSaved.parent) {
+      const saved = fullscreenChatClone._gssSaved;
+      if (saved.nextSibling) {
+        saved.parent.insertBefore(fullscreenChatClone, saved.nextSibling);
+      } else {
+        saved.parent.appendChild(fullscreenChatClone);
+      }
+      delete fullscreenChatClone._gssSaved;
     }
   }
 
-  // 【關鍵】將面板移回 body
+  // 【完美恢復】將面板精確插回原位置
   const panel = document.getElementById(UI.panelId);
-  if (panel && panel.parentNode !== document.body) {
-    document.body.appendChild(panel);
+  if (panel && panel._gssSaved && panel._gssSaved.parent) {
+    const saved = panel._gssSaved;
+    if (saved.nextSibling) {
+      saved.parent.insertBefore(panel, saved.nextSibling);
+    } else {
+      saved.parent.appendChild(panel);
+    }
+    delete panel._gssSaved;
   }
 
-  // 【關鍵】將右鍵選單移回 body
+  // 【完美恢復】將右鍵選單精確插回原位置
   const ctxMenu = document.getElementById(UI.ctxMenuId);
-  if (ctxMenu && ctxMenu.parentNode !== document.body) {
-    document.body.appendChild(ctxMenu);
+  if (ctxMenu && ctxMenu._gssSaved && ctxMenu._gssSaved.parent) {
+    const saved = ctxMenu._gssSaved;
+    if (saved.nextSibling) {
+      saved.parent.insertBefore(ctxMenu, saved.nextSibling);
+    } else {
+      saved.parent.appendChild(ctxMenu);
+    }
+    delete ctxMenu._gssSaved;
   }
 
-  // 【關鍵】將面板標籤選單移回 body
+  // 【完美恢復】將面板標籤選單精確插回原位置
   const panelTagMenu = document.getElementById(UI.panelTagMenuId);
-  if (panelTagMenu && panelTagMenu.parentNode !== document.body) {
-    document.body.appendChild(panelTagMenu);
+  if (panelTagMenu && panelTagMenu._gssSaved && panelTagMenu._gssSaved.parent) {
+    const saved = panelTagMenu._gssSaved;
+    if (saved.nextSibling) {
+      saved.parent.insertBefore(panelTagMenu, saved.nextSibling);
+    } else {
+      saved.parent.appendChild(panelTagMenu);
+    }
+    delete panelTagMenu._gssSaved;
   }
 
   fullscreenChatClone = null;
   fullscreenChatActive = false;
+}
+
+// ==================== YouTube 視頻播放器 ====================
+let youtubePlayerElement = null;
+
+/**
+ * 檢測 YouTube 影片類型（是否為 Shorts）
+ * 使用 oEmbed API 檢測影片寬高比
+ * @param {string} videoId - YouTube 視頻 ID
+ * @returns {Promise<{isShorts: boolean, title: string}>}
+ */
+async function checkYouTubeVideoType(videoId) {
+  try {
+    // 使用 YouTube oEmbed API 獲取影片資訊
+    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/shorts/${videoId}&format=json`);
+    if (!response.ok) {
+      // 如果不是 Shorts URL，嘗試一般影片 URL
+      const altResponse = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+      if (!altResponse.ok) throw new Error('Failed to fetch video info');
+      const data = await altResponse.json();
+      return { isShorts: false, title: data.title || '' };
+    }
+
+    const data = await response.json();
+
+    // 從 html 提取寬高資訊
+    const widthMatch = data.html?.match(/width="(\d+)"/);
+    const heightMatch = data.html?.match(/height="(\d+)"/);
+
+    if (widthMatch && heightMatch) {
+      const width = parseInt(widthMatch[1]);
+      const height = parseInt(heightMatch[1]);
+      const ratio = height / width;
+
+      // Shorts 通常是 9:16 (1.77) 或 1:1 (1.0) 或更高
+      // 一般影片是 16:9 (0.56)
+      const isShorts = ratio >= 1.0;
+
+      return { isShorts, title: data.title || '' };
+    }
+
+    // 無法取得尺寸時，根據標題或作者名稱推測
+    return { isShorts: false, title: data.title || '' };
+  } catch (error) {
+    console.error('【GSS】檢測影片類型失敗:', error);
+    throw error;
+  }
+}
+
+/**
+ * 將長片自動轉換為 YT- 縮圖格式
+ * 用於當影片被誤用自動播放格式時自動轉換為縮略圖
+ * @param {HTMLElement} container - 原容器元素
+ * @param {string} videoId - YouTube 視頻 ID
+ * @param {string} title - 影片標題
+ */
+function convertToYTThumbnail(container, videoId, title) {
+  if (!container || !container.parentNode) return;
+
+  // 創建 YT- 格式的縮圖容器
+  const ytWrapper = document.createElement('span');
+  ytWrapper.className = 'dlsq-im-replaced dlsq-yt-thumb tsc-exclude';
+  ytWrapper.style.cssText = 'display: inline-block; position: relative; width: 160px; height: 90px; vertical-align: middle; margin: 4px 0; border-radius: 8px; overflow: hidden; cursor: pointer;';
+  ytWrapper.setAttribute('data-yt-id', `YT-${videoId}`); // 【統一】添加識別屬性
+
+  // 創建縮圖圖片
+  const img = document.createElement('img');
+  img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+  img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
+  img.alt = title || 'YouTube Video';
+
+  // 創建播放按鈕覆蓋層
+  const playOverlay = document.createElement('span');
+  playOverlay.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(255,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none;';
+  playOverlay.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>';
+
+  // 創建警告標籤（提示用戶這是長片）
+  const warningBadge = document.createElement('span');
+  warningBadge.textContent = '長片';
+  warningBadge.style.cssText = 'position: absolute; top: 4px; right: 4px; background: rgba(255,193,7,0.9); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;';
+
+  ytWrapper.appendChild(img);
+  ytWrapper.appendChild(playOverlay);
+  ytWrapper.appendChild(warningBadge);
+
+  // 點擊事件
+  ytWrapper.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openYouTubePlayer(videoId);
+  });
+
+  // 右鍵選單
+  ytWrapper.addEventListener('contextmenu', (e) => {
+    if (window.gssDisableNativeContextMenu) return;
+    e.preventDefault();
+    e.stopPropagation();
+    showContextMenuAt(e.clientX, e.clientY, `YT-${videoId}`, ytWrapper);
+  });
+
+  // 替換原容器
+  container.parentNode.replaceChild(ytWrapper, container);
+
+  console.log('【GSS】已將長片自動轉換為 YT- 縮圖格式:', videoId);
+}
+
+/**
+ * 打開 YouTube 視頻播放器
+ * @param {string} videoId - YouTube 視頻 ID (如 IO2-G1pNmHs)
+ */
+function openYouTubePlayer(videoId) {
+  // 如果已存在，先移除舊的
+  if (youtubePlayerElement) {
+    youtubePlayerElement.remove();
+    youtubePlayerElement = null;
+  }
+
+  // 清理視頻 ID（移除可能的非法字符）
+  const cleanId = videoId.replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!cleanId) {
+    showSendFailureToast('無效的 YouTube 視頻 ID');
+    return;
+  }
+
+  // 創建播放器容器
+  const container = document.createElement('div');
+  container.id = 'gss-youtube-player';
+  container.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    background: #0f0f0f;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    z-index: 999999;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  `;
+
+  // 標題欄
+  const header = document.createElement('div');
+  header.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #1a1a1a;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  `;
+
+  const title = document.createElement('span');
+  title.textContent = '🎬 YouTube';
+  title.style.cssText = `
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  `;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  `;
+  closeBtn.onmouseenter = () => {
+    closeBtn.style.background = 'rgba(255,80,80,0.3)';
+    closeBtn.style.color = '#fff';
+  };
+  closeBtn.onmouseleave = () => {
+    closeBtn.style.background = 'none';
+    closeBtn.style.color = 'rgba(255,255,255,0.6)';
+  };
+  closeBtn.onclick = () => {
+    container.remove();
+    youtubePlayerElement = null;
+  };
+
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+
+  // 縮略圖 + 播放按鈕容器
+  const thumbContainer = document.createElement('div');
+  thumbContainer.id = 'gss-yt-thumb-container';
+  thumbContainer.style.cssText = `
+    position: relative;
+    width: 100%;
+    height: 180px;
+    cursor: pointer;
+    background: #000;
+    min-height: 100px;
+  `;
+
+  // YouTube 縮略圖
+  const thumbnail = document.createElement('img');
+  thumbnail.src = `https://img.youtube.com/vi/${cleanId}/mqdefault.jpg`;
+  thumbnail.style.cssText = `
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  `;
+  thumbnail.onerror = () => {
+    thumbnail.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect fill="%23333" width="100%" height="100%"/><text fill="%23999" x="50%" y="50%" text-anchor="middle" font-size="14">無法載入縮略圖</text></svg>';
+  };
+
+  // 播放按鈕圖標
+  const playBtn = document.createElement('div');
+  playBtn.innerHTML = '▶';
+  playBtn.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(255,0,0,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    padding-left: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: transform 0.2s, background 0.2s;
+  `;
+  playBtn.style.cssText += `
+    pointer-events: none;
+  `;
+
+  thumbContainer.appendChild(thumbnail);
+  thumbContainer.appendChild(playBtn);
+
+  // 懸停效果
+  thumbContainer.onmouseenter = () => {
+    playBtn.style.transform = 'translate(-50%, -50%) scale(1.1)';
+    playBtn.style.background = 'rgba(255,0,0,1)';
+  };
+  thumbContainer.onmouseleave = () => {
+    playBtn.style.transform = 'translate(-50%, -50%) scale(1)';
+    playBtn.style.background = 'rgba(255,0,0,0.9)';
+  };
+
+  // 點擊縮略圖開始播放
+  thumbContainer.onclick = () => {
+    // 替換為 iframe 播放器
+    const iframe = document.createElement('iframe');
+    iframe.id = 'gss-yt-iframe';
+    iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&rel=0`;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 180px;
+      border: none;
+    `;
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+
+    thumbContainer.replaceWith(iframe);
+    container.style.height = 'auto';
+  };
+
+  container.appendChild(header);
+  container.appendChild(thumbContainer);
+
+  // 添加調整大小手柄
+  const resizeHandle = document.createElement('div');
+  resizeHandle.style.cssText = `
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+    border-bottom-right-radius: 12px;
+    z-index: 10;
+  `;
+  container.appendChild(resizeHandle);
+
+  document.body.appendChild(container);
+  youtubePlayerElement = container;
+
+  // 【拖拽功能】讓播放器可以被拖動
+  let isDragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+
+  header.style.cursor = 'move';
+
+  header.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    dragOffsetX = e.clientX - container.offsetLeft;
+    dragOffsetY = e.clientY - container.offsetTop;
+    container.style.transition = 'none';
+  });
+
+  // 【調整大小功能】
+  let isResizing = false;
+  let startX = 0;
+  let startY = 0;
+  let startWidth = 0;
+  let startHeight = 0;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    e.stopPropagation(); // 防止觸發拖拽
+    isResizing = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = container.offsetWidth;
+    startHeight = container.offsetHeight;
+    container.style.transition = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    // 處理拖拽
+    if (isDragging) {
+      let newX = e.clientX - dragOffsetX;
+      let newY = e.clientY - dragOffsetY;
+
+      const maxX = window.innerWidth - container.offsetWidth;
+      const maxY = window.innerHeight - container.offsetHeight;
+
+      newX = Math.max(0, Math.min(newX, maxX));
+      newY = Math.max(0, Math.min(newY, maxY));
+
+      container.style.left = `${newX}px`;
+      container.style.top = `${newY}px`;
+      container.style.bottom = 'auto';
+      container.style.right = 'auto';
+    }
+
+    // 處理調整大小
+    if (isResizing) {
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      let newWidth = startWidth + deltaX;
+      let newHeight = startHeight + deltaY;
+
+      // 限制最小和最大尺寸
+      newWidth = Math.max(240, Math.min(newWidth, window.innerWidth - 40));
+      newHeight = Math.max(135, Math.min(newHeight, window.innerHeight - 40));
+
+      container.style.width = `${newWidth}px`;
+
+      // 調整縮略圖/視頻高度（保持 16:9 比例或根據縱向調整）
+      const iframe = container.querySelector('#gss-yt-iframe');
+      const thumbDiv = container.querySelector('#gss-yt-thumb-container');
+
+      if (iframe) {
+        // 播放後：調整 iframe 高度
+        const videoHeight = Math.max(135, newHeight - header.offsetHeight - 10);
+        iframe.style.height = `${videoHeight}px`;
+      } else if (thumbDiv) {
+        // 播放前：調整縮略圖高度
+        const thumbHeight = newWidth * 9 / 16;
+        thumbDiv.style.height = `${thumbHeight}px`;
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      container.style.transition = '';
+    }
+    if (isResizing) {
+      isResizing = false;
+      container.style.transition = '';
+    }
+  });
+
+  // 顯示提示
+  setPanelStatus('🎬 已打開 YouTube 播放器（可拖動、可縮放）', '#28a745');
 }
 
 // 啟動 UI（先遷移 sync → local，避免舊資料留在已爆量的 sync）
@@ -5256,4 +8608,42 @@ function cleanupFullscreenChat() {
   setupUiAutoMount();
   initIMFeature();
   initFullscreenChat();
+
+  // ===== GSS System - 多平台直播追蹤器 =====
+  if (typeof GSSTracker !== 'undefined') {
+    const tracker = new GSSTracker();
+    tracker.init();
+    window._gssTracker = tracker;
+    console.log('[GSS] Multi-platform tracker initialized');
+  }
+
+  // ===== Texo Stream Core - 左上角浮動資訊面板 =====
+  if (typeof TexoPanel !== 'undefined') {
+    TexoPanel.init();
+    console.log('[GSS] Texo Panel initialized');
+  }
+
+  // 手動測試快捷鍵（Shift+I）在 Twitch 上強制掃描
+  if (window.location.hostname.includes('twitch.tv')) {
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        // 嘗試找到聊天容器並強制掃描
+        const chatSelectors = [
+          '.chat-list', '[data-a-target="chat-list"]',
+          '.chat-scroll-area', '[class*="chat-list"]',
+          '[class*="ChatList"]', '.chat-room__content',
+          '[data-test-selector="chat-room-component"]',
+          '[data-a-target="chat-room"]', '.stream-chat'
+        ];
+        for (const sel of chatSelectors) {
+          const container = document.querySelector(sel);
+          if (container) {
+            scanTwitchChatMessages(container);
+            break;
+          }
+        }
+      }
+    });
+  }
 })();

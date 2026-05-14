@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- =========================================================================
+     【GSS 管理面板】popup.html
+     - 這是擴充功能的管理介面（點擊瀏覽器工具列圖示開啟）
+     - 功能：貼圖管理、設定、編織(TexoStreamCore)、通用設定
+     - 對應：content.js 是「聊天面板」（直播頁面上的貼圖發送面板）
+     ========================================================================= -->
 <html>
 
 <head>
@@ -189,6 +195,57 @@
       opacity: 0.8;
     }
 
+    /* Update notification button styles */
+    .update-btn {
+      padding: 0;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1;
+      flex-shrink: 0;
+      margin-left: 4px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .update-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* Highlighted state - pulsating effect */
+    .update-btn.highlighted {
+      color: #ffd43b;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .update-btn.highlighted::after {
+      content: "";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 6px;
+      height: 6px;
+      background: #ff4444;
+      border-radius: 50%;
+      box-shadow: 0 0 4px #ff4444;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 0 transparent;
+      }
+
+      50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 8px rgba(255, 212, 59, 0.6);
+      }
+    }
+
     /* Help popover styles */
     .help-popover {
       position: fixed;
@@ -258,64 +315,157 @@
       margin: 4px 0;
     }
 
-    /* DLive 設定頁樣式 */
-    .dlive-settings {
-      padding: 15px;
+    /* 通用設定頁樣式 */
+    .settings-page {
+      padding: 15px 15px 60px 15px;
       background: rgba(16, 18, 22, 0.98);
       min-height: 200px;
+      position: relative;
     }
 
-    .dlive-section {
+    .settings-section {
       margin-bottom: 20px;
     }
 
-    .dlive-section-title {
+    .settings-section-title {
       font-size: 13px;
       color: rgba(255, 255, 255, 0.9);
       font-weight: 600;
       margin-bottom: 10px;
-      padding-bottom: 8px;
+      padding-bottom: 5px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .dlive-btn-grid {
+    .settings-btn-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
     }
 
-    .dlive-btn {
+    .settings-btn {
       padding: 8px 12px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 6px;
-      background: rgba(10, 12, 16, 0.88);
-      color: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.8);
       font-size: 11px;
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
     }
 
-    .dlive-btn:hover {
+    .settings-btn:hover {
       background: rgba(120, 190, 255, 0.14);
       border-color: rgba(120, 190, 255, 0.45);
     }
 
-    .dlive-btn.active {
+    .settings-btn.active {
       background: rgba(120, 190, 255, 0.35);
       border-color: rgba(120, 190, 255, 0.7);
     }
 
-    .dlive-status {
-      margin-top: 12px;
-      padding: 10px;
-      background: rgba(10, 12, 16, 0.95);
-      border-radius: 6px;
+    .settings-status {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 8px 15px;
+      background: rgba(16, 18, 22, 0.98);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 11px;
-      color: rgba(255, 255, 255, 0.7);
-      min-height: 36px;
-      display: flex;
-      align-items: center;
+      color: #4a90e2;
+      text-align: center;
+    }
+
+
+    /* 開關樣式 */
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+
+    /* TSC 開關樣式 */
+    .tsc-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+
+    .tsc-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .tsc-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      border-radius: 20px;
+      transition: .3s;
+      cursor: pointer;
+    }
+
+    .tsc-slider::before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+
+    /* ON 狀態 - 綠色背景 */
+    .tsc-switch input:checked+.tsc-slider {
+      background-color: #28a745 !important;
+    }
+
+    /* ON 狀態 - 圓點右移 */
+    .tsc-switch input:checked+.tsc-slider::before {
+      transform: translateX(16px);
+    }
+
+    /* OFF 狀態 - 灰色 */
+    .tsc-switch input:not(:checked)+.tsc-slider {
+      background-color: #ccc !important;
+    }
+
+    /* 禁用狀態 */
+    .tsc-switch input:disabled+.tsc-slider {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background-color: #666 !important;
+    }
+
+    .tsc-switch input:disabled+.tsc-slider::before {
+      opacity: 0.5;
+      background-color: #999;
+    }
+
+    /* 禁用時文字變灰 */
+    .tsc-toggle-row:has(input:disabled) span {
+      opacity: 0.4;
     }
 
     .config-section {
@@ -588,9 +738,116 @@
       text-align: center;
     }
 
-    /* DLive 頁面時隱藏 footer 文字但保持佔位 */
-    #dlivePage.active~.footer {
+    /* 設定頁面時隱藏 footer 文字但保持佔位 */
+    #settingsPage.active~.footer {
       visibility: hidden;
+    }
+
+    /* ==================== 自定義確認對話框 ==================== */
+    .custom-dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+    }
+
+    .custom-dialog-overlay.show {
+      display: flex;
+    }
+
+    .custom-dialog {
+      background: linear-gradient(180deg, rgba(32, 34, 40, 1), rgba(20, 22, 28, 1));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .custom-dialog-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .custom-dialog-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .custom-dialog-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .custom-dialog-content {
+      padding: 14px 16px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.85);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .custom-dialog-content .highlight {
+      color: #ffd43b;
+      font-weight: 500;
+    }
+
+    .custom-dialog-content ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .custom-dialog-content li {
+      margin: 6px 0;
+    }
+
+    .custom-dialog-footer {
+      padding: 12px 16px 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .custom-dialog-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .custom-dialog-btn.cancel {
+      background: rgba(10, 12, 16, 0.8);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .custom-dialog-btn.cancel:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .custom-dialog-btn.confirm {
+      background: #ffd700;
+      color: #1a1a1a;
+      border-color: #ffd700;
+    }
+
+    .custom-dialog-btn.confirm:hover {
+      background: #ffec4d;
     }
   </style>
 </head>
@@ -602,12 +859,13 @@
       <div class="header-title-row">
         <div class="header-title" id="titleText"><img src="icons/icon16.png"
             style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"> General Sticker System (GSS)</div>
+        <button id="updateBtn" class="update-btn" title="查看更新日誌">📢</button>
         <button id="helpBtn" class="help-btn">❓</button>
       </div>
       <div class="header-subtitle-row">
         <div class="header-subtitle" id="subtitleText">通用貼圖系統 (GSS)</div>
         <div class="lang-selector">
-          <button class="lang-btn active" data-lang="zh-TW">中</button>
+          <button class="lang-btn active" data-lang="zh-TW">繁</button>
           <button class="lang-btn" data-lang="zh-CN">简</button>
           <button class="lang-btn" data-lang="en">En</button>
           <button class="lang-btn" data-lang="ja">日</button>
@@ -620,8 +878,9 @@
           by <a href="https://github.com/ElfinL" target="_blank" rel="noopener noreferrer">Elfin</a>
         </div>
         <div class="page-tabs">
-          <button id="tabSticker" class="page-tab active">🎨 貼圖</button>
-          <button id="tabDlive" class="page-tab">⚙️ DLive</button>
+          <button id="tabSticker" class="page-tab active">🎨 <span data-i18n="tabSticker">貼圖</span></button>
+          <button id="tabTexo" class="page-tab">🧶 <span data-i18n="tabTexo">編織</span></button>
+          <button id="tabSettings" class="page-tab">⚙️ 設定</button>
         </div>
       </div>
     </div>
@@ -637,7 +896,7 @@
         <button id="openEditorBtn" class="page-tab">📚 圖庫編輯</button>
       </div>
       <div id="configHint" style="font-size: 11px; color: #868e96; margin-top: 5px;">
-        支援 DL / IM / ME 圖，後可接 #標籤，詳見 ❓
+        支援 DL / IM / ME / GSS 圖，後可接 #標籤，詳見 ❓
       </div>
       <textarea id="idListInput" autocomplete="off"
         placeholder="DL-826c4ac1e004273_498281 #meme #reaction&#10;IM-ha3eTC7.gif #funny&#10;ME-LXEcxGi.gif&#10;DL-826cd8c8b004273_335245&#10;IM-abc1234.png"></textarea>
@@ -658,7 +917,7 @@
       <button id="saveIdsBtn">儲存 ID 清單與詞庫</button>
       <div class="config-status" id="configStatus" style="margin-top:0px;"></div>
       <div id="reminderText" style="font-size: 11px; color: #4a90e2; margin-top: 5px;">
-        提醒：需要先在 DLive 或 Twitch 登入；並在頻道頁使用
+        提醒：需要先在支援的直播平台登入；並在頻道頁使用
       </div>
     </div>
 
@@ -668,50 +927,136 @@
   </div>
   <!-- 主頁面結束 -->
 
-  <!-- DLive 設定頁 -->
-  <div id="dlivePage" class="page-content">
-    <div class="dlive-settings">
-      <!-- 區塊 1: 劇院模式 -->
-      <div class="dlive-section">
-        <div class="dlive-section-title">🎭 劇院模式</div>
-        <div class="dlive-btn-grid">
-          <button class="dlive-btn" id="btnTheater13">🎭 劇院模式</button>
-          <button class="dlive-btn" id="btnTestZoomReset">🔄 縮放重置</button>
-          <button class="dlive-btn" id="btnTestZoomOut">🔍- 縮小10%</button>
-          <button class="dlive-btn" id="btnTestZoomIn">🔍+ 放大10%</button>
+  <!-- 編織頁面 (Texo Stream Core) -->
+  <div id="texoPage" class="page-content">
+    <div class="texo-settings" style="padding: 16px;">
+      <!-- 標題與開關 -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <!-- 左側：文字 -->
+        <div>
+          <div id="texoTitle" style="font-size: 18px; font-weight: 600; color: #28a745;">🧶 實況編織核心</div>
+          <div id="texoSubtitle" style="font-size: 11px; color: #868e96; margin-top: 4px;">Texo Stream Core - 管理多平台實況資訊
+          </div>
+        </div>
+        <!-- 右側：開關 -->
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+          <div class="tsc-toggle-row" style="display: flex; align-items: center; gap: 8px;">
+            <span id="tscEnabledLabel" style="font-size: 11px; color: rgba(255, 255, 255, 0.7);">啟用系統</span>
+            <label class="tsc-switch"
+              style="position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer;">
+              <input type="checkbox" id="tscEnabled" checked
+                style="opacity: 0; width: 0; height: 0; position: absolute;">
+              <span class="tsc-slider"
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 20px; transition: .3s;"></span>
+            </label>
+          </div>
+          <div class="tsc-toggle-row" style="display: flex; align-items: center; gap: 8px;">
+            <span id="tscAutoCollectLabel"
+              style="font-size: 10px; color: rgba(255, 255, 255, 0.5);">__MSG_tscAutoCollectLabel__</span>
+            <label class="tsc-switch"
+              style="position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer;">
+              <input type="checkbox" id="tscAutoCollect" checked
+                style="opacity: 0; width: 0; height: 0; position: absolute;">
+              <span class="tsc-slider"
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 20px; transition: .3s;"></span>
+            </label>
+          </div>
         </div>
       </div>
 
-      <!-- 區塊 2: 聊天室控制 -->
-      <div class="dlive-section">
-        <div class="dlive-section-title">💬 聊天室控制</div>
-        <div class="dlive-btn-grid">
-          <button class="dlive-btn" id="btnChatNarrow">💬 聊天室變窄</button>
-          <button class="dlive-btn" id="btnChatHidden">🚫 隱藏聊天室</button>
-          <button class="dlive-btn" id="btnChatOverlayFix1">🎬 浮動聊天室</button>
+      <!-- 輸入區域 -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- 單一輸入框 -->
+        <div>
+          <label id="texoLabel"
+            style="display: block; font-size: 12px; color: #ced4da; margin-bottom: 4px; font-weight: 500;">
+            編織資料 <span id="texoOnePerLine" style="color: #868e96; font-weight: 400;">(一行一筆)</span>
+          </label>
+          <textarea id="texoInput" data-i18n-placeholder="texoPlaceholder"
+            placeholder=">主播名稱 #https://www.twitch.tv/xxx&#10;#https://www.youtube.com/...&#10;#https://www.kick.com/..."
+            style="width: 100%; height: 180px; padding: 10px 12px; background: #212529; border: 1px solid #495057; border-radius: 6px; color: #f8f9fa; font-size: 12px; box-sizing: border-box; resize: vertical; font-family: monospace; line-height: 1.5;"></textarea>
+        </div>
+
+        <!-- 格式說明 -->
+        <div id="texoFormatBox"
+          style="padding: 8px 10px; background: rgba(40, 167, 69, 0.08); border-radius: 6px; font-size: 11px; color: #868e96; line-height: 1.4;">
+          <strong id="texoFormatTitle" style="color: #28a745;">格式規則：</strong>
+          <span style="color: #ffaa66;">></span> <span id="texoFormatDisplayName">顯示名稱</span>，<span
+            style="color: #ffaa66;">#</span> <span id="texoFormatPlatform">直播平台</span>，<span
+            style="color: #ffaa66;">!</span> <span id="texoFormatSharedChat">共用聊天室</span>，<span
+            id="texoFormatSeeHelp">詳見</span> ❓
+
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button id="texoSave"
+            style="flex: 1; padding: 10px; background: #28a745; border: none; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;">💾
+            <span id="texoSaveText">儲存</span></button>
+        </div>
+
+        <!-- 狀態顯示 -->
+        <div id="texoStatus"
+          style="margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 12px; color: rgba(255,255,255,0.7); text-align: center;">
+          自動載入上次儲存的內容
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 編織頁面結束 -->
+
+  <!-- 通用設定頁 -->
+  <div id="settingsPage" class="page-content">
+    <div class="settings-page">
+      <!-- 區塊 1: 通用設定 -->
+      <div class="settings-section">
+        <div class="settings-section-title">⚡ 通用設定</div>
+        <div class="settings-btn-grid">
+          <button class="settings-btn" id="btnDisableNativeContextMenu">🖱️ 關閉右鍵面板</button>
         </div>
       </div>
 
-      <!-- 區塊 3: 元素控制 -->
-      <div class="dlive-section">
-        <div class="dlive-section-title">👁️ 元素控制</div>
-        <div class="dlive-btn-grid">
-          <button class="dlive-btn" id="btnNavbar">📌 隱藏頂部欄</button>
-          <button class="dlive-btn" id="btnTitleFix1">👁️ 隱藏標題</button>
-          <button class="dlive-btn" id="btnDonation">💰 隱藏送禮區</button>
-          <button class="dlive-btn" id="btnSidebar">📁 隱藏側邊欄</button>
-          <button class="dlive-btn" id="btnAboutFix1">📦 隱藏下方區</button>
-          <button class="dlive-btn" id="btnTestBlackFix1">🖤 黑色背景</button>
+      <!-- 區塊 2: 劇院模式 (通用功能) -->
+      <div class="settings-section">
+        <div class="settings-section-title">🎭 劇院模式</div>
+        <div class="settings-btn-grid">
+          <button class="settings-btn" id="btnTheater13">🎭 劇院模式</button>
+          <button class="settings-btn" id="btnTestZoomReset">🔄 縮放重置</button>
+          <button class="settings-btn" id="btnTestZoomOut">🔍- 縮小10%</button>
+          <button class="settings-btn" id="btnTestZoomIn">🔍+ 放大10%</button>
+        </div>
+      </div>
+
+      <!-- 區塊 3: 聊天室控制 (通用功能) -->
+      <div class="settings-section">
+        <div class="settings-section-title">💬 聊天室控制</div>
+        <div class="settings-btn-grid">
+          <button class="settings-btn" id="btnChatNarrow">💬 聊天室變窄</button>
+          <button class="settings-btn" id="btnChatHidden">🚫 隱藏聊天室</button>
+          <button class="settings-btn" id="btnChatOverlayFix1">🎬 浮動聊天室</button>
+        </div>
+      </div>
+
+      <!-- 區塊 4: 元素控制 (通用功能) -->
+      <div class="settings-section">
+        <div class="settings-section-title">👁️ 元素控制</div>
+        <div class="settings-btn-grid">
+          <button class="settings-btn" id="btnNavbar">📌 隱藏頂部欄</button>
+          <button class="settings-btn" id="btnTitleFix1">👁️ 隱藏標題</button>
+          <button class="settings-btn" id="btnDonation">💰 隱藏送禮區</button>
+          <button class="settings-btn" id="btnSidebar">📁 隱藏側邊欄</button>
+          <button class="settings-btn" id="btnAboutFix1">📦 隱藏下方區</button>
+          <button class="settings-btn" id="btnTestBlackFix1">🖤 黑色背景</button>
         </div>
       </div>
 
       <!-- 狀態顯示 -->
-      <div class="dlive-status" id="dliveStatus">
-        ℹ️ 需要先在 DLive 頻道頁面才能使用這些功能
+      <div class="settings-status" id="settingsStatus">
+        ℹ️ 需要在支援的直播平台頁面才能使用這些功能
       </div>
     </div>
   </div>
-  <!-- DLive 設定頁結束 -->
+  <!-- 通用設定頁結束 -->
 
   <div class="footer" id="footerText">
     🔥 ★ 常用 • ✕ 刪除 • 右鍵添加標籤（頁面或面板）
@@ -720,7 +1065,25 @@
   <script src="i18n.js"></script>
   <script src="stickerStorage.js"></script>
   <script src="stickerTags.js"></script>
+  <script src="stickerRegistry.js"></script>
+  <script src="TexoStreamCore/index.js"></script>
+  <script src="TexoStreamCore/popup.js"></script>
   <script src="popup.js"></script>
+
+  <!-- 自定義確認對話框 -->
+  <div id="customConfirmDialog" class="custom-dialog-overlay">
+    <div class="custom-dialog">
+      <div class="custom-dialog-header">
+        <span class="custom-dialog-icon">⚠️</span>
+        <span class="custom-dialog-title" id="customDialogTitle">請注意</span>
+      </div>
+      <div class="custom-dialog-content" id="customDialogContent"></div>
+      <div class="custom-dialog-footer">
+        <button class="custom-dialog-btn cancel" id="customDialogCancel">取消</button>
+        <button class="custom-dialog-btn confirm" id="customDialogConfirm">確定</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

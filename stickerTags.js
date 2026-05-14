@@ -2,16 +2,13 @@
 (function initDlsqTags(global) {
   const MAX_TAG_LEN = 16;
   const MAX_TAGS_PER_STICKER = 4;
-  // 支援 DL- 前綴（DLive 貼圖）、IM- 前綴（Imgur 圖片）和 ME- 前綴（meee.com.tw 圖片）
-  const DL_ID_RE = /^(?:DL-)?[A-Za-z0-9_]+$/;
+  // 支援 IM- 前綴（Imgur 圖片）、ME- 前綴（meee.com.tw 圖片）、YT- 前綴（YouTube 視頻）、CB- 前綴（Catbox 圖片）
   const IM_ID_RE = /^IM-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
   const ME_ID_RE = /^ME-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4)$/i;
+  const YT_ID_RE = /^YT-[a-zA-Z0-9_-]+$/;
+  const CB_ID_RE = /^CB-[a-zA-Z0-9-]+\.(?:gif|png|jpg|jpeg|mp4|webp)?$/i;
+  const GSS_ID_RE = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i;
 
-  function isValidDLId(id) {
-    // DL ID 不能是 IM- 或 ME- 开头（避免与 IM/ME 类型混淆）
-    if (!id || id.startsWith('IM-') || id.startsWith('ME-')) return false;
-    return DL_ID_RE.test(id);
-  }
 
   function isValidIMId(id) {
     return IM_ID_RE.test(id);
@@ -19,6 +16,18 @@
 
   function isValidMEId(id) {
     return ME_ID_RE.test(id);
+  }
+
+  function isValidYTId(id) {
+    return YT_ID_RE.test(id);
+  }
+
+  function isValidCBId(id) {
+    return CB_ID_RE.test(id);
+  }
+
+  function isValidGSSId(id) {
+    return GSS_ID_RE.test(id);
   }
 
   function normalizeId(id) {
@@ -31,10 +40,14 @@
     if (id.startsWith('ME-')) {
       return id.replace(/-(gif|png|jpg|jpeg|mp4)$/i, '.$1');
     }
-    // 已經有 DL- 前綴，直接返回
-    if (id.startsWith('DL-')) return id;
-    // 舊格式，添加 DL- 前綴
-    if (/^[A-Za-z0-9_]+$/.test(id)) return `DL-${id}`;
+    // CB 格式：將 -gif, -png, -jpg, -jpeg, -mp4, -webp 結尾替換為 . 點格式
+    if (id.startsWith('CB-')) {
+      return id.replace(/-(gif|png|jpg|jpeg|mp4|webp)$/i, '.$1');
+    }
+    // GSS 格式：移除 http:// 和 https:// 前綴
+    if (id.startsWith('GSS-')) {
+      return id.replace(/^GSS-https?:\/\//i, 'GSS-');
+    }
     return id;
   }
 
@@ -76,12 +89,27 @@
       if (!isValidMEId(id)) {
         return { error: 'bad_id', id: rawId, raw: trimmed };
       }
-    } else {
-      // DL 格式：正規化並驗證
-      id = normalizeId(rawId);
-      if (!isValidDLId(id)) {
+    } else if (rawId.startsWith('YT-')) {
+      // YT 格式：YouTube 視頻 ID，不需要正規化
+      id = rawId;
+      if (!isValidYTId(id)) {
         return { error: 'bad_id', id: rawId, raw: trimmed };
       }
+    } else if (rawId.startsWith('CB-')) {
+      // CB 格式：先正規化再驗證
+      id = normalizeId(rawId);
+      if (!isValidCBId(id)) {
+        return { error: 'bad_id', id: rawId, raw: trimmed };
+      }
+    } else if (rawId.startsWith('GSS-')) {
+      // GSS 格式：先正規化再驗證
+      id = normalizeId(rawId);
+      if (!isValidGSSId(id)) {
+        return { error: 'bad_id', id: rawId, raw: trimmed };
+      }
+    } else {
+      // 移除 DLive 格式處理
+      return { error: 'bad_id', id: rawId, raw: trimmed };
     }
 
     const tags = [];
@@ -130,8 +158,8 @@
       .map((r) => {
         const id = r?.id;
         if (!id) return '';
-        // IM/ME 格式直接返回，DL 格式確保有前綴
-        const normalizedId = (id.startsWith('IM-') || id.startsWith('ME-')) ? id : (id.startsWith('DL-') ? id : `DL-${id}`);
+        // IM/ME/YT/CB/GSS 格式直接返回
+        const normalizedId = (id.startsWith('IM-') || id.startsWith('ME-') || id.startsWith('YT-') || id.startsWith('CB-') || id.startsWith('GSS-')) ? id : id;
         const uniq = [];
         const seen = new Set();
         for (const t of Array.isArray(r.tags) ? r.tags : []) {
@@ -230,9 +258,11 @@
     normalizeTagToken,
     isValidTagLabel,
     normalizeId,
-    isValidDLId,
     isValidIMId,
     isValidMEId,
+    isValidYTId,
+    isValidCBId,
+    isValidGSSId,
     codePointLength
   });
 })(typeof self !== 'undefined' ? self : window);

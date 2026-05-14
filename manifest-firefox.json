@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "__MSG_extName__",
   "version": "6.6",
   "default_locale": "zh_TW",
@@ -10,9 +10,8 @@
   },
   "description": "__MSG_extDesc__",
   "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
+    "storage",
+    "tabs",
     "https://*.twitch.tv/*",
     "https://vaughn.live/*",
     "https://*.vaughn.live/*",
@@ -25,7 +24,7 @@
     "https://*.beamstream.gg/*",
     "https://*.w.tv/*"
   ],
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_title": "General Sticker System (GSS)",
     "default_icon": {
@@ -59,7 +58,6 @@
         "libraries/base.js",
         "libraries/imgur.js",
         "libraries/meee.js",
-        "libraries/catbox.js",
         "libraries/index.js",
         "platforms/base.js",
         "platforms/twitch.js",
@@ -77,21 +75,24 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
   },
   "web_accessible_resources": [
-    {
-      "resources": [
-        "icons/*.png"
-      ],
-      "matches": [
-        "https://*.twitch.tv/*",
-        "https://*.vaughn.live/*",
-        "https://*.kick.com/*",
-        "https://*.youtube.com/*",
-        "https://*.beamstream.gg/*",
-        "https://*.w.tv/*"
-      ]
+    "icons/*.png"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "gss@texo.com",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "internal": false,
+        "required": [
+          "none"
+        ]
+      }
     }
-  ]
+  }
 }

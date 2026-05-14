@@ -10,7 +10,8 @@
   },
   "description": "__MSG_extDesc__",
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://*.twitch.tv/*",
@@ -59,7 +60,6 @@
         "libraries/base.js",
         "libraries/imgur.js",
         "libraries/meee.js",
-        "libraries/catbox.js",
         "libraries/index.js",
         "platforms/base.js",
         "platforms/twitch.js",

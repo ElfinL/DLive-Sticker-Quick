@@ -88,15 +88,39 @@
         your sticker data or settings.</p>
 
     <h2>4. 第三方服務 / Third-Party Services</h2>
-    <p>本擴充功能與 <strong>DLive GraphQL API</strong> 和 <strong>Twitch 聊天服務</strong>互動，用於發送聊天訊息。</p>
-    <p>This extension interacts with the <strong>DLive GraphQL API</strong> and <strong>Twitch chat services</strong>
-        for sending chat messages.</p>
-    <p><strong>我們不會傳輸您的貼圖資料、標籤或任何個人資訊</strong>至第三方。發送的內容僅為您手動選擇的貼圖 ID。</p>
+    <p>本擴充功能與以下第三方服務互動：</p>
+    <p>This extension interacts with the following third-party services:</p>
+    <ul>
+        <li><strong>Twitch 聊天服務</strong>：用於發送聊天訊息 / For sending chat messages</li>
+        <li><strong>Twitch GQL API、Kick API、Vaughn API</strong>：用於 TSC（實況編織）功能的開台狀態檢測（僅查詢頻道是否在線，無需登入憑證）/
+            For TSC stream status checking (online/offline status only, no login credentials required)</li>
+    </ul>
+    <p><strong>我們不會傳輸您的貼圖資料、標籤或任何個人資訊</strong>至第三方。發送的內容僅為您手動選擇的貼圖 ID，以及 TSC 功能中您手動設定的公開頻道 URL。</p>
     <p><strong>We do not transmit your sticker data, tags, or any personal information</strong> to third parties. Only
-        the
-        sticker ID you manually select is sent.</p>
+        the sticker ID you manually select is sent, along with public channel URLs you manually configure in the TSC
+        feature.</p>
+    <p>開台狀態查詢結果（在線狀態、觀看人數、實況標題）僅儲存在您的本地裝置快取中（5 分鐘），不會上傳至任何伺服器。/ Stream status results are cached locally only (5
+        minutes) and never uploaded to any server.</p>
 
-    <h2>5. 聯絡方式 / Contact</h2>
+    <h2>5. 權限使用說明 / Permissions Usage</h2>
+    <p>本擴充功能申請使用以下權限，僅用於所述功能：</p>
+    <p>This extension requests the following permissions solely for the stated purposes:</p>
+
+
+    <h3>all_frames 設定 / all_frames Setting</h3>
+    <ul>
+        <li><strong>聊天室 iframe 支援 / Chat Room iframe Support：</strong>本擴充使用 <code>all_frames: true</code>
+            設定，將聊天面板等功能腳本注入 YouTube 等平台的聊天室 iframe 中。這是必要的技術方案，因為 YouTube 聊天室運行在獨立的 iframe 內（網址為
+            youtube.com/live_chat）。我們<strong>不會</strong>因此存取或收集任何 iframe 內的個人資料，僅用於顯示貼圖面板。</li>
+    </ul>
+    <div class="highlight">
+        <strong>重要聲明 / Important Note：</strong><br>
+        本擴充功能<strong>絕不紀錄、儲存或傳輸您的瀏覽紀錄或任何分頁 URL 至外部伺服器</strong>。所有操作均在本地端即時完成。<br><br>
+        This extension <strong>NEVER logs, stores, or transmits your browsing history or any tab URLs to
+            external servers</strong>. All operations are performed locally in real-time.
+    </div>
+
+    <h2>6. 聯絡方式 / Contact</h2>
     <p>如有任何隱私權相關問題，請透過 Chrome Web Store 的開發者資訊頁面與我們聯繫。</p>
     <p>For any privacy-related questions, please contact us through the Chrome Web Store developer information page.</p>
 </body>
