@@ -2966,6 +2966,8 @@ async function refreshPanelStickers() {
       if (code.startsWith('CB-')) return code;
       // YT 格式
       if (code.startsWith('YT-')) return code;
+      // GSS 格式
+      if (code.startsWith('GSS-')) return code;
       return null;
     };
     const isHidden = (sid) => {
@@ -3016,7 +3018,7 @@ async function refreshPanelStickers() {
   stickersToRender.sort((a, b) => {
     const getSortId = (s) => {
       const code = String(s?.code || '');
-      if (code.startsWith('IM-') || code.startsWith('ME-') || code.startsWith('YT-')) return code;
+      if (code.startsWith('IM-') || code.startsWith('ME-') || code.startsWith('YT-') || code.startsWith('CB-') || code.startsWith('GSS-')) return code;
       // 移除 DL 格式處理
       return null;
     };

@@ -377,88 +377,91 @@ function deleteSticker(id) {
   });
 }
 
-document.getElementById('saveIdsBtn').addEventListener('click', () => {
-  const idListInput = document.getElementById('idListInput');
-  const tagVocabInput = document.getElementById('tagVocabInput');
-  const rawText = idListInput.value || '';
-  const vocabRaw = tagVocabInput ? tagVocabInput.value || '' : '';
+function initSaveIdsButton() {
+  const saveBtn = document.getElementById('saveIdsBtn');
+  if (!saveBtn) return;
 
-  const vocabCheck = validateVocabInput(vocabRaw);
-  if (!vocabCheck.ok) {
-    setStatus(t('statusVocabBadLine', vocabCheck.line), '#dc3545');
-    return;
-  }
+  saveBtn.addEventListener('click', () => {
+    const idListInput = document.getElementById('idListInput');
+    const tagVocabInput = document.getElementById('tagVocabInput');
+    const rawText = idListInput.value || '';
+    const vocabRaw = tagVocabInput ? tagVocabInput.value || '' : '';
 
-  if (!rawText.trim()) {
-    chrome.storage.local.set(
-      {
-        stickerIdsText: '',
-        favoriteStickerIds: [],
-        stickerTagVocabularyText: vocabRaw
-      },
-      () => {
-        loadStickers();
-        setStatus(t('statusCleared'));
-      }
-    );
-    return;
-  }
-
-  const { rows, errors } = parseStickerIdsWithTag(rawText);
-  if (errors.length) {
-    setStatus(t('statusParseErr', formatParseError(errors[0])), '#dc3545');
-    return;
-  }
-  const mergedVocabRaw = mergeVocabWithRowTags(vocabRaw, rows);
-
-  const ids = rows.map((r) => r.id);
-  // 驗證 ID 格式（支援 CB-、IM-、ME-、YT-、YTS-、GSS- 前綴）
-  const invalidId = ids.find((id) => {
-    if (TAG) {
-      return !TAG.isValidDLId(id) && !TAG.isValidIMId(id) && !TAG.isValidMEId(id) && !TAG.isValidYTId(id) && !TAG.isValidCBId(id) && !TAG.isValidGSSId(id);
+    const vocabCheck = validateVocabInput(vocabRaw);
+    if (!vocabCheck.ok) {
+      setStatus(t('statusVocabBadLine', vocabCheck.line), '#dc3545');
+      return;
     }
-    // 後備驗證
-    const isDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(id);
-    const isIM = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
-    const isME = /^ME-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
-    const isYT = /^YT-[a-zA-Z0-9_-]+$/.test(id);
-    const isYTS = /^YTS-[a-zA-Z0-9_-]+$/.test(id);
-    const isCB = /^CB-[a-zA-Z0-9]{6}(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(id);
-    const isGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(id);
-    return !isDL && !isIM && !isME && !isYT && !isYTS && !isCB && !isGSS;
-  });
-  if (invalidId) {
-    setStatus(t('statusInvalidId', invalidId), '#dc3545');
-    return;
-  }
 
-  chrome.storage.local.get(['favoriteStickerIds'], (r) => {
-    const uniqueRows = [];
-    const seen = new Set();
-    for (const row of rows) {
-      if (seen.has(row.id)) continue;
-      seen.add(row.id);
-      uniqueRows.push(row);
+    if (!rawText.trim()) {
+      chrome.storage.local.set(
+        {
+          stickerIdsText: '',
+          favoriteStickerIds: [],
+          stickerTagVocabularyText: vocabRaw
+        },
+        () => {
+          loadStickers();
+          setStatus(t('statusCleared'));
+        }
+      );
+      return;
     }
-    const cleanedFav = removeUnknownFavorites(Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [], uniqueRows.map((x) => x.id));
-    const sortedRows = sortRowsWithFavorites(uniqueRows, cleanedFav);
-    const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
 
-    chrome.storage.local.set(
-      {
-        stickerIdsText: nextText,
-        favoriteStickerIds: cleanedFav,
-        stickerTagVocabularyText: mergedVocabRaw
-      },
-      () => {
-        idListInput.value = nextText;
-        if (tagVocabInput) tagVocabInput.value = mergedVocabRaw;
-        loadStickers();
-        setStatus(t('statusSavedCount', sortedRows.length));
+    const { rows, errors } = parseStickerIdsWithTag(rawText);
+    if (errors.length) {
+      setStatus(t('statusParseErr', formatParseError(errors[0])), '#dc3545');
+      return;
+    }
+    const mergedVocabRaw = mergeVocabWithRowTags(vocabRaw, rows);
+
+    const ids = rows.map((r) => r.id);
+    const invalidId = ids.find((id) => {
+      if (TAG && typeof TAG.isValidDLId === 'function') {
+        return !TAG.isValidDLId(id) && !TAG.isValidIMId(id) && !TAG.isValidMEId(id) && !TAG.isValidYTId(id) && !TAG.isValidCBId(id) && !TAG.isValidGSSId(id);
       }
-    );
+      const isDL = /^(?:DL-)?[A-Za-z0-9_]+$/.test(id);
+      const isIM = /^IM-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
+      const isME = /^ME-[a-zA-Z0-9]+(?:\.(?:gif|png|jpg|jpeg|mp4))?$/i.test(id);
+      const isYT = /^YT-[a-zA-Z0-9_-]+$/.test(id);
+      const isYTS = /^YTS-[a-zA-Z0-9_-]+$/.test(id);
+      const isCB = /^CB-[a-zA-Z0-9]{6}(?:\.(?:gif|png|jpg|jpeg|mp4|webp))?$/i.test(id);
+      const isGSS = /^GSS-(?:https?:\/\/)?[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg|mp4)(?:\?[^\s]*)?$/i.test(id);
+      return !isDL && !isIM && !isME && !isYT && !isYTS && !isCB && !isGSS;
+    });
+    if (invalidId) {
+      setStatus(t('statusInvalidId', invalidId), '#dc3545');
+      return;
+    }
+
+    chrome.storage.local.get(['favoriteStickerIds'], (r) => {
+      const uniqueRows = [];
+      const seen = new Set();
+      for (const row of rows) {
+        if (seen.has(row.id)) continue;
+        seen.add(row.id);
+        uniqueRows.push(row);
+      }
+      const cleanedFav = removeUnknownFavorites(Array.isArray(r.favoriteStickerIds) ? r.favoriteStickerIds : [], uniqueRows.map((x) => x.id));
+      const sortedRows = sortRowsWithFavorites(uniqueRows, cleanedFav);
+      const nextText = TAG ? TAG.serializeStickerRows(sortedRows) : idsToText(sortedRows.map((x) => x.id));
+
+      chrome.storage.local.set(
+        {
+          stickerIdsText: nextText,
+          favoriteStickerIds: cleanedFav,
+          stickerTagVocabularyText: mergedVocabRaw
+        },
+        () => {
+          idListInput.value = nextText;
+          if (tagVocabInput) tagVocabInput.value = mergedVocabRaw;
+          loadStickers();
+          setStatus(t('statusSavedCount', sortedRows.length));
+        }
+      );
+    });
   });
-});
+}
 
 (async function dlsqBootPopup() {
   // 更新標題版本號
@@ -993,6 +996,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHelpPopover();
   initUpdateButton();
   initTscToggles();
+  initSaveIdsButton();
 });
 
 // ==================== Help Button 功能 ====================
@@ -1077,3 +1081,4 @@ function showToast(message) {
     }, 3000);
   }
 }
+
